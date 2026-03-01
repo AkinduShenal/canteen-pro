@@ -4,13 +4,18 @@
 
 ### 1. Install Dependencies
 
+#### Root (required for combined dev script)
+```
+npm install
+```
+
 #### Server
 ```
 cd server
 npm install
 ```
 
-#### Client
+#### Client (Vite)
 ```
 cd client
 npm install
@@ -19,25 +24,18 @@ npm install
 ### 2. Environment Variables
 - Copy `server/.env.example` to `server/.env` and fill in required values (e.g., database URI, JWT secret).
 
-### 3. Start the Backend Server
-```
-cd server
-npm start
-```
-- For development with auto-reload (if nodemon is set up):
+### 3. Run the App
+
+#### Both client + server (recommended)
 ```
 npm run dev
 ```
+- Launches `server` (`npm run dev`) and `client` (`npm run dev` via Vite) concurrently.
+- Open [http://localhost:3000](http://localhost:3000) for the frontend; `/api/*` requests proxy to [http://localhost:5000](http://localhost:5000).
 
-### 4. Start the Frontend Client
-```
-cd client
-npm start
-```
-
-### 5. Access the App
-- Frontend: [http://localhost:3000](http://localhost:3000)
-- Backend API: [http://localhost:5000](http://localhost:5000) (or your configured port)
+#### Individually
+- Backend: `cd server && npm run dev`
+- Frontend: `cd client && npm run dev`
 
 ---
 

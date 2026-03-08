@@ -1,0 +1,156 @@
+.credit-card-form {
+    padding: 1.5rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    animation: fadeInForm 0.4s ease;
+}
+
+.cc-form-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.cc-back-btn {
+    background: none;
+    border: none;
+    color: #6b7280;
+    font-size: 0.95rem;
+    cursor: pointer;
+    padding: 0.5rem 0;
+    transition: color 0.2s;
+}
+
+.cc-back-btn:hover {
+    color: #111827;
+}
+
+.cc-form-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: #1f2937;
+    flex-grow: 1;
+    text-align: center;
+}
+
+.cc-icons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.cc-icon {
+    font-size: 0.7rem;
+    font-weight: bold;
+    color: white;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+}
+
+.cc-icon.visa {
+    background-color: #1a1f71;
+}
+
+.cc-icon.mastercard {
+    background-color: #ff5f00;
+}
+
+.cc-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.cc-input-group label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #4b5563;
+}
+
+.cc-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.cc-input-icon {
+    position: absolute;
+    left: 1rem;
+    font-size: 1.1rem;
+    color: #9ca3af;
+}
+
+.cc-input-wrapper input {
+    width: 100%;
+    padding: 0.8rem 1rem 0.8rem 2.8rem;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: #f9fafb;
+    outline: none;
+}
+
+.cc-input-wrapper input:focus {
+    border-color: #3b82f6;
+    background: white;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+.cc-row {
+    display: flex;
+    gap: 1rem;
+}
+
+.cc-half {
+    flex: 1;
+}
+
+.cc-form-footer {
+    margin-top: 1rem;
+}
+
+.cc-submit-btn {
+    width: 100%;
+    padding: 1rem;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.cc-submit-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+    background: linear-gradient(135deg, #34d399, #10b981);
+}
+
+.cc-submit-btn:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+.cc-submit-btn:disabled {
+    background: #e5e7eb;
+    color: #9ca3af;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+@keyframes fadeInForm {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}

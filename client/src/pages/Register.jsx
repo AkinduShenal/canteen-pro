@@ -30,6 +30,10 @@ const Register = () => {
             <button type="submit" className="btn btn-primary" style={{ marginTop: '1rem', width: '100%' }}>
               Create Account
             </button>
+            <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+              <span style={{ color: 'var(--text-light)' }}>Already have an account? </span>
+              <a href="/login" style={{ fontWeight: '600' }}>Sign In here</a>
+            </div>
           </form>
         </div>
       </div>

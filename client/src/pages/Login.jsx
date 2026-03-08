@@ -25,6 +25,10 @@ const Login = () => {
             <button type="submit" className="btn btn-primary" style={{ marginTop: '1rem', width: '100%' }}>
               Sign In
             </button>
+            <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+              <span style={{ color: 'var(--text-light)' }}>Don't have an account? </span>
+              <a href="/register" style={{ fontWeight: '600' }}>Create one here</a>
+            </div>
           </form>
         </div>
       </div>

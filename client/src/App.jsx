@@ -5,6 +5,7 @@ import CheckoutPage from "./components/Checkout/CheckoutPage";
 import CheckoutConfirmation from "./components/Checkout/CheckoutConfirmation";
 import PaymentMethodModal from "./components/Checkout/PaymentMethodModal";
 import OrderTracking from "./components/Tracking/OrderTracking";
+import OrderHistory from "./components/History/OrderHistory";
 import { useCart } from "./store/CartContext";
 import "./App.css"; // Basic styles for the app
 
@@ -23,6 +24,7 @@ function App() {
 	const [isOrderConfirmed, setIsOrderConfirmed] = useState(false);
 	const [orderDetails, setOrderDetails] = useState(null);
 	const [isTrackingOrder, setIsTrackingOrder] = useState(false);
+	const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 	const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 	const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
 	// Temporary state to hold the pickup slot between CheckoutPage and PaymentModal
@@ -73,6 +75,7 @@ function App() {
 		setIsOrderConfirmed(false);
 		setIsCheckoutPageOpen(false);
 		setIsTrackingOrder(false);
+		setIsHistoryOpen(false);
 		setSelectedPaymentMethod(null);
 		setOrderDetails(null);
 	};
@@ -81,12 +84,19 @@ function App() {
 		<div className="app-container">
 			<header className="app-header">
 				<h1>Canteen Pro</h1>
-				<button className="cart-toggle-btn" onClick={toggleCart}>
-					🛒 Cart {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
-				</button>
+				<div className="header-actions">
+					<button className="history-link-btn" onClick={() => setIsHistoryOpen(true)}>
+						History
+					</button>
+					<button className="cart-toggle-btn" onClick={toggleCart}>
+						🛒 Cart {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
+					</button>
+				</div>
 			</header>
 
-			{isTrackingOrder && orderDetails ? (
+			{isHistoryOpen ? (
+				<OrderHistory onBack={resetToMenu} />
+			) : isTrackingOrder && orderDetails ? (
 				<OrderTracking
 					orderDetails={orderDetails}
 					onReturnToMenu={resetToMenu}

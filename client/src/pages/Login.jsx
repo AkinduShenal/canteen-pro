@@ -8,8 +8,8 @@ const Login = () => {
       <div className="main-content auth-container">
         <div className="glass-card">
           <div className="form-header">
-            <h2 className="text-gradient">Welcome Back</h2>
-            <p>Please enter your details to sign in</p>
+            <h2>Welcome Back</h2>
+            <p>Sign in to order your favorite meals</p>
           </div>
           <form>
             <div className="form-group">
@@ -22,7 +22,7 @@ const Login = () => {
               <input type="password" className="form-control" placeholder="Enter your password" required />
             </div>
             
-            <button type="submit" className="btn btn-primary" style={{ marginTop: '1rem' }}>
+            <button type="submit" className="btn btn-primary" style={{ marginTop: '1rem', width: '100%' }}>
               Sign In
             </button>
           </form>

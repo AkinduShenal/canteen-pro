@@ -8,8 +8,8 @@ const Register = () => {
       <div className="main-content auth-container">
         <div className="glass-card">
           <div className="form-header">
-            <h2 className="text-gradient">Create an Account</h2>
-            <p>Join CanteenPro today</p>
+            <h2>Create an Account</h2>
+            <p>Join CanteenPro today for fresh meals</p>
           </div>
           <form>
             <div className="form-group">
@@ -27,7 +27,7 @@ const Register = () => {
               <input type="password" className="form-control" placeholder="Create a password" required />
             </div>
             
-            <button type="submit" className="btn btn-primary" style={{ marginTop: '1rem' }}>
+            <button type="submit" className="btn btn-primary" style={{ marginTop: '1rem', width: '100%' }}>
               Create Account
             </button>
           </form>

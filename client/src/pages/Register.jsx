@@ -8,7 +8,7 @@ const Register = () => {
       <div className="main-content auth-container">
         <div className="glass-card">
           <div className="form-header">
-            <h2>Create an Account</h2>
+            <h2 className="text-gradient">Create an Account</h2>
             <p>Join CanteenPro today</p>
           </div>
           <form>

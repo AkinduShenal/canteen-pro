@@ -8,7 +8,7 @@ const Login = () => {
       <div className="main-content auth-container">
         <div className="glass-card">
           <div className="form-header">
-            <h2>Welcome Back</h2>
+            <h2 className="text-gradient">Welcome Back</h2>
             <p>Please enter your details to sign in</p>
           </div>
           <form>

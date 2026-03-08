@@ -22,8 +22,16 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('user');
   };
 
+  const updateUser = async (userData) => {
+    login(userData); // Update local context and storage with new token
+  };
+
+  const deleteUser = () => {
+    logout(); // Clear local context and storage
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, updateUser, deleteUser }}>
       {children}
     </AuthContext.Provider>
   );

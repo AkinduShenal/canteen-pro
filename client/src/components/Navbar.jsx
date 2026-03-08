@@ -1,7 +1,16 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useContext } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext.jsx';
 
 const Navbar = () => {
+  const { user, logout } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
   return (
     <nav className="navbar">
       <Link to="/" className="nav-brand">
@@ -14,8 +23,19 @@ const Navbar = () => {
       </Link>
       <div className="nav-links">
         <Link to="/" className="nav-link">Home</Link>
-        <Link to="/login" className="nav-link btn-outline btn" style={{ padding: '0.6rem 1.5rem', borderWidth: '2px' }}>Login</Link>
-        <Link to="/register" className="btn btn-primary" style={{ padding: '0.6rem 1.5rem', width: 'auto' }}>Register</Link>
+        {user ? (
+          <>
+            <Link to="/profile" className="nav-link">Profile</Link>
+            <button onClick={handleLogout} className="btn btn-outline" style={{ padding: '0.6rem 1.5rem', borderWidth: '2px', cursor: 'pointer' }}>
+              Logout
+            </button>
+          </>
+        ) : (
+          <>
+            <Link to="/login" className="nav-link btn-outline btn" style={{ padding: '0.6rem 1.5rem', borderWidth: '2px' }}>Login</Link>
+            <Link to="/register" className="btn btn-primary" style={{ padding: '0.6rem 1.5rem', width: 'auto' }}>Register</Link>
+          </>
+        )}
       </div>
     </nav>
   );

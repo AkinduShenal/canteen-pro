@@ -3,9 +3,11 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import authRoutes from './routes/authRoutes.js';
+import canteenRoutes from './routes/canteenRoutes.js';
+import announcementRoutes from './routes/announcementRoutes.js';
 import connectDB from './config/db.js';
 
-dotenv.config({ path: '../.env' }); // Assuming .env is in server root
+dotenv.config(); // Resolves .env from current working directory (server/)
 
 const app = express();
 
@@ -15,6 +17,8 @@ app.use(express.json());
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/canteens', canteenRoutes);
+app.use('/api/announcements', announcementRoutes);
 
 app.get('/', (req, res) => {
   res.send('CanteenPro API is running...');

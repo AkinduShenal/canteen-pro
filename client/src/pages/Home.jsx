@@ -18,24 +18,24 @@ const Home = () => {
               Fresh ingredients, fast service, and a modern experience.
             </p>
             <div className="hero-actions">
-              <Link to="/register" className="btn btn-primary" style={{ width: 'auto', padding: '1rem 2rem' }}>Get Started Now</Link>
-              <Link to="/login" className="btn btn-outline" style={{ width: 'auto', padding: '1rem 2rem' }}>Sign In</Link>
+              <Link to="/register" className="btn btn-primary" style={{ width: 'auto', padding: '1.2rem 2.8rem' }}>Get Started Now</Link>
+              <Link to="/login" className="btn btn-outline" style={{ width: 'auto', padding: '1.2rem 2.8rem' }}>Sign In</Link>
             </div>
           </div>
         ) : (
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <h2 className="text-gradient">Dashboard</h2>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', padding: '2rem 2rem 0' }}>
+              <h2 className="text-gradient" style={{ fontSize: '2.5rem' }}>Dashboard</h2>
             </div>
             <div className="welcome-card">
               <div className="avatar-circle">
                 {user.name.charAt(0).toUpperCase()}
               </div>
-              <h3 style={{ marginBottom: '1rem', fontSize: '1.8rem' }}>Welcome back, <span className="text-gradient">{user.name}</span>!</h3>
-              <p style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginBottom: '2rem' }}>
-                You are currently logged in as a <span className="user-badge">{user.role}</span>
+              <h3 style={{ marginBottom: '1rem', fontSize: '2rem' }}>Welcome back, <span className="text-gradient">{user.name}</span>!</h3>
+              <p style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.8rem', marginBottom: '2.5rem', fontSize: '1.2rem' }}>
+                Currently logged in as a <span className="user-badge">{user.role}</span>
               </p>
-              <button className="btn btn-outline" onClick={logout} style={{ width: 'auto', padding: '0.8rem 2rem' }}>
+              <button className="btn btn-primary" onClick={logout} style={{ width: 'auto', padding: '1rem 3rem' }}>
                 Sign Out
               </button>
             </div>

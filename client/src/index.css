@@ -1342,6 +1342,67 @@ a:hover {
   gap: 0.7rem;
 }
 
+.menu-queue-indicator {
+  margin-top: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: linear-gradient(140deg, #fff8ef, #ffffff);
+  padding: 0.8rem 0.9rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+}
+
+.menu-queue-title {
+  margin-bottom: 0.2rem;
+  font-size: 0.92rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--primary-hover);
+}
+
+.menu-queue-meta {
+  margin-bottom: 0;
+  font-size: 0.92rem;
+}
+
+.menu-queue-meta strong {
+  color: var(--text-main);
+}
+
+.menu-queue-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.menu-queue-pill.low {
+  background: rgba(56, 176, 0, 0.14);
+  color: #207200;
+}
+
+.menu-queue-pill.medium {
+  background: rgba(250, 163, 7, 0.2);
+  color: #8a5700;
+}
+
+.menu-queue-pill.high {
+  background: rgba(220, 47, 2, 0.16);
+  color: #9e2200;
+}
+
+.menu-queue-pill.unknown {
+  background: rgba(0, 0, 0, 0.08);
+  color: #4f4f4f;
+}
+
 .menu-chip {
   border: 1px solid var(--border-color);
   background: #fff;
@@ -1505,6 +1566,44 @@ a:hover {
   font-weight: 600;
 }
 
+.menu-announcement-bar {
+  margin-bottom: 1rem;
+  border: 1px solid rgba(232, 93, 4, 0.2);
+  border-radius: 12px;
+  background: linear-gradient(130deg, #fff3e8, #fffdf8);
+  padding: 0.85rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.menu-announcement-icon {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  background: rgba(232, 93, 4, 0.14);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+}
+
+.menu-announcement-title {
+  margin: 0;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--primary-hover);
+}
+
+.menu-announcement-message {
+  margin: 0;
+  color: var(--text-main);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
 .menu-loading-note {
   text-align: center;
   color: var(--text-light);
@@ -1617,6 +1716,11 @@ a:hover {
     grid-template-columns: 1fr;
   }
 
+  .menu-queue-indicator {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
   .menu-section-head {
     flex-direction: column;
     align-items: flex-start;
@@ -1650,6 +1754,61 @@ a:hover {
 
 .staff-menu-hero p {
   color: rgba(255, 255, 255, 0.9);
+}
+
+.staff-announcement-panel {
+  background: #fff;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.staff-announcement-head {
+  margin-bottom: 0.8rem;
+}
+
+.staff-announcement-head h2 {
+  margin-bottom: 0.2rem;
+}
+
+.staff-announcement-head p {
+  margin-bottom: 0;
+  font-size: 0.95rem;
+}
+
+.staff-announcement-form {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.staff-announcement-form .btn {
+  width: fit-content;
+}
+
+.staff-announcement-list {
+  margin-top: 0.8rem;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.staff-announcement-item {
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  background: #fffdf9;
+  padding: 0.65rem 0.75rem;
+}
+
+.staff-announcement-item p {
+  margin: 0;
+  color: var(--text-main);
+  font-size: 0.95rem;
+}
+
+.staff-announcement-item span {
+  font-size: 0.78rem;
+  color: var(--text-light);
 }
 
 .staff-grid {

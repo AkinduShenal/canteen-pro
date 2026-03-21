@@ -23,6 +23,7 @@ const Navbar = () => {
       </Link>
       <div className="nav-links">
         <Link to="/" className="nav-link">Home</Link>
+        <Link to="/menu" className="nav-link">Menu</Link>
         {user ? (
           <>
             <Link to="/profile" className="nav-link">Profile</Link>

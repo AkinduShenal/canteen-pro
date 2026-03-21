@@ -27,7 +27,10 @@ const Navbar = () => {
         {user ? (
           <>
             {(user.role === 'staff' || user.role === 'admin') ? (
-              <Link to="/staff/menu-management" className="nav-link">Manage Items</Link>
+              <>
+                <Link to="/staff/category-management" className="nav-link">Manage Categories</Link>
+                <Link to="/staff/menu-management" className="nav-link">Manage Items</Link>
+              </>
             ) : null}
             <Link to="/profile" className="nav-link">Profile</Link>
             <button onClick={handleLogout} className="btn btn-outline" style={{ padding: '0.6rem 1.5rem', borderWidth: '2px', cursor: 'pointer' }}>

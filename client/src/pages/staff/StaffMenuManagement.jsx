@@ -447,7 +447,7 @@ const StaffMenuManagement = () => {
                         Edit
                       </button>
                       <button className="btn btn-outline" type="button" onClick={() => toggleAvailability(item)}>
-                        {item.available ? 'Set Out' : 'Set Available'}
+                        {item.available ? 'Set out of stock' : 'Set available'}
                       </button>
                       <button className="btn btn-outline" type="button" onClick={() => toggleSpecial(item)}>
                         {item.isSpecial ? 'Unset Special' : 'Set Special'}

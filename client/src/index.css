@@ -804,6 +804,25 @@ a:hover {
   color: var(--text-main);
 }
 
+.staff-short-links {
+  margin-top: 0.8rem;
+}
+
+.staff-category-actions {
+  margin-top: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.7rem;
+  width: 100%;
+}
+
+.staff-category-actions .btn {
+  width: min(100%, 360px);
+  min-width: 0;
+  justify-content: center;
+}
+
 .staff-item-list {
   display: grid;
   gap: 0.7rem;
@@ -870,6 +889,11 @@ a:hover {
 
   .staff-item-actions {
     justify-content: flex-start;
+  }
+
+  .staff-category-actions .btn {
+    width: 100%;
+    min-width: 0;
   }
 }
 

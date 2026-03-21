@@ -6,6 +6,7 @@ import Register from './pages/Register.jsx';
 import Profile from './pages/Profile.jsx';
 import MenuBrowse from './pages/menu/MenuBrowse.jsx';
 import StaffMenuManagement from './pages/staff/StaffMenuManagement.jsx';
+import StaffCategoryManagement from './pages/staff/StaffCategoryManagement.jsx';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/menu" element={<MenuBrowse />} />
+          <Route path="/staff/category-management" element={<StaffCategoryManagement />} />
           <Route path="/staff/menu-management" element={<StaffMenuManagement />} />
         </Routes>
       </div>

@@ -542,50 +542,120 @@ a:hover {
   padding: 0.9rem 2.2rem;
 }
 
-/* Benefits Showcase */
+/* Benefits Showcase - Enhanced */
 .home-benefits-showcase {
-  background: #fff;
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  padding: 1.5rem;
-  margin-bottom: 1.2rem;
+  background: linear-gradient(135deg, rgba(255, 248, 235, 0.6) 0%, #fff 50%, rgba(250, 163, 7, 0.04) 100%);
+  border: 1px solid rgba(232, 93, 4, 0.1);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 12px 35px rgba(232, 93, 4, 0.08);
+  padding: 3.2rem 2rem;
+  margin-bottom: 1.8rem;
+  animation: fadeInUp 0.7s ease-out 0.1s both;
 }
 
 .home-benefits-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.9rem;
+  gap: 1.8rem;
 }
 
 .home-benefit-item {
   text-align: center;
-  border-radius: 14px;
-  background: linear-gradient(170deg, #fff, #fff7ee);
-  border: 1px solid var(--border-light);
-  padding: 1.2rem 1rem;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: var(--radius-md);
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.99) 0%, rgba(255, 250, 240, 0.95) 100%);
+  border: 1px solid rgba(232, 93, 4, 0.08);
+  padding: 2rem 1.6rem;
+  transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+  position: relative;
+  overflow: hidden;
+  animation: fadeInUp 0.8s ease-out both;
+}
+
+.home-benefit-item:nth-child(1) { animation-delay: 0.2s; }
+.home-benefit-item:nth-child(2) { animation-delay: 0.3s; }
+.home-benefit-item:nth-child(3) { animation-delay: 0.4s; }
+
+.home-benefit-item::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(232, 93, 4, 0.05), rgba(255, 186, 8, 0.03));
+  opacity: 0;
+  transition: opacity 0.5s ease;
 }
 
 .home-benefit-item:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-md);
+  transform: translateY(-12px) scale(1.02);
+  box-shadow: 0 25px 50px rgba(232, 93, 4, 0.15);
+  border-color: rgba(232, 93, 4, 0.2);
+}
+
+.home-benefit-item:hover::before {
+  opacity: 1;
+}
+
+.home-benefit-icon-wrapper {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.2rem;
+  position: relative;
+  z-index: 1;
+  transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+}
+
+.benefit-icon-1 {
+  background: linear-gradient(135deg, #e85d04 0%, #dc2f02 100%);
+  box-shadow: 0 10px 25px rgba(232, 93, 4, 0.3);
+}
+
+.benefit-icon-2 {
+  background: linear-gradient(135deg, #faa307 0%, #ffba08 100%);
+  box-shadow: 0 10px 25px rgba(250, 163, 7, 0.3);
+}
+
+.benefit-icon-3 {
+  background: linear-gradient(135deg, #38b000 0%, #2d8a00 100%);
+  box-shadow: 0 10px 25px rgba(56, 176, 0, 0.3);
+}
+
+.home-benefit-item:hover .home-benefit-icon-wrapper {
+  transform: scale(1.12) rotateZ(-5deg);
 }
 
 .home-benefit-icon {
-  font-size: 2.4rem;
-  margin-bottom: 0.6rem;
+  font-size: 2.8rem;
   display: inline-block;
+  transition: transform 0.5s ease;
+  animation: float 3s ease-in-out infinite;
+}
+
+.home-benefit-item:hover .home-benefit-icon {
+  transform: scale(1.15);
+  animation: none;
 }
 
 .home-benefit-item h3 {
-  font-size: 1.15rem;
-  margin-bottom: 0.45rem;
+  font-size: 1.35rem;
+  margin-bottom: 0.7rem;
+  color: var(--text-main);
+  font-weight: 700;
+  position: relative;
+  z-index: 1;
 }
 
 .home-benefit-item p {
   margin-bottom: 0;
-  font-size: 0.95rem;
+  font-size: 0.98rem;
+  line-height: 1.65;
+  color: var(--text-light);
+  position: relative;
+  z-index: 1;
 }
 
 /* Problem Statement */

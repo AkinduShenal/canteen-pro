@@ -96,24 +96,31 @@ const Home = () => {
             </section>
 
             <section className="home-benefits-showcase">
-              <div className="home-section-head" style={{ marginBottom: '1.8rem' }}>
+              <div className="home-section-head" style={{ marginBottom: '2.2rem' }}>
                 <h2>Why Students Love CanteenPro</h2>
+                <p>Everything you need for a seamless campus food ordering experience</p>
               </div>
               <div className="home-benefits-grid">
                 <article className="home-benefit-item">
-                  <div className="home-benefit-icon">⚡</div>
-                  <h3>Fast Ordering</h3>
-                  <p>Place your order in seconds and skip waiting in long queues.</p>
+                  <div className="home-benefit-icon-wrapper benefit-icon-1">
+                    <div className="home-benefit-icon">⚡</div>
+                  </div>
+                  <h3>Lightning Fast</h3>
+                  <p>Place your order in seconds and skip waiting in long queues. Your favorite food, ready when you need it.</p>
                 </article>
                 <article className="home-benefit-item">
-                  <div className="home-benefit-icon">📱</div>
-                  <h3>Easy Access</h3>
-                  <p>Browse menus from anywhere on campus anytime you want.</p>
+                  <div className="home-benefit-icon-wrapper benefit-icon-2">
+                    <div className="home-benefit-icon">📱</div>
+                  </div>
+                  <h3>Order Anywhere</h3>
+                  <p>Browse menus from your dorm, classroom, or anywhere on campus anytime of day.</p>
                 </article>
                 <article className="home-benefit-item">
-                  <div className="home-benefit-icon">💰</div>
-                  <h3>Smart Pricing</h3>
-                  <p>Transparent prices and no hidden charges ever.</p>
+                  <div className="home-benefit-icon-wrapper benefit-icon-3">
+                    <div className="home-benefit-icon">💰</div>
+                  </div>
+                  <h3>Transparent Pricing</h3>
+                  <p>Transparent prices and no hidden charges ever. Know exactly what you're paying.</p>
                 </article>
               </div>
             </section>

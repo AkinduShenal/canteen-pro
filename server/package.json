@@ -7,7 +7,9 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "seed:canteens": "node src/seed/seedCanteens.js"
+    "seed:canteens": "node src/seed/seedCanteens.js",
+    "seed:categories": "node src/seed/seedCategories.js",
+    "seed:menu-items": "node src/seed/seedMenuItems.js"
   },
   "keywords": [],
   "author": "",

@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import Category from '../models/Category.js';
 import Canteen from '../models/Canteen.js';
+import MenuItem from '../models/MenuItem.js';
 
 // @desc    Create a category under a canteen
 // @route   POST /api/categories
@@ -90,6 +91,41 @@ export const getCategoryById = async (req, res) => {
     }
 
     return res.json(category);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get availability status for a category
+// @route   GET /api/categories/:id/availability-status
+// @access  Public
+export const getCategoryAvailabilityStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: 'Invalid category id' });
+    }
+
+    const category = await Category.findById(id);
+    if (!category) {
+      return res.status(404).json({ message: 'Category not found' });
+    }
+
+    const [totalItems, availableItems] = await Promise.all([
+      MenuItem.countDocuments({ category: id }),
+      MenuItem.countDocuments({ category: id, available: true }),
+    ]);
+
+    const foodOver = totalItems > 0 && availableItems === 0;
+
+    return res.json({
+      categoryId: category._id,
+      totalItems,
+      availableItems,
+      foodOver,
+      message: foodOver ? 'Foods are over for this category' : null,
+    });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }

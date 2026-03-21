@@ -27,6 +27,10 @@ const StaffMenuManagement = () => {
   const [status, setStatus] = useState('');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [announcementMessage, setAnnouncementMessage] = useState('');
+  const [announcementList, setAnnouncementList] = useState([]);
+  const [announcementStatus, setAnnouncementStatus] = useState('');
+  const [postingAnnouncement, setPostingAnnouncement] = useState(false);
 
   const canManage = useMemo(
     () => user && ['staff', 'admin'].includes(user.role),
@@ -66,14 +70,16 @@ const StaffMenuManagement = () => {
 
     const loadBaseData = async () => {
       try {
-        const [categoryRes, itemRes] = await Promise.all([
+        const [categoryRes, itemRes, announcementRes] = await Promise.all([
           api.get('/categories', { params: { canteenId: selectedCanteen } }),
           api.get('/menu-items', { params: { canteenId: selectedCanteen } }),
+          api.get(`/announcements/canteen/${selectedCanteen}`),
         ]);
 
         const categoryList = categoryRes.data || [];
         setCategories(categoryList);
         setItems(itemRes.data?.items || []);
+        setAnnouncementList(announcementRes.data || []);
 
         setForm((prev) => ({
           ...prev,
@@ -94,6 +100,16 @@ const StaffMenuManagement = () => {
 
     const { data } = await api.get('/menu-items', { params: { canteenId: selectedCanteen } });
     setItems(data?.items || []);
+  };
+
+  const refreshAnnouncements = async () => {
+    if (!selectedCanteen) {
+      setAnnouncementList([]);
+      return;
+    }
+
+    const { data } = await api.get(`/announcements/canteen/${selectedCanteen}`);
+    setAnnouncementList(data || []);
   };
 
   const validate = () => {
@@ -252,6 +268,32 @@ const StaffMenuManagement = () => {
     }
   };
 
+  const handlePostAnnouncement = async (event) => {
+    event.preventDefault();
+    setAnnouncementStatus('');
+
+    const trimmed = announcementMessage.trim();
+    if (!trimmed) {
+      setAnnouncementStatus('Announcement message is required');
+      return;
+    }
+
+    try {
+      setPostingAnnouncement(true);
+      await api.post('/announcements', {
+        canteenId: selectedCanteen,
+        message: trimmed,
+      });
+      setAnnouncementMessage('');
+      setAnnouncementStatus('Announcement posted successfully');
+      await refreshAnnouncements();
+    } catch (error) {
+      setAnnouncementStatus(error.response?.data?.message || 'Failed to post announcement');
+    } finally {
+      setPostingAnnouncement(false);
+    }
+  };
+
   if (!user) {
     return (
       <div className="app-container">
@@ -290,6 +332,42 @@ const StaffMenuManagement = () => {
           <p className="menu-kicker">Staff Console</p>
           <h1>Menu Item Management</h1>
           <p>Create items, adjust availability, and mark daily specials for each canteen.</p>
+        </section>
+
+        <section className="staff-announcement-panel">
+          <div className="staff-announcement-head">
+            <h2>Canteen Announcement Bar</h2>
+            <p>Post instant updates like kitchen delays, specials, and temporary closing notices.</p>
+          </div>
+
+          <form className="staff-announcement-form" onSubmit={handlePostAnnouncement}>
+            <label className="menu-field">
+              <span>Announcement Message</span>
+              <textarea
+                className="staff-textarea"
+                value={announcementMessage}
+                onChange={(event) => setAnnouncementMessage(event.target.value)}
+                placeholder="Example: Kitchen delay - orders will take around 20 minutes"
+              />
+            </label>
+            <button className="btn btn-primary" type="submit" disabled={postingAnnouncement || !selectedCanteen}>
+              {postingAnnouncement ? 'Posting...' : 'Post Announcement'}
+            </button>
+          </form>
+
+          {announcementStatus ? <p className="staff-status-text">{announcementStatus}</p> : null}
+
+          <div className="staff-announcement-list">
+            {announcementList.slice(0, 3).map((announcement) => (
+              <article key={announcement._id} className="staff-announcement-item">
+                <p>{announcement.message}</p>
+                <span>{new Date(announcement.createdAt).toLocaleString()}</span>
+              </article>
+            ))}
+            {announcementList.length === 0 ? (
+              <div className="menu-empty-card">No announcements posted for this canteen yet.</div>
+            ) : null}
+          </div>
         </section>
 
         {loading ? <p className="menu-loading-note">Loading management data...</p> : null}

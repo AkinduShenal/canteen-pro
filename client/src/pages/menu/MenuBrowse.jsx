@@ -21,6 +21,10 @@ const MenuBrowse = () => {
   const [error, setError] = useState('');
   const [selectedItem, setSelectedItem] = useState(null);
   const [actionMessage, setActionMessage] = useState('');
+  const [queueStatus, setQueueStatus] = useState(null);
+  const [loadingQueue, setLoadingQueue] = useState(false);
+  const [announcements, setAnnouncements] = useState([]);
+  const [loadingAnnouncements, setLoadingAnnouncements] = useState(false);
 
   const selectedCategoryName = useMemo(() => {
     if (selectedCategory === ALL_CATEGORIES) {
@@ -56,6 +60,7 @@ const MenuBrowse = () => {
     if (!selectedCanteen) {
       setCategories([]);
       setSelectedCategory(ALL_CATEGORIES);
+      setQueueStatus(null);
       return;
     }
 
@@ -63,13 +68,15 @@ const MenuBrowse = () => {
       try {
         setError('');
 
-        const [categoryResponse, specialResponse] = await Promise.all([
+        const [categoryResponse, specialResponse, announcementResponse] = await Promise.all([
           api.get('/categories', { params: { canteenId: selectedCanteen } }),
           api.get('/menu-items/specials', { params: { canteenId: selectedCanteen } }),
+          api.get(`/announcements/canteen/${selectedCanteen}`),
         ]);
 
         setCategories(categoryResponse.data || []);
         setSpecials(specialResponse.data || []);
+        setAnnouncements(announcementResponse.data || []);
       } catch (apiError) {
         setError(apiError.response?.data?.message || 'Failed to load menu information');
       }
@@ -77,6 +84,51 @@ const MenuBrowse = () => {
 
     setSelectedCategory(ALL_CATEGORIES);
     loadBaseData();
+  }, [selectedCanteen]);
+
+  useEffect(() => {
+    if (!selectedCanteen) {
+      setAnnouncements([]);
+      return;
+    }
+
+    const loadAnnouncements = async () => {
+      try {
+        setLoadingAnnouncements(true);
+        const { data } = await api.get(`/announcements/canteen/${selectedCanteen}`);
+        setAnnouncements(data || []);
+      } catch {
+        setAnnouncements([]);
+      } finally {
+        setLoadingAnnouncements(false);
+      }
+    };
+
+    loadAnnouncements();
+    const interval = setInterval(loadAnnouncements, 30000);
+    return () => clearInterval(interval);
+  }, [selectedCanteen]);
+
+  useEffect(() => {
+    if (!selectedCanteen) {
+      return;
+    }
+
+    const loadQueueStatus = async () => {
+      try {
+        setLoadingQueue(true);
+        const { data } = await api.get(`/canteens/${selectedCanteen}/queue-status`);
+        setQueueStatus(data || null);
+      } catch {
+        setQueueStatus(null);
+      } finally {
+        setLoadingQueue(false);
+      }
+    };
+
+    loadQueueStatus();
+    const interval = setInterval(loadQueueStatus, 30000);
+    return () => clearInterval(interval);
   }, [selectedCanteen]);
 
   useEffect(() => {
@@ -233,6 +285,23 @@ const MenuBrowse = () => {
             </label>
           </div>
 
+          <div className="menu-queue-indicator" aria-live="polite">
+            <div>
+              <p className="menu-queue-title">Real-Time Queue</p>
+              {loadingQueue ? (
+                <p className="menu-queue-meta">Checking queue status...</p>
+              ) : (
+                <p className="menu-queue-meta">
+                  Estimated prep time: <strong>{queueStatus?.estimatedPrepTime ?? '--'} mins</strong>
+                  {' '}• Active orders: <strong>{queueStatus?.activeOrders ?? '--'}</strong>
+                </p>
+              )}
+            </div>
+            <span className={`menu-queue-pill ${String(queueStatus?.queueLoad || '').toLowerCase() || 'unknown'}`}>
+              {queueStatus?.queueLoad ? `${queueStatus.queueLoad} Queue` : 'Queue Unknown'}
+            </span>
+          </div>
+
           <div className="menu-category-chips">
             <button
               type="button"
@@ -253,6 +322,20 @@ const MenuBrowse = () => {
             ))}
           </div>
         </section>
+
+        {announcements.length > 0 || loadingAnnouncements ? (
+          <section className="menu-announcement-bar" aria-live="polite">
+            <div className="menu-announcement-icon">📢</div>
+            <div>
+              <p className="menu-announcement-title">Canteen Announcement</p>
+              <p className="menu-announcement-message">
+                {loadingAnnouncements
+                  ? 'Checking latest updates...'
+                  : announcements[0]?.message}
+              </p>
+            </div>
+          </section>
+        ) : null}
 
         {error ? <p className="menu-error">{error}</p> : null}
         {actionMessage ? <p className="menu-action-note">{actionMessage}</p> : null}

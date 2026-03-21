@@ -3,6 +3,7 @@ import Navbar from '../../components/Navbar.jsx';
 import api from '../../services/api.js';
 
 const ALL_CATEGORIES = 'all';
+const CART_STORAGE_KEY = 'canteen_cart';
 
 const MenuBrowse = () => {
   const [canteens, setCanteens] = useState([]);
@@ -18,6 +19,8 @@ const MenuBrowse = () => {
   const [loading, setLoading] = useState(true);
   const [loadingItems, setLoadingItems] = useState(false);
   const [error, setError] = useState('');
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [actionMessage, setActionMessage] = useState('');
 
   const selectedCategoryName = useMemo(() => {
     if (selectedCategory === ALL_CATEGORIES) {
@@ -118,6 +121,66 @@ const MenuBrowse = () => {
     loadMenuItems();
   }, [selectedCanteen, selectedCategory, search, availableOnly]);
 
+  useEffect(() => {
+    const handleEscapeClose = (event) => {
+      if (event.key === 'Escape') {
+        setSelectedItem(null);
+      }
+    };
+
+    if (selectedItem) {
+      document.body.style.overflow = 'hidden';
+      window.addEventListener('keydown', handleEscapeClose);
+    }
+
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', handleEscapeClose);
+    };
+  }, [selectedItem]);
+
+  const saveItemToCart = (item) => {
+    if (!item.available) {
+      setActionMessage('This item is currently out of stock.');
+      return false;
+    }
+
+    const existingCart = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || '[]');
+    const existingIndex = existingCart.findIndex((entry) => entry.itemId === item._id);
+
+    if (existingIndex >= 0) {
+      existingCart[existingIndex].quantity += 1;
+    } else {
+      existingCart.push({
+        itemId: item._id,
+        name: item.name,
+        price: Number(item.price),
+        image: item.image || '',
+        category: item.category?.name || 'General',
+        canteenId: selectedCanteen,
+        quantity: 1,
+      });
+    }
+
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(existingCart));
+    return true;
+  };
+
+  const handleAddToCart = (item) => {
+    const added = saveItemToCart(item);
+    if (added) {
+      setActionMessage(`${item.name} added to cart.`);
+    }
+  };
+
+  const handleOrderNow = (item) => {
+    const added = saveItemToCart(item);
+    if (added) {
+      setSelectedItem(null);
+      setActionMessage(`${item.name} added. Proceed to checkout from your cart once cart page is enabled.`);
+    }
+  };
+
   return (
     <div className="app-container">
       <Navbar />
@@ -192,6 +255,7 @@ const MenuBrowse = () => {
         </section>
 
         {error ? <p className="menu-error">{error}</p> : null}
+        {actionMessage ? <p className="menu-action-note">{actionMessage}</p> : null}
 
         <section className="menu-specials-section">
           <div className="menu-section-head">
@@ -203,7 +267,19 @@ const MenuBrowse = () => {
               <div className="menu-empty-card">No specials available right now.</div>
             ) : (
               specials.map((item) => (
-                <article className="menu-special-card" key={item._id}>
+                <article
+                  className="menu-special-card menu-card-clickable"
+                  key={item._id}
+                  onClick={() => setSelectedItem(item)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      setSelectedItem(item);
+                    }
+                  }}
+                >
                   {item.image ? (
                     <img className="menu-card-image" src={item.image} alt={item.name} loading="lazy" />
                   ) : null}
@@ -237,7 +313,19 @@ const MenuBrowse = () => {
               <div className="menu-empty-card">No items found for your current filters.</div>
             ) : (
               menuItems.map((item) => (
-                <article className="menu-item-card" key={item._id}>
+                <article
+                  className="menu-item-card menu-card-clickable"
+                  key={item._id}
+                  onClick={() => setSelectedItem(item)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      setSelectedItem(item);
+                    }
+                  }}
+                >
                   {item.image ? (
                     <img className="menu-card-image" src={item.image} alt={item.name} loading="lazy" />
                   ) : null}
@@ -259,6 +347,66 @@ const MenuBrowse = () => {
         </section>
 
         {loading ? <p className="menu-loading-note">Loading canteens...</p> : null}
+
+        {selectedItem ? (
+          <div className="menu-item-modal-backdrop" onClick={() => setSelectedItem(null)}>
+            <div
+              className="menu-item-modal"
+              role="dialog"
+              aria-modal="true"
+              aria-label={`${selectedItem.name} details`}
+              onClick={(event) => event.stopPropagation()}
+            >
+              <button
+                type="button"
+                className="menu-item-modal-close"
+                onClick={() => setSelectedItem(null)}
+                aria-label="Close item details"
+              >
+                x
+              </button>
+              {selectedItem.image ? (
+                <img
+                  className="menu-item-modal-image"
+                  src={selectedItem.image}
+                  alt={selectedItem.name}
+                  loading="lazy"
+                />
+              ) : null}
+              <div className="menu-item-modal-content">
+                <div className="menu-item-modal-head">
+                  <h3>{selectedItem.name}</h3>
+                  <span className={`menu-stock-pill ${selectedItem.available ? 'in' : 'out'}`}>
+                    {selectedItem.available ? 'Available' : 'Out of stock'}
+                  </span>
+                </div>
+                <p>{selectedItem.description || 'No description available.'}</p>
+                <div className="menu-item-modal-meta">
+                  <strong>LKR {Number(selectedItem.price).toFixed(2)}</strong>
+                  <span>{selectedItem.category?.name || 'General'}</span>
+                </div>
+                <div className="menu-item-modal-actions">
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={() => handleOrderNow(selectedItem)}
+                    disabled={!selectedItem.available}
+                  >
+                    Order Now
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-outline"
+                    onClick={() => handleAddToCart(selectedItem)}
+                    disabled={!selectedItem.available}
+                  >
+                    Add to Cart
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : null}
       </main>
     </div>
   );

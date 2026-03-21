@@ -7,6 +7,9 @@ import Profile from './pages/Profile.jsx';
 import MenuBrowse from './pages/menu/MenuBrowse.jsx';
 import StaffMenuManagement from './pages/staff/StaffMenuManagement.jsx';
 import StaffCategoryManagement from './pages/staff/StaffCategoryManagement.jsx';
+import Unauthorized from './pages/auth/Unauthorized.jsx';
+import ProtectedRoute from './routes/ProtectedRoute.jsx';
+import RoleRoute from './routes/RoleRoute.jsx';
 
 function App() {
   return (
@@ -16,10 +19,32 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/profile" element={<Profile />} />
+          <Route
+            path="/profile"
+            element={(
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            )}
+          />
           <Route path="/menu" element={<MenuBrowse />} />
-          <Route path="/staff/category-management" element={<StaffCategoryManagement />} />
-          <Route path="/staff/menu-management" element={<StaffMenuManagement />} />
+          <Route
+            path="/staff/category-management"
+            element={(
+              <RoleRoute allowedRoles={['staff', 'admin']}>
+                <StaffCategoryManagement />
+              </RoleRoute>
+            )}
+          />
+          <Route
+            path="/staff/menu-management"
+            element={(
+              <RoleRoute allowedRoles={['staff', 'admin']}>
+                <StaffMenuManagement />
+              </RoleRoute>
+            )}
+          />
+          <Route path="/unauthorized" element={<Unauthorized />} />
         </Routes>
       </div>
     </Router>

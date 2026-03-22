@@ -21,7 +21,12 @@ const Login = () => {
     try {
       const { data } = await api.post('/auth/login', { email, password });
       login(data); // Save to context and localStorage
-      navigate('/'); // Redirect to Home dashboard
+
+      if (data?.role === 'admin' || data?.role === 'staff') {
+        navigate('/dashboard');
+      } else {
+        navigate('/');
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid email or password. Please try again.');
     } finally {

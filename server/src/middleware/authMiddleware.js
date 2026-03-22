@@ -33,3 +33,17 @@ export const admin = (req, res, next) => {
     res.status(401).json({ message: 'Not authorized as an admin or staff' });
   }
 };
+
+export const permitRoles = (...roles) => (req, res, next) => {
+  if (!req.user) {
+    return res.status(401).json({ message: 'Not authorized, no user context' });
+  }
+
+  if (!roles.includes(req.user.role)) {
+    return res.status(403).json({
+      message: `Not authorized. Required role: ${roles.join(' or ')}`,
+    });
+  }
+
+  return next();
+};

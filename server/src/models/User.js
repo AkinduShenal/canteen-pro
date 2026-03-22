@@ -20,6 +20,11 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ['student', 'staff', 'admin'],
     default: 'student'
+  },
+  assignedCanteen: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Canteen',
+    default: null
   }
 }, { timestamps: true });
 

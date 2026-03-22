@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect } from 'react';
+import api from '../services/api.js';
 
 export const AuthContext = createContext();
 
@@ -6,10 +7,31 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
+    const syncUser = async () => {
+      const storedUser = localStorage.getItem('user');
+      if (!storedUser) return;
+
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+
+        if (parsedUser?.token) {
+          const { data } = await api.get('/auth/profile');
+          const refreshedUser = {
+            ...parsedUser,
+            ...data,
+            token: parsedUser.token,
+          };
+          setUser(refreshedUser);
+          localStorage.setItem('user', JSON.stringify(refreshedUser));
+        }
+      } catch {
+        setUser(null);
+        localStorage.removeItem('user');
+      }
+    };
+
+    syncUser();
   }, []);
 
   const login = (userData) => {

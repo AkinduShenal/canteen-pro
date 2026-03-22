@@ -700,6 +700,7 @@ a:hover {
   display: flex;
   align-items: center;
   gap: 0.55rem;
+  position: relative;
   width: 100%;
   text-align: left;
   border: 1px solid var(--border-light);
@@ -715,6 +716,18 @@ a:hover {
   background: var(--primary-color);
   color: #fff;
   border-color: var(--primary-color);
+}
+
+.sidebar-active-indicator {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 22px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.45);
 }
 
 .sidebar-footer {
@@ -914,8 +927,53 @@ a:hover {
   word-break: break-word;
 }
 
+.profile-password-box {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 0.75rem;
+  margin-bottom: 0.8rem;
+  background: #f8fafc;
+}
+
+.profile-password-box h4 {
+  margin: 0 0 0.2rem;
+  font-size: 1rem;
+}
+
+.profile-password-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+  margin-top: 0.55rem;
+}
+
+.profile-modal-card .alert {
+  margin-bottom: 0.75rem;
+}
+
+.profile-modal-card .form-control {
+  font-size: 0.92rem;
+}
+
+.profile-modal-card .inline-actions .btn {
+  padding: 0.78rem 1.4rem;
+  font-size: 0.95rem;
+  border-radius: 16px;
+}
+
+@media (max-width: 720px) {
+  .profile-grid,
+  .profile-password-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .dashboard-main-panel {
   min-width: 0;
+}
+
+.dashboard-main-panel .form-control {
+  font-size: 0.95rem;
 }
 
 .dashboard-shell {

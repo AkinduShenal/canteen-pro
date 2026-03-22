@@ -1,4 +1,5 @@
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { Toaster, toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import {
   HiOutlineHome,
@@ -11,6 +12,7 @@ import {
 } from 'react-icons/hi';
 import { AuthContext } from '../context/AuthContext.jsx';
 import { staffAdminApi } from '../services/staffAdminApi.js';
+import api from '../services/api.js';
 import OrderCard from '../components/staffAdmin/OrderCard.jsx';
 import FeedbackPanel from '../components/staffAdmin/FeedbackPanel.jsx';
 import ReportsPanel from '../components/staffAdmin/ReportsPanel.jsx';
@@ -46,7 +48,7 @@ const dashboardTabsByRole = {
 };
 
 const StaffAdminDashboard = () => {
-  const { user, logout } = useContext(AuthContext);
+  const { user, logout, updateUser } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -64,6 +66,15 @@ const StaffAdminDashboard = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [profileError, setProfileError] = useState('');
+  const [profileSuccess, setProfileSuccess] = useState('');
+  const [profileForm, setProfileForm] = useState({
+    name: user?.name || '',
+    email: user?.email || '',
+    newPassword: '',
+    confirmPassword: '',
+  });
 
   const isAdmin = user?.role === 'admin';
   const isStaff = user?.role === 'staff';
@@ -88,6 +99,7 @@ const StaffAdminDashboard = () => {
 
   const showError = (err, fallback) => {
     setError(err?.response?.data?.message || fallback);
+    toast.error(err?.response?.data?.message || fallback);
   };
 
   const fetchOrders = useCallback(async (options = {}) => {
@@ -230,6 +242,7 @@ const StaffAdminDashboard = () => {
     try {
       await staffAdminApi.createCanteen(payload);
       setSuccess('Canteen registered');
+      toast.success('Canteen registered successfully!');
       await fetchAdminData();
     } catch (err) {
       showError(err, 'Failed to register canteen');
@@ -356,6 +369,82 @@ const StaffAdminDashboard = () => {
     navigate('/login');
   };
 
+  const openProfilePopup = () => {
+    setProfileError('');
+    setProfileSuccess('');
+    setProfileForm({
+      name: user?.name || '',
+      email: user?.email || '',
+      newPassword: '',
+      confirmPassword: '',
+    });
+    setIsProfileOpen(true);
+  };
+
+  const handleProfileChange = (field, value) => {
+    setProfileForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleProfileSave = async (e) => {
+    e.preventDefault();
+    setProfileError('');
+    setProfileSuccess('');
+
+    if (!profileForm.name.trim() || !profileForm.email.trim()) {
+      setProfileError('Name and email are required.');
+      return;
+    }
+
+    // If either password field is filled, require both and validate
+    if (profileForm.newPassword || profileForm.confirmPassword) {
+      if (!profileForm.newPassword || !profileForm.confirmPassword) {
+        setProfileError('Please fill both password fields to change password.');
+        return;
+      }
+      if (profileForm.newPassword.length < 6) {
+        setProfileError('New password must be at least 6 characters.');
+        return;
+      }
+      if (profileForm.newPassword !== profileForm.confirmPassword) {
+        setProfileError('New password and confirmation do not match.');
+        return;
+      }
+    }
+
+    // Only send password if both fields are filled
+    const payload = {
+      name: profileForm.name.trim(),
+      email: profileForm.email.trim(),
+    };
+    if (profileForm.newPassword && profileForm.confirmPassword) {
+      payload.password = profileForm.newPassword;
+    }
+
+    setProfileSaving(true);
+    try {
+      const { data } = await api.put('/auth/profile', payload);
+      await updateUser(data);
+      // Only show success if password was actually updated or if only profile fields changed
+      if (payload.password) {
+        setProfileSuccess('Password updated successfully.');
+        toast.success('Password updated successfully!');
+      } else {
+        setProfileSuccess('Profile updated successfully.');
+        toast.success('Profile updated successfully!');
+      }
+      setProfileForm((prev) => ({
+        ...prev,
+        newPassword: '',
+        confirmPassword: '',
+      }));
+    } catch (err) {
+      setProfileError(err?.response?.data?.message || 'Failed to update profile.');
+      toast.error(err?.response?.data?.message || 'Failed to update profile.');
+    } finally {
+      setProfileSaving(false);
+    }
+  };
+
   if (!user) return null;
 
   if (!hasAccess) {
@@ -376,6 +465,7 @@ const StaffAdminDashboard = () => {
 
   return (
     <div className="dashboard-layout">
+      <Toaster position="top-right" />
       <aside className="dashboard-sidebar">
         <div>
           <h2 className="sidebar-brand">CanteenPro</h2>
@@ -391,6 +481,7 @@ const StaffAdminDashboard = () => {
               >
                 {tab.icon && <tab.icon size={16} />}
                 <span>{tab.label}</span>
+                {activeTab === tab.id && <span className="sidebar-active-indicator" />}
               </button>
             ))}
           </nav>
@@ -410,7 +501,7 @@ const StaffAdminDashboard = () => {
           <button
             type="button"
             className="sidebar-user-card"
-            onClick={() => setIsProfileOpen(true)}
+            onClick={openProfilePopup}
             title="Open profile"
           >
             <div className="sidebar-avatar">{avatarInitial}</div>
@@ -651,30 +742,71 @@ const StaffAdminDashboard = () => {
               </div>
             </div>
 
-            <div className="profile-grid">
-              <div>
-                <p className="profile-label">Name</p>
-                <p className="profile-value">{user?.name || '-'}</p>
+            <form onSubmit={handleProfileSave}>
+              <div className="profile-grid">
+                <div>
+                  <label className="profile-label">Name</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={profileForm.name}
+                    onChange={(e) => handleProfileChange('name', e.target.value)}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="profile-label">Email</label>
+                  <input
+                    type="email"
+                    className="form-control"
+                    value={profileForm.email}
+                    onChange={(e) => handleProfileChange('email', e.target.value)}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="profile-label">Role</label>
+                  <p className="profile-value capitalize">{displayRole || '-'}</p>
+                </div>
+                <div>
+                  <label className="profile-label">Assigned Canteen</label>
+                  <p className="profile-value">{user?.assignedCanteen?.name || 'Not assigned'}</p>
+                </div>
               </div>
-              <div>
-                <p className="profile-label">Email</p>
-                <p className="profile-value">{user?.email || '-'}</p>
-              </div>
-              <div>
-                <p className="profile-label">Role</p>
-                <p className="profile-value capitalize">{displayRole || '-'}</p>
-              </div>
-              <div>
-                <p className="profile-label">Assigned Canteen</p>
-                <p className="profile-value">{user?.assignedCanteen?.name || 'Not assigned'}</p>
-              </div>
-            </div>
 
-            <div className="inline-actions">
-              <button type="button" className="btn btn-outline" onClick={() => setIsProfileOpen(false)}>
-                Close
-              </button>
-            </div>
+              <div className="profile-password-box">
+                <h4>Change Password</h4>
+                <p className="small muted">Leave these fields blank if you do not want to change your password.</p>
+                <div className="profile-password-grid">
+                  <input
+                    type="password"
+                    className="form-control"
+                    placeholder="New password"
+                    value={profileForm.newPassword}
+                    onChange={(e) => handleProfileChange('newPassword', e.target.value)}
+                  />
+                  <input
+                    type="password"
+                    className="form-control"
+                    placeholder="Confirm new password"
+                    value={profileForm.confirmPassword}
+                    onChange={(e) => handleProfileChange('confirmPassword', e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {profileError && <div className="alert error">{profileError}</div>}
+              {/* Removed static profile success alert as requested */}
+
+              <div className="inline-actions">
+                <button type="button" className="btn btn-outline" onClick={() => setIsProfileOpen(false)}>
+                  Close
+                </button>
+                <button type="submit" className="btn btn-primary" disabled={profileSaving}>
+                  {profileSaving ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

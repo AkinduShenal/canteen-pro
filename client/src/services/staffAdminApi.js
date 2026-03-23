@@ -20,7 +20,7 @@ export const staffAdminApi = {
   updateStaffAccount: (staffId, payload) => api.put(`/staff-admin/staff/${staffId}`, payload),
   deleteStaffAccount: (staffId) => api.delete(`/staff-admin/staff/${staffId}`),
 
-  getCanteenStaffMembers: () => api.get('/staff-admin/canteen-staff'),
+  getCanteenStaffMembers: (params = {}) => api.get('/staff-admin/canteen-staff', { params }),
   createCanteenStaffMember: (payload) => api.post('/staff-admin/canteen-staff', payload),
   updateCanteenStaffMember: (staffId, payload) => api.put(`/staff-admin/canteen-staff/${staffId}`, payload),
   deleteCanteenStaffMember: (staffId) => api.delete(`/staff-admin/canteen-staff/${staffId}`),

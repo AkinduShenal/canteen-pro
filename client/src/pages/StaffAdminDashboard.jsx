@@ -15,7 +15,7 @@ import { staffAdminApi } from '../services/staffAdminApi.js';
 import api from '../services/api.js';
 import AdminDashboardOverview from './admin/AdminDashboardOverview.jsx';
 import AdminOrdersContent from './admin/AdminOrdersContent.jsx';
-import AdminPriorityQueueContent from './admin/AdminPriorityQueueContent.jsx';
+import AdminStaffContent from './admin/AdminStaffContent.jsx';
 import AdminFeedbackContent from './admin/AdminFeedbackContent.jsx';
 import AdminCanteensContent from './admin/AdminCanteensContent.jsx';
 import AdminReportsContent from './admin/AdminReportsContent.jsx';
@@ -29,7 +29,7 @@ const dashboardTabsByRole = {
   admin: [
     { id: 'dashboard', path: 'overview', label: 'Dashboard', icon: HiOutlineHome },
     { id: 'orders', path: 'orders', label: 'Orders', icon: HiOutlineClipboardList },
-    { id: 'priority-queue', path: 'priority-queue', label: 'Priority Queue', icon: HiOutlineClock },
+    { id: 'staff-members', path: 'staff-members', label: 'Staff Members', icon: HiOutlineUsers },
     { id: 'feedback', path: 'feedback', label: 'Feedback', icon: HiOutlineChatAlt2 },
     { id: 'reports', path: 'reports', label: 'Reports', icon: HiOutlineChartBar },
     { id: 'canteens', path: 'canteens', label: 'Canteens', icon: HiOutlineOfficeBuilding },
@@ -50,7 +50,6 @@ const StaffAdminDashboard = () => {
 
   const [orders, setOrders] = useState([]);
   const [feedbackItems, setFeedbackItems] = useState([]);
-  const [canteenStaffMembers, setCanteenStaffMembers] = useState([]);
   const [canteens, setCanteens] = useState([]);
   const [reports, setReports] = useState(null);
   const [dashboardMetrics, setDashboardMetrics] = useState(null);
@@ -94,7 +93,8 @@ const StaffAdminDashboard = () => {
   const displayRole = user?.role === 'staff' ? 'canteen' : user?.role;
   const avatarInitial = (displayName || 'C').charAt(0).toUpperCase();
 
-  const dashboardTitle = isAdmin ? 'Admin Dashboard' : 'Canteen Dashboard';
+  const activeTabLabel = activeTabConfig?.label || 'Dashboard';
+  const dashboardTitle = `${isAdmin ? 'Admin Dashboard' : 'Canteen Dashboard'} - ${activeTabLabel}`;
   const dashboardSubtitle = isAdmin
     ? 'Manage orders, canteen registration, feedback moderation, and reports.'
     : 'Manage only your assigned canteen orders and customer feedback.';
@@ -168,21 +168,6 @@ const StaffAdminDashboard = () => {
     }
   }, [isAdmin]);
 
-  const fetchCanteenStaff = useCallback(async () => {
-    if (!isStaff) return;
-
-    setLoading(true);
-    clearFlash();
-    try {
-      const { data } = await staffAdminApi.getCanteenStaffMembers();
-      setCanteenStaffMembers(data || []);
-    } catch (err) {
-      showError(err, 'Failed to load canteen staff members');
-    } finally {
-      setLoading(false);
-    }
-  }, [isStaff]);
-
   const fetchDashboardMetrics = useCallback(async () => {
     if (!hasAccess) return;
 
@@ -205,9 +190,8 @@ const StaffAdminDashboard = () => {
     fetchOrders({ priorityOnly: activeTab === 'priority-queue' });
     fetchFeedback();
     fetchAdminData();
-    fetchCanteenStaff();
     fetchDashboardMetrics();
-  }, [activeTab, fetchAdminData, fetchCanteenStaff, fetchDashboardMetrics, fetchFeedback, fetchOrders, hasAccess]);
+  }, [activeTab, fetchAdminData, fetchDashboardMetrics, fetchFeedback, fetchOrders, hasAccess]);
 
   useEffect(() => {
     if (!hasAccess) return undefined;
@@ -219,13 +203,17 @@ const StaffAdminDashboard = () => {
     return () => clearInterval(intervalId);
   }, [fetchDashboardMetrics, hasAccess]);
 
-  const handleStatusUpdate = async (order, nextStatus) => {
+  const handleStatusUpdate = async (order, nextStatus, providedReason) => {
     const payload = { status: nextStatus };
 
     if (nextStatus === 'cancelled') {
-      const reason = window.prompt('Please provide cancel reason:');
-      if (!reason) return;
-      payload.reason = reason;
+      if (typeof providedReason === 'string') {
+        payload.reason = providedReason.trim();
+      } else {
+        const reason = window.prompt('Please provide cancel reason (optional):');
+        if (reason === null) return;
+        payload.reason = reason.trim();
+      }
     }
 
     setLoading(true);
@@ -297,9 +285,6 @@ const StaffAdminDashboard = () => {
   };
 
   const handleDeleteCanteen = async (canteenId) => {
-    const confirmed = window.confirm('Delete this canteen?');
-    if (!confirmed) return;
-
     setLoading(true);
     clearFlash();
     try {
@@ -330,53 +315,6 @@ const StaffAdminDashboard = () => {
     }
   };
 
-  const handleCreateCanteenStaff = async (payload) => {
-    setLoading(true);
-    clearFlash();
-    try {
-      await staffAdminApi.createCanteenStaffMember(payload);
-      setSuccess('Canteen staff account created');
-      await fetchCanteenStaff();
-    } catch (err) {
-      showError(err, 'Failed to create canteen staff account');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleUpdateCanteenStaff = async (staffId, payload) => {
-    setLoading(true);
-    clearFlash();
-    try {
-      await staffAdminApi.updateCanteenStaffMember(staffId, payload);
-      setSuccess('Canteen staff account updated');
-      await fetchCanteenStaff();
-    } catch (err) {
-      showError(err, 'Failed to update canteen staff account');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDeleteCanteenStaff = async (staffId) => {
-    const confirmed = window.confirm('Delete this staff member?');
-    if (!confirmed) return;
-
-    setLoading(true);
-    clearFlash();
-    try {
-      await staffAdminApi.deleteCanteenStaffMember(staffId);
-      setSuccess('Canteen staff account deleted');
-      await fetchCanteenStaff();
-    } catch (err) {
-      showError(err, 'Failed to delete canteen staff account');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const sortedOrders = useMemo(() => {
     return [...orders].sort((a, b) => new Date(a.pickupTime) - new Date(b.pickupTime));
   }, [orders]);
@@ -388,7 +326,7 @@ const StaffAdminDashboard = () => {
       preparing: orders.filter((order) => ['accepted', 'preparing'].includes(order.status)).length,
       ready: orders.filter((order) => order.status === 'ready').length,
       feedbackCount: feedbackItems.filter((item) => !item?.feedback?.isHidden).length,
-      canteenStaffCount: canteenStaffMembers.length,
+      canteenStaffCount: 0,
       averageRating:
         feedbackItems.length > 0
           ? Number(
@@ -404,7 +342,7 @@ const StaffAdminDashboard = () => {
             )
           : 0,
     };
-  }, [canteenStaffMembers.length, feedbackItems, orders]);
+  }, [feedbackItems, orders]);
 
   const dashboardStats = useMemo(() => {
     if (!dashboardMetrics?.stats) {
@@ -675,19 +613,10 @@ const StaffAdminDashboard = () => {
                 )
               }
             />
-            <Route
-              path="priority-queue"
-              element={
-                isAdmin ? (
-                  <AdminPriorityQueueContent
-                    sortedOrders={sortedOrders}
-                    selectedOrderIds={selectedOrderIds}
-                    handleSelectOrder={handleSelectOrder}
-                    handleStatusUpdate={handleStatusUpdate}
-                    loading={loading}
-                    fetchOrders={fetchOrders}
-                  />
-                ) : (
+            {isStaff && (
+              <Route
+                path="priority-queue"
+                element={
                   <CanteenPriorityQueueContent
                     sortedOrders={sortedOrders}
                     selectedOrderIds={selectedOrderIds}
@@ -696,9 +625,9 @@ const StaffAdminDashboard = () => {
                     loading={loading}
                     fetchOrders={fetchOrders}
                   />
-                )
-              }
-            />
+                }
+              />
+            )}
             <Route
               path="feedback"
               element={
@@ -720,15 +649,13 @@ const StaffAdminDashboard = () => {
             {isStaff && (
               <Route
                 path="canteen-staff"
-                element={
-                  <CanteenStaffContent
-                    staffMembers={canteenStaffMembers}
-                    loading={loading}
-                    onCreate={handleCreateCanteenStaff}
-                    onUpdate={handleUpdateCanteenStaff}
-                    onDelete={handleDeleteCanteenStaff}
-                  />
-                }
+                element={<CanteenStaffContent />}
+              />
+            )}
+            {isAdmin && (
+              <Route
+                path="staff-members"
+                element={<AdminStaffContent />}
               />
             )}
             {isAdmin && (

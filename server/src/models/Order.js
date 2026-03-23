@@ -135,6 +135,7 @@ const orderSchema = new mongoose.Schema({
 
 orderSchema.index({ canteenId: 1, pickupTime: 1 });
 orderSchema.index({ status: 1, pickupTime: 1 });
+orderSchema.index({ token: 1 });
 
 const Order = mongoose.model('Order', orderSchema);
 export default Order;

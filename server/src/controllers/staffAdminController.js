@@ -172,7 +172,7 @@ export const getDashboardMetrics = async (req, res) => {
 
 export const getStaffOrders = async (req, res) => {
   try {
-    const { status, priorityOnly } = req.query;
+    const { status, priorityOnly, canteenId, search } = req.query;
 
     const filter = {};
 
@@ -181,6 +181,11 @@ export const getStaffOrders = async (req, res) => {
         return res.status(400).json({ message: 'Staff account is not assigned to any canteen' });
       }
       filter.canteenId = req.user.assignedCanteen;
+    } else if (canteenId) {
+      if (!isValidObjectId(canteenId)) {
+        return res.status(400).json({ message: 'Invalid canteen id filter' });
+      }
+      filter.canteenId = canteenId;
     }
 
     const normalizedStatus = normalizeStatus(status);
@@ -192,9 +197,16 @@ export const getStaffOrders = async (req, res) => {
       filter.status = { $in: ['accepted', 'preparing'] };
     }
 
+    const searchText = String(search || '').trim();
+    if (searchText) {
+      const regex = new RegExp(searchText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+      filter.$or = [{ token: regex }, { notes: regex }];
+    }
+
     const orders = await Order.find(filter)
       .populate('canteenId', 'name location')
       .populate('userId', 'name email')
+      .populate('statusHistory.changedBy', 'name role')
       .sort({ pickupTime: 1, createdAt: 1 });
 
     res.json(orders);
@@ -232,10 +244,6 @@ export const updateOrderStatus = async (req, res) => {
       return res.status(400).json({
         message: `Invalid transition from ${order.status} to ${nextStatus}`,
       });
-    }
-
-    if (nextStatus === 'cancelled' && !reason.trim()) {
-      return res.status(400).json({ message: 'Cancellation reason is required' });
     }
 
     order.status = nextStatus;

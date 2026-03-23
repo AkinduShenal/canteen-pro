@@ -4,7 +4,6 @@ import {
   HiOutlineCheckCircle,
   HiOutlineClipboardDocumentList,
   HiOutlineClock,
-  HiOutlineQueueList,
   HiOutlineStar,
 } from 'react-icons/hi2';
 import {
@@ -251,14 +250,6 @@ const AdminDashboardOverview = ({ dashboardStats, dashboardTrends, onNavigate })
         subtitle: `${pending} waiting`,
         tone: 'tw-bg-amber-50 hover:tw-bg-amber-100/80',
         onClick: () => onNavigate('orders'),
-      },
-      {
-        key: 'priority',
-        icon: HiOutlineQueueList,
-        title: 'Priority Queue',
-        subtitle: 'View urgent orders',
-        tone: 'tw-bg-violet-50 hover:tw-bg-violet-100/80',
-        onClick: () => onNavigate('priority-queue'),
       },
       {
         key: 'ready',

@@ -269,13 +269,13 @@ const CanteenStaffContent = () => {
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.05 }}
-            whileHover={{ y: -3, boxShadow: '0 18px 32px rgba(127, 46, 13, 0.2)' }}
+            whileHover={{ y: -3, boxShadow: '0 18px 32px rgba(15, 155, 111, 0.20)' }}
             className="tw-relative tw-overflow-hidden tw-rounded-2xl tw-border tw-p-4 tw-shadow-lg tw-transition-all"
             style={{
               minHeight: 110,
-              background: 'linear-gradient(135deg, #fff8f2 0%, #fff1e5 100%)',
-              borderColor: '#f0ddcf',
-              boxShadow: '0 12px 24px rgba(127, 46, 13, 0.12)',
+              background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',
+              borderColor: '#a7f3d0',
+              boxShadow: '0 12px 24px rgba(15, 155, 111, 0.12)',
             }}
           >
             <div
@@ -287,10 +287,10 @@ const CanteenStaffContent = () => {
             >
               <HiOutlineBadgeCheck className="tw-h-4.5 tw-w-4.5" />
             </div>
-            <p className="tw-m-0 tw-text-[11px] tw-font-semibold tw-uppercase tw-tracking-[0.08em]" style={{ color: '#8c5a3b' }}>
+            <p className="tw-m-0 tw-text-[11px] tw-font-semibold tw-uppercase tw-tracking-[0.08em]" style={{ color: '#0f766e' }}>
               Active
             </p>
-            <p className="tw-m-0 tw-mt-2 tw-text-4xl tw-font-semibold tw-leading-none" style={{ color: '#2b1d16' }}>
+            <p className="tw-m-0 tw-mt-2 tw-text-4xl tw-font-semibold tw-leading-none" style={{ color: '#065f46' }}>
               {summary.active || 0}
             </p>
           </motion.article>
@@ -299,13 +299,13 @@ const CanteenStaffContent = () => {
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.1 }}
-            whileHover={{ y: -3, boxShadow: '0 18px 32px rgba(127, 46, 13, 0.2)' }}
+            whileHover={{ y: -3, boxShadow: '0 18px 32px rgba(225, 29, 72, 0.20)' }}
             className="tw-relative tw-overflow-hidden tw-rounded-2xl tw-border tw-p-4 tw-shadow-lg tw-transition-all"
             style={{
               minHeight: 110,
-              background: 'linear-gradient(135deg, #fff8f2 0%, #fff1e5 100%)',
-              borderColor: '#f0ddcf',
-              boxShadow: '0 12px 24px rgba(127, 46, 13, 0.12)',
+              background: 'linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%)',
+              borderColor: '#fecdd3',
+              boxShadow: '0 12px 24px rgba(225, 29, 72, 0.12)',
             }}
           >
             <div
@@ -317,10 +317,10 @@ const CanteenStaffContent = () => {
             >
               <HiOutlineXCircle className="tw-h-4.5 tw-w-4.5" />
             </div>
-            <p className="tw-m-0 tw-text-[11px] tw-font-semibold tw-uppercase tw-tracking-[0.08em]" style={{ color: '#8c5a3b' }}>
+            <p className="tw-m-0 tw-text-[11px] tw-font-semibold tw-uppercase tw-tracking-[0.08em]" style={{ color: '#be123c' }}>
               Inactive
             </p>
-            <p className="tw-m-0 tw-mt-2 tw-text-4xl tw-font-semibold tw-leading-none" style={{ color: '#2b1d16' }}>
+            <p className="tw-m-0 tw-mt-2 tw-text-4xl tw-font-semibold tw-leading-none" style={{ color: '#9f1239' }}>
               {summary.inactive || 0}
             </p>
           </motion.article>

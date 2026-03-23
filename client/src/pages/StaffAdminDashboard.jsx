@@ -1,6 +1,6 @@
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { Toaster, toast } from 'react-hot-toast';
-import { useNavigate } from 'react-router-dom';
+import { Navigate, NavLink, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import {
   HiOutlineHome,
   HiOutlineClipboardList,
@@ -13,50 +13,47 @@ import {
 import { AuthContext } from '../context/AuthContext.jsx';
 import { staffAdminApi } from '../services/staffAdminApi.js';
 import api from '../services/api.js';
-import OrderCard from '../components/staffAdmin/OrderCard.jsx';
-import FeedbackPanel from '../components/staffAdmin/FeedbackPanel.jsx';
-import ReportsPanel from '../components/staffAdmin/ReportsPanel.jsx';
-import CanteenManagementPanel from '../components/staffAdmin/CanteenManagementPanel.jsx';
-import CanteenStaffPanel from '../components/staffAdmin/CanteenStaffPanel.jsx';
-
-const statusOptions = [
-  { value: '', label: 'All statuses' },
-  { value: 'pending', label: 'Pending' },
-  { value: 'accepted', label: 'Accepted' },
-  { value: 'preparing', label: 'Preparing' },
-  { value: 'ready', label: 'Ready' },
-  { value: 'completed', label: 'Completed' },
-  { value: 'cancelled', label: 'Cancelled' },
-];
+import AdminDashboardOverview from './admin/AdminDashboardOverview.jsx';
+import AdminOrdersContent from './admin/AdminOrdersContent.jsx';
+import AdminPriorityQueueContent from './admin/AdminPriorityQueueContent.jsx';
+import AdminFeedbackContent from './admin/AdminFeedbackContent.jsx';
+import AdminCanteensContent from './admin/AdminCanteensContent.jsx';
+import AdminReportsContent from './admin/AdminReportsContent.jsx';
+import CanteenDashboardOverview from './canteen/CanteenDashboardOverview.jsx';
+import CanteenOrdersContent from './canteen/CanteenOrdersContent.jsx';
+import CanteenPriorityQueueContent from './canteen/CanteenPriorityQueueContent.jsx';
+import CanteenFeedbackContent from './canteen/CanteenFeedbackContent.jsx';
+import CanteenStaffContent from './canteen/CanteenStaffContent.jsx';
 
 const dashboardTabsByRole = {
   admin: [
-    { id: 'dashboard', label: 'Dashboard', icon: HiOutlineHome },
-    { id: 'orders', label: 'Orders', icon: HiOutlineClipboardList },
-    { id: 'priority-queue', label: 'Priority Queue', icon: HiOutlineClock },
-    { id: 'feedback', label: 'Feedback', icon: HiOutlineChatAlt2 },
-    { id: 'reports', label: 'Reports', icon: HiOutlineChartBar },
-    { id: 'canteens', label: 'Canteens', icon: HiOutlineOfficeBuilding },
+    { id: 'dashboard', path: 'overview', label: 'Dashboard', icon: HiOutlineHome },
+    { id: 'orders', path: 'orders', label: 'Orders', icon: HiOutlineClipboardList },
+    { id: 'priority-queue', path: 'priority-queue', label: 'Priority Queue', icon: HiOutlineClock },
+    { id: 'feedback', path: 'feedback', label: 'Feedback', icon: HiOutlineChatAlt2 },
+    { id: 'reports', path: 'reports', label: 'Reports', icon: HiOutlineChartBar },
+    { id: 'canteens', path: 'canteens', label: 'Canteens', icon: HiOutlineOfficeBuilding },
   ],
   staff: [
-    { id: 'dashboard', label: 'Dashboard', icon: HiOutlineHome },
-    { id: 'orders', label: 'Orders', icon: HiOutlineClipboardList },
-    { id: 'priority-queue', label: 'Priority Queue', icon: HiOutlineClock },
-    { id: 'canteen-staff', label: 'Staff Members', icon: HiOutlineUsers },
-    { id: 'feedback', label: 'Feedback', icon: HiOutlineChatAlt2 },
+    { id: 'dashboard', path: 'overview', label: 'Dashboard', icon: HiOutlineHome },
+    { id: 'orders', path: 'orders', label: 'Orders', icon: HiOutlineClipboardList },
+    { id: 'priority-queue', path: 'priority-queue', label: 'Priority Queue', icon: HiOutlineClock },
+    { id: 'canteen-staff', path: 'canteen-staff', label: 'Staff Members', icon: HiOutlineUsers },
+    { id: 'feedback', path: 'feedback', label: 'Feedback', icon: HiOutlineChatAlt2 },
   ],
 };
 
 const StaffAdminDashboard = () => {
   const { user, logout, updateUser } = useContext(AuthContext);
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const [activeTab, setActiveTab] = useState('dashboard');
   const [orders, setOrders] = useState([]);
   const [feedbackItems, setFeedbackItems] = useState([]);
   const [canteenStaffMembers, setCanteenStaffMembers] = useState([]);
   const [canteens, setCanteens] = useState([]);
   const [reports, setReports] = useState(null);
+  const [dashboardMetrics, setDashboardMetrics] = useState(null);
 
   const [statusFilter, setStatusFilter] = useState('');
   const [priorityOnly, setPriorityOnly] = useState(false);
@@ -80,10 +77,20 @@ const StaffAdminDashboard = () => {
   const isStaff = user?.role === 'staff';
   const hasAccess = isAdmin || isStaff;
   const roleTabs = isAdmin ? dashboardTabsByRole.admin : dashboardTabsByRole.staff;
+  const currentPath = location.pathname.split('/')[2] || 'overview';
+  const activeTabConfig = roleTabs.find((tab) => tab.path === currentPath) || roleTabs[0];
+  const activeTab = activeTabConfig?.id || 'dashboard';
+  const defaultTabPath = roleTabs[0]?.path || 'overview';
   const isCanteenUser = ['staff', 'canteen'].includes(user?.role);
   const displayName = isCanteenUser
     ? user?.assignedCanteen?.name || user?.name || 'Canteen Account'
     : user?.name || 'User';
+  const sidebarDisplayName = isCanteenUser
+    ? String(user?.assignedCanteen?.name || user?.name || 'Canteen')
+        .replace(/\bstaff\b/gi, '')
+        .replace(/\s{2,}/g, ' ')
+        .trim()
+    : displayName;
   const displayRole = user?.role === 'staff' ? 'canteen' : user?.role;
   const avatarInitial = (displayName || 'C').charAt(0).toUpperCase();
 
@@ -176,6 +183,17 @@ const StaffAdminDashboard = () => {
     }
   }, [isStaff]);
 
+  const fetchDashboardMetrics = useCallback(async () => {
+    if (!hasAccess) return;
+
+    try {
+      const { data } = await staffAdminApi.getDashboardMetrics();
+      setDashboardMetrics(data || null);
+    } catch (err) {
+      // Keep dashboard usable even if metrics endpoint fails temporarily.
+    }
+  }, [hasAccess]);
+
   useEffect(() => {
     if (!user) {
       navigate('/login');
@@ -188,7 +206,18 @@ const StaffAdminDashboard = () => {
     fetchFeedback();
     fetchAdminData();
     fetchCanteenStaff();
-  }, [activeTab, fetchAdminData, fetchCanteenStaff, fetchFeedback, fetchOrders, hasAccess]);
+    fetchDashboardMetrics();
+  }, [activeTab, fetchAdminData, fetchCanteenStaff, fetchDashboardMetrics, fetchFeedback, fetchOrders, hasAccess]);
+
+  useEffect(() => {
+    if (!hasAccess) return undefined;
+
+    const intervalId = setInterval(() => {
+      fetchDashboardMetrics();
+    }, 10000);
+
+    return () => clearInterval(intervalId);
+  }, [fetchDashboardMetrics, hasAccess]);
 
   const handleStatusUpdate = async (order, nextStatus) => {
     const payload = { status: nextStatus };
@@ -352,7 +381,7 @@ const StaffAdminDashboard = () => {
     return [...orders].sort((a, b) => new Date(a.pickupTime) - new Date(b.pickupTime));
   }, [orders]);
 
-  const dashboardStats = useMemo(() => {
+  const fallbackDashboardStats = useMemo(() => {
     return {
       totalOrders: orders.length,
       pending: orders.filter((order) => order.status === 'pending').length,
@@ -360,8 +389,37 @@ const StaffAdminDashboard = () => {
       ready: orders.filter((order) => order.status === 'ready').length,
       feedbackCount: feedbackItems.filter((item) => !item?.feedback?.isHidden).length,
       canteenStaffCount: canteenStaffMembers.length,
+      averageRating:
+        feedbackItems.length > 0
+          ? Number(
+              (
+                feedbackItems
+                  .filter((item) => !item?.feedback?.isHidden)
+                  .reduce((sum, item) => sum + (Number(item?.feedback?.rating) || 0), 0) /
+                Math.max(
+                  1,
+                  feedbackItems.filter((item) => !item?.feedback?.isHidden && item?.feedback?.rating).length
+                )
+              ).toFixed(1)
+            )
+          : 0,
     };
   }, [canteenStaffMembers.length, feedbackItems, orders]);
+
+  const dashboardStats = useMemo(() => {
+    if (!dashboardMetrics?.stats) {
+      return fallbackDashboardStats;
+    }
+
+    return {
+      ...fallbackDashboardStats,
+      ...dashboardMetrics.stats,
+    };
+  }, [dashboardMetrics?.stats, fallbackDashboardStats]);
+
+  const dashboardTrends = useMemo(() => {
+    return dashboardMetrics?.trends || null;
+  }, [dashboardMetrics?.trends]);
 
   const handleLogout = () => {
     setIsProfileOpen(false);
@@ -465,7 +523,41 @@ const StaffAdminDashboard = () => {
 
   return (
     <div className="dashboard-layout">
-      <Toaster position="top-right" />
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3200,
+          style: {
+            borderRadius: '10px',
+            padding: '12px 14px',
+            background: '#ffffff',
+            color: '#0f172a',
+            border: '1px solid #e2e8f0',
+            boxShadow: '0 10px 22px rgba(15, 23, 42, 0.12)',
+            fontWeight: 600,
+          },
+          success: {
+            style: {
+              background: '#ffffff',
+              border: '1px solid #10b981',
+            },
+            iconTheme: {
+              primary: '#10b981',
+              secondary: '#ffffff',
+            },
+          },
+          error: {
+            style: {
+              background: '#ffffff',
+              border: '1px solid #ef4444',
+            },
+            iconTheme: {
+              primary: '#ef4444',
+              secondary: '#ffffff',
+            },
+          },
+        }}
+      />
       <aside className="dashboard-sidebar">
         <div>
           <h2 className="sidebar-brand">CanteenPro</h2>
@@ -473,16 +565,15 @@ const StaffAdminDashboard = () => {
 
           <nav className="sidebar-nav">
             {roleTabs.map((tab) => (
-              <button
+              <NavLink
                 key={tab.id}
-                type="button"
-                className={`sidebar-nav-btn ${activeTab === tab.id ? 'active' : ''}`}
-                onClick={() => setActiveTab(tab.id)}
+                to={`/dashboard/${tab.path}`}
+                className={({ isActive }) => `sidebar-nav-btn ${isActive ? 'active' : ''}`}
               >
                 {tab.icon && <tab.icon size={16} />}
                 <span>{tab.label}</span>
                 {activeTab === tab.id && <span className="sidebar-active-indicator" />}
-              </button>
+              </NavLink>
             ))}
           </nav>
         </div>
@@ -506,7 +597,7 @@ const StaffAdminDashboard = () => {
           >
             <div className="sidebar-avatar">{avatarInitial}</div>
             <div className="sidebar-user-meta">
-              <p className="sidebar-user-name">{displayName}</p>
+              <p className="sidebar-user-name">{sidebarDisplayName}</p>
               <div className="sidebar-status-row">
                 <span className="sidebar-active-dot" />
                 <p className="sidebar-user-role">{displayRole}</p>
@@ -530,194 +621,133 @@ const StaffAdminDashboard = () => {
           {error && <div className="alert error">{error}</div>}
           {success && <div className="alert success">{success}</div>}
 
-          {activeTab === 'dashboard' && (
-            <section className="dashboard-grid stats-grid">
-              <article className="dashboard-card stat-card">
-                <span className="stat-label">Total Orders</span>
-                <strong className="stat-value">{dashboardStats.totalOrders}</strong>
-              </article>
-              <article className="dashboard-card stat-card">
-                <span className="stat-label">Pending</span>
-                <strong className="stat-value">{dashboardStats.pending}</strong>
-              </article>
-              <article className="dashboard-card stat-card">
-                <span className="stat-label">Preparing</span>
-                <strong className="stat-value">{dashboardStats.preparing}</strong>
-              </article>
-              <article className="dashboard-card stat-card">
-                <span className="stat-label">Ready</span>
-                <strong className="stat-value">{dashboardStats.ready}</strong>
-              </article>
-              <article className="dashboard-card stat-card">
-                <span className="stat-label">Visible Feedback</span>
-                <strong className="stat-value">{dashboardStats.feedbackCount}</strong>
-              </article>
-              {isStaff && (
-                <article className="dashboard-card stat-card">
-                  <span className="stat-label">Canteen Staff</span>
-                  <strong className="stat-value">{dashboardStats.canteenStaffCount}</strong>
-                </article>
-              )}
-
-              <section className="dashboard-card full-width">
-                <div className="section-head">
-                  <h3>Quick Actions</h3>
-                </div>
-                <div className="inline-actions">
-                  <button type="button" className="btn btn-primary" onClick={() => setActiveTab('orders')}>
-                    Manage Orders
-                  </button>
-                  <button type="button" className="btn btn-outline" onClick={() => setActiveTab('priority-queue')}>
-                    Priority Queue
-                  </button>
-                  <button type="button" className="btn btn-outline" onClick={() => setActiveTab('feedback')}>
-                    View Feedback
-                  </button>
-                  {isAdmin && (
-                    <>
-                      <button type="button" className="btn btn-outline" onClick={() => setActiveTab('canteens')}>
-                        Manage Canteens
-                      </button>
-                      <button type="button" className="btn btn-outline" onClick={() => setActiveTab('reports')}>
-                        View Reports
-                      </button>
-                    </>
-                  )}
-                  {isStaff && (
-                    <button type="button" className="btn btn-outline" onClick={() => setActiveTab('canteen-staff')}>
-                      Manage Staff Members
-                    </button>
-                  )}
-                </div>
-              </section>
-            </section>
-          )}
-
-          {activeTab === 'orders' && (
-            <>
-              <section className="dashboard-card">
-                <div className="filter-row">
-                  <select
-                    className="form-control filter-select"
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                  >
-                    {statusOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-
-                  <label className="priority-toggle">
-                    <input
-                      type="checkbox"
-                      checked={priorityOnly}
-                      onChange={(e) => setPriorityOnly(e.target.checked)}
-                    />
-                    Priority queue (soonest pickup)
-                  </label>
-
-                  <button type="button" className="btn btn-outline" onClick={fetchOrders} disabled={loading}>
-                    Refresh
-                  </button>
-
-                  <button
-                    type="button"
-                    className="btn btn-primary"
-                    onClick={handleBulkReady}
-                    disabled={loading || selectedOrderIds.length === 0}
-                  >
-                    Bulk Mark Ready ({selectedOrderIds.length})
-                  </button>
-                </div>
-              </section>
-
-              <section className="order-grid">
-                {sortedOrders.length === 0 ? (
-                  <div className="dashboard-card empty-state">No orders found for selected filters.</div>
+          <Routes>
+            <Route index element={<Navigate to={defaultTabPath} replace />} />
+            <Route
+              path="overview"
+              element={
+                isAdmin ? (
+                  <AdminDashboardOverview
+                    dashboardStats={dashboardStats}
+                    dashboardTrends={dashboardTrends}
+                    onNavigate={(path) => navigate(`/dashboard/${path}`)}
+                  />
                 ) : (
-                  sortedOrders.map((order) => (
-                    <OrderCard
-                      key={order._id}
-                      order={order}
-                      selected={selectedOrderIds.includes(order._id)}
-                      onSelect={handleSelectOrder}
-                      onStatusChange={handleStatusUpdate}
-                      isUpdating={loading}
-                    />
-                  ))
-                )}
-              </section>
-            </>
-          )}
-
-          {activeTab === 'priority-queue' && (
-            <>
-              <section className="dashboard-card">
-                <div className="section-head">
-                  <h3>Priority Queue</h3>
-                  <button
-                    type="button"
-                    className="btn btn-outline"
-                    onClick={() => fetchOrders({ priorityOnly: true })}
-                    disabled={loading}
-                  >
-                    Refresh Queue
-                  </button>
-                </div>
-                <p className="small muted">Shows accepted/preparing orders sorted by nearest pickup time.</p>
-              </section>
-
-              <section className="order-grid">
-                {sortedOrders.length === 0 ? (
-                  <div className="dashboard-card empty-state">No priority orders right now.</div>
+                  <CanteenDashboardOverview
+                    dashboardStats={dashboardStats}
+                    dashboardTrends={dashboardTrends}
+                    onNavigate={(path) => navigate(`/dashboard/${path}`)}
+                  />
+                )
+              }
+            />
+            <Route
+              path="orders"
+              element={
+                isAdmin ? (
+                  <AdminOrdersContent
+                    statusFilter={statusFilter}
+                    setStatusFilter={setStatusFilter}
+                    priorityOnly={priorityOnly}
+                    setPriorityOnly={setPriorityOnly}
+                    fetchOrders={fetchOrders}
+                    loading={loading}
+                    handleBulkReady={handleBulkReady}
+                    selectedOrderIds={selectedOrderIds}
+                    sortedOrders={sortedOrders}
+                    handleSelectOrder={handleSelectOrder}
+                    handleStatusUpdate={handleStatusUpdate}
+                  />
                 ) : (
-                  sortedOrders.map((order) => (
-                    <OrderCard
-                      key={order._id}
-                      order={order}
-                      selected={selectedOrderIds.includes(order._id)}
-                      onSelect={handleSelectOrder}
-                      onStatusChange={handleStatusUpdate}
-                      isUpdating={loading}
-                    />
-                  ))
-                )}
-              </section>
-            </>
-          )}
-
-          {activeTab === 'feedback' && (
-            <FeedbackPanel
-              feedbackItems={feedbackItems}
-              loading={loading}
-              isAdmin={isAdmin}
-              onRemove={handleRemoveFeedback}
+                  <CanteenOrdersContent
+                    statusFilter={statusFilter}
+                    setStatusFilter={setStatusFilter}
+                    priorityOnly={priorityOnly}
+                    setPriorityOnly={setPriorityOnly}
+                    fetchOrders={fetchOrders}
+                    loading={loading}
+                    handleBulkReady={handleBulkReady}
+                    selectedOrderIds={selectedOrderIds}
+                    sortedOrders={sortedOrders}
+                    handleSelectOrder={handleSelectOrder}
+                    handleStatusUpdate={handleStatusUpdate}
+                  />
+                )
+              }
             />
-          )}
-
-          {isStaff && activeTab === 'canteen-staff' && (
-            <CanteenStaffPanel
-              staffMembers={canteenStaffMembers}
-              loading={loading}
-              onCreate={handleCreateCanteenStaff}
-              onUpdate={handleUpdateCanteenStaff}
-              onDelete={handleDeleteCanteenStaff}
+            <Route
+              path="priority-queue"
+              element={
+                isAdmin ? (
+                  <AdminPriorityQueueContent
+                    sortedOrders={sortedOrders}
+                    selectedOrderIds={selectedOrderIds}
+                    handleSelectOrder={handleSelectOrder}
+                    handleStatusUpdate={handleStatusUpdate}
+                    loading={loading}
+                    fetchOrders={fetchOrders}
+                  />
+                ) : (
+                  <CanteenPriorityQueueContent
+                    sortedOrders={sortedOrders}
+                    selectedOrderIds={selectedOrderIds}
+                    handleSelectOrder={handleSelectOrder}
+                    handleStatusUpdate={handleStatusUpdate}
+                    loading={loading}
+                    fetchOrders={fetchOrders}
+                  />
+                )
+              }
             />
-          )}
-
-          {isAdmin && activeTab === 'canteens' && (
-            <CanteenManagementPanel
-              canteens={canteens}
-              loading={loading}
-              onCreate={handleCreateCanteen}
-              onUpdate={handleUpdateCanteen}
-              onDelete={handleDeleteCanteen}
+            <Route
+              path="feedback"
+              element={
+                isAdmin ? (
+                  <AdminFeedbackContent
+                    feedbackItems={feedbackItems}
+                    loading={loading}
+                    onRemove={handleRemoveFeedback}
+                  />
+                ) : (
+                  <CanteenFeedbackContent
+                    feedbackItems={feedbackItems}
+                    loading={loading}
+                    onRemove={handleRemoveFeedback}
+                  />
+                )
+              }
             />
-          )}
-
-          {isAdmin && activeTab === 'reports' && <ReportsPanel reports={reports} />}
+            {isStaff && (
+              <Route
+                path="canteen-staff"
+                element={
+                  <CanteenStaffContent
+                    staffMembers={canteenStaffMembers}
+                    loading={loading}
+                    onCreate={handleCreateCanteenStaff}
+                    onUpdate={handleUpdateCanteenStaff}
+                    onDelete={handleDeleteCanteenStaff}
+                  />
+                }
+              />
+            )}
+            {isAdmin && (
+              <Route
+                path="canteens"
+                element={
+                  <AdminCanteensContent
+                    canteens={canteens}
+                    loading={loading}
+                    onCreate={handleCreateCanteen}
+                    onUpdate={handleUpdateCanteen}
+                    onDelete={handleDeleteCanteen}
+                  />
+                }
+              />
+            )}
+            {isAdmin && <Route path="reports" element={<AdminReportsContent reports={reports} />} />}
+            <Route path="*" element={<Navigate to={defaultTabPath} replace />} />
+          </Routes>
         </div>
       </div>
 

@@ -8,6 +8,7 @@ import {
   deleteCanteenStaffMember,
   deleteStaffAccount,
   getBasicReports,
+  getDashboardMetrics,
   getCanteenStaffMembers,
   getCanteensForAssignment,
   getFeedbackList,
@@ -23,6 +24,7 @@ const router = express.Router();
 
 router.use(protect);
 
+router.get('/dashboard/metrics', permitRoles('staff', 'admin'), getDashboardMetrics);
 router.get('/orders', permitRoles('staff', 'admin'), getStaffOrders);
 router.patch('/orders/:orderId/status', permitRoles('staff', 'admin'), updateOrderStatus);
 router.patch('/orders/bulk/ready', permitRoles('staff', 'admin'), bulkMarkOrdersReady);

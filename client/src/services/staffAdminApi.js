@@ -1,6 +1,11 @@
 import api from './api.js';
 
 export const staffAdminApi = {
+  getDashboardMetrics: () => api.get('/staff-admin/dashboard/metrics'),
+
+  getAnnouncements: () => api.get('/announcements'),
+  getCanteenAnnouncements: (canteenId) => api.get(`/announcements/canteen/${canteenId}`),
+
   getOrders: (params = {}) => api.get('/staff-admin/orders', { params }),
   getPriorityOrders: () => api.get('/staff-admin/orders', { params: { priorityOnly: 'true' } }),
   updateOrderStatus: (orderId, payload) =>

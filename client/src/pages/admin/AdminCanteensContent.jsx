@@ -334,33 +334,107 @@ const AdminCanteensContent = ({ canteens, loading, onCreate, onUpdate, onDelete 
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.32, ease: 'easeOut', delay: 0.03 }}
-        className="tw-mb-5 tw-grid tw-grid-cols-2 md:tw-grid-cols-4 tw-gap-3 tw-rounded-2xl tw-border tw-bg-white tw-p-3"
-        style={{ borderColor: '#ecd9cb', boxShadow: '0 5px 16px rgba(118,68,31,0.06)' }}
+        className="tw-mb-5 tw-grid tw-grid-cols-1 md:tw-grid-cols-2 xl:tw-grid-cols-4 tw-gap-3"
       >
-        <div className="tw-rounded-xl tw-px-3 tw-py-2" style={{ background: '#fff8f2' }}>
-          <p className="tw-m-0 tw-text-[11px] tw-font-semibold tw-uppercase tw-tracking-wide" style={{ color: '#9a5a33' }}>
+        <motion.article
+          whileHover={{ y: -3, boxShadow: '0 16px 28px rgba(127, 46, 13, 0.12)' }}
+          className="tw-relative tw-overflow-hidden tw-rounded-2xl tw-border tw-p-4 tw-shadow-lg tw-transition-all"
+          style={{
+            minHeight: 112,
+            background: 'linear-gradient(135deg, #fffdfb 0%, #fff7f1 100%)',
+            borderColor: '#f5e9de',
+            boxShadow: '0 10px 22px rgba(127, 46, 13, 0.08)',
+          }}
+        >
+          <div
+            className="tw-absolute tw-right-4 tw-top-4 tw-flex tw-h-10 tw-w-10 tw-items-center tw-justify-center tw-rounded-xl tw-text-white"
+            style={{
+              background: 'linear-gradient(135deg, #d9480f 0%, #f97316 100%)',
+              boxShadow: '0 8px 14px rgba(217, 72, 15, 0.22)',
+            }}
+          >
+            <HiOutlineOfficeBuilding className="tw-h-5 tw-w-5" />
+          </div>
+          <p className="tw-m-0 tw-text-[11px] tw-font-semibold tw-uppercase tw-tracking-[0.08em]" style={{ color: '#8c5a3b' }}>
             Total canteens
           </p>
-          <p className="tw-m-0 tw-text-lg tw-font-bold" style={{ color: '#2b1d16' }}>{canteenSummary.total}</p>
-        </div>
-        <div className="tw-rounded-xl tw-px-3 tw-py-2" style={{ background: '#f3fff7' }}>
-          <p className="tw-m-0 tw-text-[11px] tw-font-semibold tw-uppercase tw-tracking-wide" style={{ color: '#2f7a3d' }}>
+          <p className="tw-m-0 tw-mt-2 tw-text-4xl tw-font-semibold tw-leading-none" style={{ color: '#2b1d16' }}>{canteenSummary.total}</p>
+        </motion.article>
+
+        <motion.article
+          whileHover={{ y: -3, boxShadow: '0 16px 28px rgba(15, 118, 110, 0.12)' }}
+          className="tw-relative tw-overflow-hidden tw-rounded-2xl tw-border tw-p-4 tw-shadow-lg tw-transition-all"
+          style={{
+            minHeight: 112,
+            background: 'linear-gradient(135deg, #f4fdf9 0%, #e8faf2 100%)',
+            borderColor: '#cbeee0',
+            boxShadow: '0 10px 22px rgba(15, 118, 110, 0.08)',
+          }}
+        >
+          <div
+            className="tw-absolute tw-right-4 tw-top-4 tw-flex tw-h-10 tw-w-10 tw-items-center tw-justify-center tw-rounded-xl tw-text-white"
+            style={{
+              background: 'linear-gradient(135deg, #10b981 0%, #34d399 100%)',
+              boxShadow: '0 8px 14px rgba(16, 185, 129, 0.22)',
+            }}
+          >
+            <HiOutlineClock className="tw-h-5 tw-w-5" />
+          </div>
+          <p className="tw-m-0 tw-text-[11px] tw-font-semibold tw-uppercase tw-tracking-[0.08em]" style={{ color: '#0f766e' }}>
             Open now
           </p>
-          <p className="tw-m-0 tw-text-lg tw-font-bold" style={{ color: '#1f5130' }}>{canteenSummary.openNow}</p>
-        </div>
-        <div className="tw-rounded-xl tw-px-3 tw-py-2" style={{ background: '#fff6f4' }}>
-          <p className="tw-m-0 tw-text-[11px] tw-font-semibold tw-uppercase tw-tracking-wide" style={{ color: '#b4532c' }}>
+          <p className="tw-m-0 tw-mt-2 tw-text-4xl tw-font-semibold tw-leading-none" style={{ color: '#065f46' }}>{canteenSummary.openNow}</p>
+        </motion.article>
+
+        <motion.article
+          whileHover={{ y: -3, boxShadow: '0 16px 28px rgba(190, 24, 93, 0.12)' }}
+          className="tw-relative tw-overflow-hidden tw-rounded-2xl tw-border tw-p-4 tw-shadow-lg tw-transition-all"
+          style={{
+            minHeight: 112,
+            background: 'linear-gradient(135deg, #fff7f8 0%, #ffeff2 100%)',
+            borderColor: '#f9d5de',
+            boxShadow: '0 10px 22px rgba(190, 24, 93, 0.08)',
+          }}
+        >
+          <div
+            className="tw-absolute tw-right-4 tw-top-4 tw-flex tw-h-10 tw-w-10 tw-items-center tw-justify-center tw-rounded-xl tw-text-white"
+            style={{
+              background: 'linear-gradient(135deg, #f43f5e 0%, #fb7185 100%)',
+              boxShadow: '0 8px 14px rgba(244, 63, 94, 0.20)',
+            }}
+          >
+            <HiOutlineExclamation className="tw-h-5 tw-w-5" />
+          </div>
+          <p className="tw-m-0 tw-text-[11px] tw-font-semibold tw-uppercase tw-tracking-[0.08em]" style={{ color: '#be123c' }}>
             Closed now
           </p>
-          <p className="tw-m-0 tw-text-lg tw-font-bold" style={{ color: '#7f2e0d' }}>{canteenSummary.closedNow}</p>
-        </div>
-        <div className="tw-rounded-xl tw-px-3 tw-py-2" style={{ background: '#f8faff' }}>
-          <p className="tw-m-0 tw-text-[11px] tw-font-semibold tw-uppercase tw-tracking-wide" style={{ color: '#4a6084' }}>
+          <p className="tw-m-0 tw-mt-2 tw-text-4xl tw-font-semibold tw-leading-none" style={{ color: '#9f1239' }}>{canteenSummary.closedNow}</p>
+        </motion.article>
+
+        <motion.article
+          whileHover={{ y: -3, boxShadow: '0 16px 28px rgba(37, 99, 235, 0.12)' }}
+          className="tw-relative tw-overflow-hidden tw-rounded-2xl tw-border tw-p-4 tw-shadow-lg tw-transition-all"
+          style={{
+            minHeight: 112,
+            background: 'linear-gradient(135deg, #f5f9ff 0%, #ebf3ff 100%)',
+            borderColor: '#d5e5fb',
+            boxShadow: '0 10px 22px rgba(37, 99, 235, 0.08)',
+          }}
+        >
+          <div
+            className="tw-absolute tw-right-4 tw-top-4 tw-flex tw-h-10 tw-w-10 tw-items-center tw-justify-center tw-rounded-xl tw-text-white"
+            style={{
+              background: 'linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)',
+              boxShadow: '0 8px 14px rgba(59, 130, 246, 0.20)',
+            }}
+          >
+            <HiOutlineLocationMarker className="tw-h-5 tw-w-5" />
+          </div>
+          <p className="tw-m-0 tw-text-[11px] tw-font-semibold tw-uppercase tw-tracking-[0.08em]" style={{ color: '#1d4ed8' }}>
             Showing
           </p>
-          <p className="tw-m-0 tw-text-lg tw-font-bold" style={{ color: '#23324d' }}>{canteenSummary.showing}</p>
-        </div>
+          <p className="tw-m-0 tw-mt-2 tw-text-4xl tw-font-semibold tw-leading-none" style={{ color: '#1e3a8a' }}>{canteenSummary.showing}</p>
+        </motion.article>
       </motion.section>
 
       <motion.section

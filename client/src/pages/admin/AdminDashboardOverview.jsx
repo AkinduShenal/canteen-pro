@@ -18,7 +18,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import DashboardUtilityBar from '../../components/common/DashboardUtilityBar.jsx';
 import { staffAdminApi } from '../../services/staffAdminApi.js';
 
@@ -36,8 +36,19 @@ const SAMPLE_STATS = {
 const SPRING_SMOOTH = { type: 'spring', stiffness: 80, damping: 20, mass: 0.9 };
 const SPRING_FAST = { type: 'spring', stiffness: 100, damping: 22, mass: 0.85 };
 
+/* ─── stagger container for child reveals ─── */
+const STAGGER_CONTAINER = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.09, delayChildren: 0.05 } },
+};
+const STAGGER_ITEM = {
+  hidden: { opacity: 0, y: 14 },
+  show: { opacity: 1, y: 0, transition: SPRING_SMOOTH },
+};
+
 const buildSeries = (value) => [0, 0, 0, 0, 0, 0, Math.max(0, Number(value) || 0)];
 
+/* ─────────────────────── TrendChart ─────────────────────── */
 const TrendChart = ({ values, labels = DAY_LABELS, color, areaColor, maxLabelPrefix, maxLabelSuffix = '', variant = 'line' }) => {
   const chartData = useMemo(
     () => labels.map((label, index) => ({ label, value: Number(values[index] || 0) })),
@@ -46,57 +57,54 @@ const TrendChart = ({ values, labels = DAY_LABELS, color, areaColor, maxLabelPre
 
   const CustomTooltip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null;
-
     const value = Number(payload[0]?.value || 0);
     return (
-      <div className="tw-rounded-xl tw-bg-slate-900 tw-px-3 tw-py-2 tw-shadow-lg">
-        <p className="tw-m-0 tw-text-xs tw-font-semibold tw-text-slate-300">{label} • Last 7 days</p>
-        <p className="tw-m-0 tw-mt-1 tw-text-sm tw-font-bold tw-text-white">
-          {maxLabelPrefix}
-          {value.toLocaleString()}
-          {maxLabelSuffix}
+      <div className="tw-rounded-2xl tw-border tw-border-white/20 tw-bg-slate-900/95 tw-px-4 tw-py-3 tw-shadow-2xl tw-backdrop-blur-md">
+        <p className="tw-m-0 tw-text-xs tw-font-semibold tw-tracking-wide tw-text-slate-400 tw-uppercase">{label} · Last 7 days</p>
+        <p className="tw-m-0 tw-mt-1.5 tw-text-base tw-font-extrabold tw-text-white">
+          {maxLabelPrefix}{value.toLocaleString()}{maxLabelSuffix}
         </p>
       </div>
     );
   };
 
   return (
-    <div className="tw-h-[260px] tw-w-full tw-overflow-hidden tw-rounded-2xl tw-border tw-border-slate-200 tw-bg-gradient-to-br tw-from-white tw-to-slate-50 tw-p-3 md:tw-p-5">
+    <div className="tw-h-[260px] tw-w-full tw-overflow-hidden tw-rounded-2xl tw-border tw-border-slate-100 tw-bg-gradient-to-br tw-from-slate-50/80 tw-to-white tw-p-3 tw-shadow-inner md:tw-p-5">
       <ResponsiveContainer width="100%" height="100%">
         {variant === 'bar' ? (
           <BarChart data={chartData} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="4 4" stroke="#cbd5e1" />
-            <XAxis dataKey="label" tick={{ fill: '#64748b', fontSize: 12, fontWeight: 600 }} axisLine={false} tickLine={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+            <XAxis dataKey="label" tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 700 }} axisLine={false} tickLine={false} />
             <YAxis
-              tick={{ fill: '#64748b', fontSize: 12, fontWeight: 600 }}
+              tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 700 }}
               axisLine={false}
               tickLine={false}
               tickFormatter={(value) => `${maxLabelPrefix}${Number(value).toLocaleString()}${maxLabelSuffix}`}
               width={72}
             />
-            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(51,65,85,0.08)' }} />
-            <Bar dataKey="value" fill={color} radius={[8, 8, 0, 0]} maxBarSize={40} animationDuration={500} />
+            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(139,92,246,0.06)', rx: 8 }} />
+            <Bar dataKey="value" fill={color} radius={[10, 10, 0, 0]} maxBarSize={38} animationDuration={600} />
           </BarChart>
         ) : (
           <LineChart data={chartData} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="4 4" stroke="#cbd5e1" />
-            <XAxis dataKey="label" tick={{ fill: '#64748b', fontSize: 12, fontWeight: 600 }} axisLine={false} tickLine={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+            <XAxis dataKey="label" tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 700 }} axisLine={false} tickLine={false} />
             <YAxis
-              tick={{ fill: '#64748b', fontSize: 12, fontWeight: 600 }}
+              tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 700 }}
               axisLine={false}
               tickLine={false}
               tickFormatter={(value) => `${maxLabelPrefix}${Number(value).toLocaleString()}${maxLabelSuffix}`}
               width={72}
             />
-            <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#334155', strokeDasharray: '5 5', strokeOpacity: 0.55 }} />
+            <Tooltip content={<CustomTooltip />} cursor={{ stroke: color, strokeDasharray: '5 4', strokeOpacity: 0.4, strokeWidth: 2 }} />
             <Line
               type="monotone"
               dataKey="value"
               stroke={color}
-              strokeWidth={3}
-              animationDuration={500}
+              strokeWidth={3.5}
+              animationDuration={600}
               animationEasing="ease-out"
-              activeDot={{ r: 7, fill: '#0f172a', stroke: color, strokeWidth: 4 }}
+              activeDot={{ r: 8, fill: '#fff', stroke: color, strokeWidth: 3.5, filter: `drop-shadow(0 0 6px ${color}80)` }}
               dot={false}
             />
           </LineChart>
@@ -106,47 +114,75 @@ const TrendChart = ({ values, labels = DAY_LABELS, color, areaColor, maxLabelPre
   );
 };
 
+/* StatCard  */
 const StatCard = ({ title, value, tone, icon: Icon, trendText }) => (
   <motion.article
+    variants={STAGGER_ITEM}
     layout
-    initial={{ opacity: 0, y: 10 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={SPRING_SMOOTH}
-    className={`tw-rounded-2xl tw-border tw-border-white/70 tw-p-5 tw-shadow-[0_12px_28px_rgba(15,23,42,0.10)] tw-transition-all tw-duration-300 hover:tw--translate-y-1 hover:tw-shadow-[0_18px_36px_rgba(15,23,42,0.16)] ${tone.card}`}
+    whileHover={{ y: -4, transition: { type: 'spring', stiffness: 320, damping: 20 } }}
+    className={`tw-relative tw-overflow-hidden tw-rounded-3xl tw-border tw-p-5 tw-shadow-md tw-transition-shadow tw-duration-300 hover:tw-shadow-xl ${tone.card}`}
   >
+    {/* decorative circle blob — inline bg so it always renders */}
+    <div
+      style={{ background: tone.blobColor, filter: 'blur(28px)', opacity: 0.25 }}
+      className="tw-pointer-events-none tw-absolute -tw-right-6 -tw-top-6 tw-h-28 tw-w-28 tw-rounded-full"
+    />
+
     <div className="tw-flex tw-items-start tw-justify-between tw-gap-4">
       <div>
-        <p className="tw-mb-2 tw-text-sm tw-font-semibold tw-text-slate-500">{title}</p>
-        <p className="tw-m-0 tw-text-4xl tw-font-extrabold tw-leading-none tw-text-slate-900 md:tw-text-5xl">{value}</p>
+        <p className="tw-mb-2 tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-slate-500">{title}</p>
+        <p className="tw-m-0 tw-text-4xl tw-font-extrabold tw-leading-none tw-text-slate-900 tw-tabular-nums md:tw-text-5xl">{value}</p>
       </div>
-      <div className={`tw-flex tw-h-12 tw-w-12 tw-items-center tw-justify-center tw-rounded-xl tw-text-white tw-shadow-md md:tw-h-14 md:tw-w-14 ${tone.icon}`}>
-        <Icon size={24} />
+      {/* inline gradient so the icon container is always visibly coloured */}
+      <div
+        style={{ background: tone.iconBg, minWidth: '3.25rem', minHeight: '3.25rem' }}
+        className="tw-flex tw-items-center tw-justify-center tw-rounded-2xl tw-text-white tw-shadow-lg"
+      >
+        <Icon size={24} strokeWidth={2} />
       </div>
     </div>
-    {trendText ? <p className="tw-mb-0 tw-mt-3 tw-text-sm tw-font-semibold tw-text-emerald-600">{trendText}</p> : null}
+
+    {trendText ? (
+      <div className="tw-mt-4 tw-flex tw-items-center tw-gap-1.5">
+        <span
+          style={{ background: '#10b981' }}
+          className="tw-inline-block tw-h-1.5 tw-w-1.5 tw-rounded-full tw-ring-2 tw-ring-emerald-200"
+        />
+        <p className="tw-mb-0 tw-text-xs tw-font-bold tw-text-emerald-600">{trendText}</p>
+      </div>
+    ) : null}
   </motion.article>
 );
 
+/* ─────────────────────── QuickActionItem ─────────────────────── */
 const QuickActionItem = ({ icon: Icon, title, subtitle, tone, onClick }) => (
   <motion.button
+    variants={STAGGER_ITEM}
     layout
-    initial={{ opacity: 0, x: 8 }}
-    animate={{ opacity: 1, x: 0 }}
-    transition={SPRING_FAST}
+    whileHover={{ x: 4, transition: { type: 'spring', stiffness: 320, damping: 22 } }}
+    whileTap={{ scale: 0.97 }}
     type="button"
     onClick={onClick}
-    className={`tw-flex tw-w-full tw-items-center tw-gap-3 tw-rounded-2xl tw-border tw-border-white tw-p-4 tw-text-left tw-shadow-[inset_0_0_0_1px_rgba(255,255,255,0.65)] tw-transition-all hover:tw--translate-y-0.5 hover:tw-shadow-md focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-orange-300 ${tone}`}
+    className={`tw-group tw-flex tw-w-full tw-items-center tw-gap-3.5 tw-rounded-2xl tw-border tw-border-white/80 tw-p-4 tw-text-left tw-shadow-sm tw-transition-shadow tw-duration-200 hover:tw-shadow-md focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-orange-300 focus:tw-ring-offset-2 ${tone}`}
   >
-    <span className="tw-inline-flex tw-h-11 tw-w-11 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-xl tw-bg-white/80 tw-text-slate-800">
-      <Icon size={22} />
+    <span className={`tw-inline-flex tw-h-11 tw-w-11 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-xl tw-bg-white/90 tw-text-slate-700 tw-shadow-sm tw-transition-transform tw-duration-200 group-hover:tw-scale-110`}>
+      <Icon size={21} strokeWidth={2} />
     </span>
-    <span className="tw-min-w-0">
-      <span className="tw-block tw-text-lg tw-font-semibold tw-leading-tight tw-text-slate-900 md:tw-text-xl">{title}</span>
-      <span className="tw-block tw-text-sm tw-font-normal tw-leading-tight tw-text-slate-500">{subtitle}</span>
+    <span className="tw-min-w-0 tw-flex-1">
+      <span className="tw-block tw-text-sm tw-font-bold tw-leading-tight tw-text-slate-800 md:tw-text-base">{title}</span>
+      <span className="tw-block tw-text-xs tw-leading-tight tw-text-slate-500 tw-mt-0.5">{subtitle}</span>
     </span>
+    <motion.span
+      initial={{ opacity: 0, x: -4 }}
+      whileHover={{ opacity: 1, x: 0 }}
+      className="tw-ml-auto tw-text-slate-400 tw-transition-colors group-hover:tw-text-slate-600"
+    >
+      →
+    </motion.span>
   </motion.button>
 );
 
+/* ─────────────────────── AdminDashboardOverview ─────────────────────── */
 const AdminDashboardOverview = ({ dashboardStats, dashboardTrends, onNavigate }) => {
   const [searchText, setSearchText] = useState('');
   const [liveMetrics, setLiveMetrics] = useState(null);
@@ -213,7 +249,7 @@ const AdminDashboardOverview = ({ dashboardStats, dashboardTrends, onNavigate })
         icon: HiOutlineClock,
         title: 'Pending Orders',
         subtitle: `${pending} waiting`,
-        tone: 'tw-bg-amber-100',
+        tone: 'tw-bg-amber-50 hover:tw-bg-amber-100/80',
         onClick: () => onNavigate('orders'),
       },
       {
@@ -221,7 +257,7 @@ const AdminDashboardOverview = ({ dashboardStats, dashboardTrends, onNavigate })
         icon: HiOutlineQueueList,
         title: 'Priority Queue',
         subtitle: 'View urgent orders',
-        tone: 'tw-bg-violet-100',
+        tone: 'tw-bg-violet-50 hover:tw-bg-violet-100/80',
         onClick: () => onNavigate('priority-queue'),
       },
       {
@@ -229,7 +265,7 @@ const AdminDashboardOverview = ({ dashboardStats, dashboardTrends, onNavigate })
         icon: HiOutlineCheckCircle,
         title: 'Ready Orders',
         subtitle: `${ready} for pickup`,
-        tone: 'tw-bg-emerald-100',
+        tone: 'tw-bg-emerald-50 hover:tw-bg-emerald-100/80',
         onClick: () => onNavigate('orders'),
       },
       {
@@ -237,7 +273,7 @@ const AdminDashboardOverview = ({ dashboardStats, dashboardTrends, onNavigate })
         icon: HiOutlineChartBar,
         title: 'View Reports',
         subtitle: 'Analytics & insights',
-        tone: 'tw-bg-sky-100',
+        tone: 'tw-bg-sky-50 hover:tw-bg-sky-100/80',
         onClick: () => onNavigate('reports'),
       },
     ],
@@ -254,11 +290,12 @@ const AdminDashboardOverview = ({ dashboardStats, dashboardTrends, onNavigate })
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={SPRING_SMOOTH}
       className="tw-space-y-6 tw-text-slate-800"
     >
+      {/* ── Utility bar ── */}
       <DashboardUtilityBar
         value={searchText}
         onChange={(e) => setSearchText(e.target.value)}
@@ -266,63 +303,84 @@ const AdminDashboardOverview = ({ dashboardStats, dashboardTrends, onNavigate })
         notificationCount={pending}
       />
 
+      {/* ── Stat cards ── */}
       <motion.section
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ ...SPRING_SMOOTH, delay: 0.08 }}
+        variants={STAGGER_CONTAINER}
+        initial="hidden"
+        animate="show"
         className="tw-grid tw-grid-cols-1 tw-gap-4 lg:tw-grid-cols-2 xl:tw-grid-cols-4"
       >
         <StatCard
           title="Today's Orders"
           value={totalOrders}
           icon={HiOutlineClipboardDocumentList}
-          tone={{ card: 'tw-border-sky-200 tw-bg-sky-50', icon: 'tw-bg-blue-500' }}
+          tone={{
+            card: 'tw-border-sky-100 tw-bg-sky-50',
+            iconBg: 'linear-gradient(135deg, #38bdf8 0%, #2563eb 100%)',
+            blobColor: '#38bdf8',
+          }}
           trendText="↑ 12% vs last week"
         />
         <StatCard
           title="Pending"
           value={pending}
           icon={HiOutlineClock}
-          tone={{ card: 'tw-border-amber-200 tw-bg-amber-50', icon: 'tw-bg-orange-500' }}
+          tone={{
+            card: 'tw-border-amber-100 tw-bg-amber-50',
+            iconBg: 'linear-gradient(135deg, #fbbf24 0%, #f97316 100%)',
+            blobColor: '#fbbf24',
+          }}
         />
         <StatCard
           title="Ready"
           value={ready}
           icon={HiOutlineCheckCircle}
-          tone={{ card: 'tw-border-emerald-200 tw-bg-emerald-50', icon: 'tw-bg-emerald-500' }}
+          tone={{
+            card: 'tw-border-emerald-100 tw-bg-emerald-50',
+            iconBg: 'linear-gradient(135deg, #34d399 0%, #0d9488 100%)',
+            blobColor: '#34d399',
+          }}
         />
         <StatCard
           title="Avg Rating"
           value={avgRating.toFixed(1)}
           icon={HiOutlineStar}
-          tone={{ card: 'tw-border-violet-200 tw-bg-violet-50', icon: 'tw-bg-violet-500' }}
+          tone={{
+            card: 'tw-border-violet-100 tw-bg-violet-50',
+            iconBg: 'linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%)',
+            blobColor: '#a78bfa',
+          }}
         />
       </motion.section>
 
+      {/* ── Revenue chart + Quick actions ── */}
       <motion.section
-        initial={{ opacity: 0, y: 10 }}
+        initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ ...SPRING_SMOOTH, delay: 0.16 }}
         className="tw-grid tw-grid-cols-1 tw-gap-5 xl:tw-grid-cols-12"
       >
+        {/* Revenue chart */}
         <motion.article
           layout
-          initial={{ opacity: 0, scale: 0.992 }}
+          initial={{ opacity: 0, scale: 0.995 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={SPRING_SMOOTH}
-          className="tw-rounded-2xl tw-border tw-border-slate-200 tw-bg-white tw-p-6 tw-shadow-sm xl:tw-col-span-9"
+          className="tw-rounded-3xl tw-border tw-border-slate-100 tw-bg-white tw-p-6 tw-shadow-md tw-ring-1 tw-ring-slate-900/[0.04] xl:tw-col-span-9"
         >
-          <div className="tw-mb-4 tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-3">
+          <div className="tw-mb-5 tw-flex tw-flex-wrap tw-items-start tw-justify-between tw-gap-3">
             <div>
-              <h3 className="tw-m-0 tw-text-2xl tw-font-bold tw-text-slate-900">Weekly Revenue Trend</h3>
-              <p className="tw-mb-0 tw-mt-1 tw-text-sm tw-text-slate-500">Performance overview for the last 7 days</p>
+              <h3 className="tw-m-0 tw-text-xl tw-font-extrabold tw-text-slate-900 md:tw-text-2xl">Weekly Revenue Trend</h3>
+              <p className="tw-mb-0 tw-mt-1 tw-text-sm tw-text-slate-400">Performance overview for the last 7 days</p>
             </div>
             <div className="tw-flex tw-flex-wrap tw-gap-2">
-              <span className="tw-rounded-full tw-bg-sky-100 tw-px-3 tw-py-1 tw-text-sm tw-font-semibold tw-text-sky-700">
-                Revenue: Rs. {revenue.toLocaleString()}
+              <span className="tw-inline-flex tw-items-center tw-gap-1.5 tw-rounded-full tw-bg-sky-100 tw-px-3.5 tw-py-1.5 tw-text-xs tw-font-bold tw-text-sky-700 tw-shadow-sm">
+                <span className="tw-h-1.5 tw-w-1.5 tw-rounded-full tw-bg-sky-400" />
+                Rs. {revenue.toLocaleString()}
               </span>
-              <span className="tw-rounded-full tw-bg-violet-100 tw-px-3 tw-py-1 tw-text-sm tw-font-semibold tw-text-violet-700">
-                Orders: {totalOrders}
+              <span className="tw-inline-flex tw-items-center tw-gap-1.5 tw-rounded-full tw-bg-violet-100 tw-px-3.5 tw-py-1.5 tw-text-xs tw-font-bold tw-text-violet-700 tw-shadow-sm">
+                <span className="tw-h-1.5 tw-w-1.5 tw-rounded-full tw-bg-violet-400" />
+                {totalOrders} Orders
               </span>
             </div>
           </div>
@@ -330,44 +388,71 @@ const AdminDashboardOverview = ({ dashboardStats, dashboardTrends, onNavigate })
           <TrendChart values={revenueSeries} labels={chartLabels} color="#0ea5e9" areaColor="rgba(14,165,233,0.15)" maxLabelPrefix="Rs." />
         </motion.article>
 
+        {/* Quick actions */}
         <motion.aside
           layout
-          initial={{ opacity: 0, x: 8 }}
+          initial={{ opacity: 0, x: 10 }}
           animate={{ opacity: 1, x: 0 }}
           transition={SPRING_FAST}
-          className="tw-rounded-2xl tw-border tw-border-slate-200 tw-bg-white tw-p-6 tw-shadow-sm xl:tw-col-span-3"
+          className="tw-rounded-3xl tw-border tw-border-slate-100 tw-bg-white tw-p-6 tw-shadow-md tw-ring-1 tw-ring-slate-900/[0.04] xl:tw-col-span-3"
         >
-          <h3 className="tw-mb-4 tw-text-2xl tw-font-bold tw-text-slate-900">Quick Actions</h3>
-          <div className="tw-space-y-4">
-            {filteredQuickActions.map((item) => (
-              <QuickActionItem
-                key={item.key}
-                icon={item.icon}
-                title={item.title}
-                subtitle={item.subtitle}
-                tone={item.tone}
-                onClick={item.onClick}
-              />
-            ))}
+          <h3 className="tw-mb-4 tw-text-xl tw-font-extrabold tw-text-slate-900">Quick Actions</h3>
+          <motion.div
+            variants={STAGGER_CONTAINER}
+            initial="hidden"
+            animate="show"
+            className="tw-space-y-3"
+          >
+            <AnimatePresence>
+              {filteredQuickActions.map((item) => (
+                <QuickActionItem
+                  key={item.key}
+                  icon={item.icon}
+                  title={item.title}
+                  subtitle={item.subtitle}
+                  tone={item.tone}
+                  onClick={item.onClick}
+                />
+              ))}
+            </AnimatePresence>
             {filteredQuickActions.length === 0 ? (
-              <p className="tw-m-0 tw-rounded-xl tw-border tw-border-slate-200 tw-bg-slate-50 tw-p-3 tw-text-sm tw-text-slate-500">
-                No quick actions found for “{searchText}”.
-              </p>
+              <motion.p
+                initial={{ opacity: 0, scale: 0.97 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0 }}
+                className="tw-m-0 tw-rounded-2xl tw-border tw-border-dashed tw-border-slate-200 tw-bg-slate-50 tw-p-4 tw-text-center tw-text-sm tw-text-slate-400"
+              >
+                No results for <span className="tw-font-semibold tw-text-slate-600">"{searchText}"</span>
+              </motion.p>
             ) : null}
-          </div>
+          </motion.div>
         </motion.aside>
       </motion.section>
 
+      {/* ── Orders chart ── */}
       <motion.section
-        initial={{ opacity: 0, y: 10 }}
+        initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ ...SPRING_SMOOTH, delay: 0.24 }}
-        className="tw-rounded-2xl tw-border tw-border-slate-200 tw-bg-white tw-p-6 tw-shadow-sm"
+        className="tw-rounded-3xl tw-border tw-border-slate-100 tw-bg-white tw-p-6 tw-shadow-md tw-ring-1 tw-ring-slate-900/[0.04]"
       >
-        <h3 className="tw-mb-4 tw-text-2xl tw-font-bold tw-text-slate-900">Orders This Week</h3>
+        <div className="tw-mb-5 tw-flex tw-items-center tw-justify-between">
+          <div>
+            <h3 className="tw-m-0 tw-text-xl tw-font-extrabold tw-text-slate-900 md:tw-text-2xl">Orders This Week</h3>
+            <p className="tw-mb-0 tw-mt-1 tw-text-sm tw-text-slate-400">Daily order volume breakdown</p>
+          </div>
+          {/* live indicator */}
+          <span className="tw-inline-flex tw-items-center tw-gap-1.5 tw-rounded-full tw-bg-emerald-50 tw-px-3 tw-py-1 tw-text-xs tw-font-bold tw-text-emerald-600 tw-border tw-border-emerald-100">
+            <motion.span
+              animate={{ opacity: [1, 0.3, 1] }}
+              transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
+              className="tw-h-1.5 tw-w-1.5 tw-rounded-full tw-bg-emerald-500"
+            />
+            Live
+          </span>
+        </div>
         <TrendChart values={ordersSeries} labels={chartLabels} color="#8b5cf6" areaColor="rgba(139,92,246,0.17)" maxLabelPrefix="" variant="bar" />
       </motion.section>
-
     </motion.div>
   );
 };

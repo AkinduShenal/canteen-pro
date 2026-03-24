@@ -45,7 +45,7 @@ const CanteenDirectory = () => {
               <div key={canteen._id} className="canteen-card">
                 <div className="canteen-card-image">
                   <div className={`status-badge ${isOpen ? 'open' : 'closed'}`}>
-                    {isOpen ? 'Open Now' : 'Closed'}
+                    {isOpen ? 'Open' : 'Closed'}
                   </div>
                 </div>
                 <div className="canteen-card-content">

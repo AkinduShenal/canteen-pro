@@ -48,6 +48,17 @@ const StaffCanteenManagement = () => {
     fetchCanteens();
   };
 
+  const handleToggleStatus = async (canteenId) => {
+    try {
+      const { data } = await api.put(`/canteens/${canteenId}/status`);
+      // Update the local state with the returned canteen object (which includes updated status)
+      setCanteens(prev => prev.map(c => c._id === canteenId ? data : c));
+    } catch (err) {
+      console.error('Error toggling status:', err);
+      alert('Failed to toggle canteen status.');
+    }
+  };
+
   const openDeleteModal = (canteen) => {
     setCanteenToDelete(canteen);
     setIsDeleteModalOpen(true);
@@ -113,15 +124,22 @@ const StaffCanteenManagement = () => {
                         <span className="badge-time">{canteen.openTime} - {canteen.closeTime}</span>
                       </td>
                       <td>
-                        {canteen.isOpen === false ? (
-                          <span className="badge-status-closed">Manual: Closed</span>
-                        ) : (
-                          <span className="badge-status-open">Auto (Open)</span>
+                        <span className={`badge-status-${canteen.status?.toLowerCase()}`}>
+                          {canteen.status}
+                        </span>
+                        {canteen.isOpen !== null && (
+                          <div className="manual-indicator">Manual</div>
                         )}
                       </td>
                       <td>{canteen.contactNumber}</td>
                       <td>
                         <div className="action-buttons">
+                          <button 
+                            className={`btn-toggle ${canteen.status === 'Open' ? 'close' : 'open'}`}
+                            onClick={() => handleToggleStatus(canteen._id)}
+                          >
+                            {canteen.status === 'Open' ? 'Close Canteen' : 'Open Canteen'}
+                          </button>
                           <button className="btn-icon edit" onClick={() => openEditModal(canteen)} title="Edit">
                             ✎
                           </button>

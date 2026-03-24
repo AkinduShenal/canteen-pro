@@ -51,7 +51,7 @@ const NEXT_STATUS_MAP = {
 
 // ─── Progress Steps ───────────────────────────────────────────────────────────
 
-const ProgressSteps = ({ status }) => {
+const ProgressSteps = ({ status, smooth = false }) => {
   if (status === 'cancelled') return null;
   const currentIdx = STATUS_STEPS.indexOf(status);
   const stepLabels = ['Pending', 'Accepted', 'Preparing', 'Ready', 'Done'];
@@ -68,9 +68,9 @@ const ProgressSteps = ({ status }) => {
               {/* Node */}
               <div className="tw-flex tw-flex-col tw-items-center tw-gap-1">
                 <motion.div
-                  initial={{ scale: 0 }}
+                  initial={smooth ? false : { scale: 0 }}
                   animate={{ scale: 1 }}
-                  transition={{ delay: idx * 0.07, type: 'spring', stiffness: 300 }}
+                  transition={smooth ? { duration: 0.18 } : { delay: idx * 0.07, type: 'spring', stiffness: 300 }}
                   className={`tw-w-5 tw-h-5 tw-rounded-full tw-flex tw-items-center tw-justify-center tw-flex-shrink-0 ${
                     isDone   ? 'tw-bg-emerald-400' :
                     isActive ? 'tw-bg-orange-400 tw-ring-4 tw-ring-orange-100' :
@@ -83,8 +83,8 @@ const ProgressSteps = ({ status }) => {
                     </svg>
                   ) : isActive ? (
                     <motion.div
-                      animate={{ scale: [1, 1.2, 1] }}
-                      transition={{ duration: 1.5, repeat: Infinity }}
+                      animate={smooth ? { scale: 1 } : { scale: [1, 1.2, 1] }}
+                      transition={smooth ? { duration: 0.15 } : { duration: 1.5, repeat: Infinity }}
                       className="tw-w-2 tw-h-2 tw-rounded-full tw-bg-white"
                     />
                   ) : null}
@@ -98,9 +98,9 @@ const ProgressSteps = ({ status }) => {
               {/* Connector */}
               {!isLast && (
                 <motion.div
-                  initial={{ scaleX: 0 }}
+                  initial={smooth ? false : { scaleX: 0 }}
                   animate={{ scaleX: 1 }}
-                  transition={{ duration: 0.4, delay: idx * 0.07 }}
+                  transition={smooth ? { duration: 0.2 } : { duration: 0.4, delay: idx * 0.07 }}
                   className={`tw-flex-1 tw-h-0.5 tw-origin-left tw-mb-3.5 ${isDone ? 'tw-bg-emerald-300' : 'tw-bg-slate-200'}`}
                 />
               )}
@@ -114,7 +114,7 @@ const ProgressSteps = ({ status }) => {
 
 // ─── Main Card ────────────────────────────────────────────────────────────────
 
-const AdminOrderCard = ({ order, onStatusChange, isUpdating, readOnly = false }) => {
+const AdminOrderCard = ({ order, onStatusChange, isUpdating, readOnly = false, motionMode = 'default' }) => {
   const [showItems, setShowItems]           = useState(true);
   const [showCancelInput, setShowCancelInput] = useState(false);
   const [cancelReason, setCancelReason]     = useState('');
@@ -126,6 +126,7 @@ const AdminOrderCard = ({ order, onStatusChange, isUpdating, readOnly = false })
   const tokenDisplay = order.token || String(order._id).slice(-6).toUpperCase();
   const totalItems   = (order.items || []).reduce((s, i) => s + (i.quantity || 1), 0);
   const totalPrice   = (order.items || []).reduce((s, i) => s + (i.price || 0) * (i.quantity || 1), 0);
+  const smooth       = motionMode === 'smooth';
 
   const handleActionClick = (action) => {
     if (readOnly) return;
@@ -142,11 +143,11 @@ const AdminOrderCard = ({ order, onStatusChange, isUpdating, readOnly = false })
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 16 }}
+      initial={smooth ? false : { opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.97 }}
-      transition={{ duration: 0.3 }}
-      whileHover={{ y: -3, boxShadow: '0 16px 30px rgba(15,23,42,0.12)' }}
+      exit={smooth ? { opacity: 0 } : { opacity: 0, scale: 0.97 }}
+      transition={smooth ? { duration: 0.18, ease: 'easeOut' } : { duration: 0.3 }}
+      whileHover={smooth ? { y: -1, boxShadow: '0 10px 20px rgba(15,23,42,0.09)' } : { y: -3, boxShadow: '0 16px 30px rgba(15,23,42,0.12)' }}
       className="tw-relative tw-h-full tw-rounded-2xl tw-bg-white tw-overflow-hidden tw-transition-all"
       style={{ border: '1px solid #e2e8f0', boxShadow: '0 6px 16px rgba(15,23,42,0.06)' }}
     >
@@ -198,8 +199,8 @@ const AdminOrderCard = ({ order, onStatusChange, isUpdating, readOnly = false })
             {/* Status + Urgency */}
             <div className="tw-relative tw-z-10 tw-flex tw-flex-col tw-items-end tw-gap-1.5 tw-flex-shrink-0">
               <motion.span
-                animate={urgencyLevel === 'late' || urgencyLevel === 'urgent' ? { scale: [1, 1.04, 1] } : {}}
-                transition={{ duration: 1.4, repeat: Infinity }}
+                animate={smooth ? { scale: 1 } : (urgencyLevel === 'late' || urgencyLevel === 'urgent' ? { scale: [1, 1.04, 1] } : {})}
+                transition={smooth ? { duration: 0.15 } : { duration: 1.4, repeat: Infinity }}
                 className={`tw-inline-flex tw-items-center tw-gap-1 tw-rounded-full tw-border tw-px-3 tw-py-1 tw-text-xs tw-font-bold tw-shadow-sm ${
                   urgencyLevel === 'late'
                     ? 'tw-bg-rose-50 tw-text-rose-700 tw-border-rose-200'
@@ -219,8 +220,8 @@ const AdminOrderCard = ({ order, onStatusChange, isUpdating, readOnly = false })
 
               <span className={`tw-inline-flex tw-items-center tw-gap-1.5 tw-rounded-full tw-border tw-px-3 tw-py-1 tw-text-xs tw-font-bold tw-shadow-sm ${statusMeta.pill}`}>
                 <motion.span
-                  animate={['pending', 'accepted', 'preparing'].includes(order.status) ? { opacity: [1, 0.2, 1] } : {}}
-                  transition={{ duration: 1.5, repeat: Infinity }}
+                  animate={smooth ? { opacity: 1 } : (['pending', 'accepted', 'preparing'].includes(order.status) ? { opacity: [1, 0.2, 1] } : {})}
+                  transition={smooth ? { duration: 0.15 } : { duration: 1.5, repeat: Infinity }}
                   className={`tw-w-1.5 tw-h-1.5 tw-rounded-full ${statusMeta.dot}`}
                 />
                 {statusMeta.label}
@@ -229,7 +230,7 @@ const AdminOrderCard = ({ order, onStatusChange, isUpdating, readOnly = false })
           </div>
 
           {/* ── Progress stepper ── */}
-          <ProgressSteps status={order.status} />
+          <ProgressSteps status={order.status} smooth={smooth} />
 
           {/* ── Student / Canteen row ── */}
           <div className="tw-rounded-xl tw-border tw-p-3 tw-mb-3" style={{ background: '#fffaf5', borderColor: '#fde7d3' }}>
@@ -371,7 +372,7 @@ const AdminOrderCard = ({ order, onStatusChange, isUpdating, readOnly = false })
               {nextActions.map((action) => (
                 <motion.button
                   key={action.value}
-                  whileHover={{ scale: 1.02 }}
+                  whileHover={smooth ? { scale: 1.01 } : { scale: 1.02 }}
                   whileTap={{ scale: 0.97 }}
                   disabled={isUpdating}
                   onClick={() => handleActionClick(action)}

@@ -43,10 +43,10 @@ const getUrgencyLevel = (pickupTime) => {
 
 const StatCard = ({ icon, label, value, tone, delay }) => (
   <motion.article
-    initial={{ opacity: 0, y: 14 }}
+    initial={{ opacity: 0, y: 8 }}
     animate={{ opacity: 1, y: 0 }}
-    transition={{ delay, duration: 0.35, ease: 'easeOut' }}
-    whileHover={{ y: -5, scale: 1.015, boxShadow: '0 20px 34px rgba(15,23,42,0.16)', transition: { duration: 0.22 } }}
+    transition={{ delay, duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+    whileHover={{ y: -2, scale: 1.004, transition: { duration: 0.18, ease: 'easeOut' } }}
     className="tw-relative tw-overflow-hidden tw-rounded-2xl tw-border tw-p-3 tw-shadow-md tw-cursor-default"
     style={{ background: tone.cardBg, borderColor: tone.border }}
   >
@@ -72,10 +72,9 @@ const StatCard = ({ icon, label, value, tone, delay }) => (
     </div>
 
     <motion.p
-      key={value}
-      initial={{ opacity: 0, scale: 0.75 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+      initial={false}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.2 }}
       className="tw-text-4xl tw-font-black tw-leading-none tw-tracking-tight"
       style={{ color: tone.valueColor }}
     >
@@ -311,7 +310,7 @@ const CanteenOrdersContent = ({
       <motion.section
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.22 }}
+        transition={{ delay: 0.12, duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
         className="tw-rounded-2xl tw-border tw-border-slate-200/80 tw-bg-white tw-shadow-sm tw-overflow-hidden"
       >
         <div className="tw-p-4 tw-border-b tw-border-slate-100">
@@ -401,22 +400,15 @@ const CanteenOrdersContent = ({
           </motion.div>
         ) : (
           <div className="tw-grid tw-gap-4 xl:tw-grid-cols-2">
-            {filteredOrders.map((order, idx) => (
-              <motion.div
-                key={order._id}
-                layout
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.97 }}
-                transition={{ delay: Math.min(idx * 0.04, 0.28), duration: 0.3 }}
-                className="tw-h-full"
-              >
+            {filteredOrders.map((order) => (
+              <div key={order._id} className="tw-h-full">
                 <AdminOrderCard
                   order={order}
                   onStatusChange={handleStatusUpdate}
                   isUpdating={updatingOrderId === order._id}
+                  motionMode="smooth"
                 />
-              </motion.div>
+              </div>
             ))}
           </div>
         )}

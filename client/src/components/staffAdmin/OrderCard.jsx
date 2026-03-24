@@ -66,8 +66,9 @@ const InfoPill = ({ icon, label, value }) => (
 );
 
 // ── Main OrderCard ─────────────────────────────────────────────────────────────
-const OrderCard = ({ order, selected, onSelect, onStatusChange, isUpdating }) => {
+const OrderCard = ({ order, selected, onSelect, onStatusChange, isUpdating, motionMode = 'default' }) => {
   const [confirmCancel, setConfirmCancel] = useState(false);
+  const smooth = motionMode === 'smooth';
   const urgency = getUrgencyLevel(order.pickupTime);
   const urgencyCfg = urgencyConfig[urgency];
   const statusCfg = statusConfig[order.status] || statusConfig.pending;
@@ -98,7 +99,7 @@ const OrderCard = ({ order, selected, onSelect, onStatusChange, isUpdating }) =>
 
   return (
     <motion.div
-      layout
+      layout={!smooth}
       className="tw-relative tw-flex tw-overflow-hidden tw-rounded-2xl tw-bg-white"
       style={{
         boxShadow: selected
@@ -106,8 +107,8 @@ const OrderCard = ({ order, selected, onSelect, onStatusChange, isUpdating }) =>
           : '0 4px 20px rgba(70,34,16,0.10)',
         border: selected ? 'none' : '1px solid #f0e4d8',
       }}
-      whileHover={{ boxShadow: '0 8px 32px rgba(70,34,16,0.16)', y: -1, transition: { duration: 0.25 } }}
-      transition={{ layout: { duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] } }}
+      whileHover={smooth ? undefined : { boxShadow: '0 8px 32px rgba(70,34,16,0.16)', y: -1, transition: { duration: 0.25 } }}
+      transition={smooth ? { duration: 0 } : { layout: { duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] } }}
     >
       {/* Left accent bar */}
       <div
@@ -214,40 +215,83 @@ const OrderCard = ({ order, selected, onSelect, onStatusChange, isUpdating }) =>
           </p>
           <ul className="tw-m-0 tw-p-0 tw-list-none tw-flex tw-flex-col tw-gap-1">
             {(order.items || []).map((item, i) => (
-              <motion.li
-                key={i}
-                initial={{ opacity: 0, x: -8 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.05, duration: 0.3 }}
-                className="tw-flex tw-items-center tw-gap-2"
-              >
-                <span
-                  className="tw-inline-flex tw-items-center tw-justify-center tw-w-5 tw-h-5 tw-rounded-md tw-text-[10px] tw-font-black tw-flex-shrink-0"
-                  style={{ background: 'rgba(200,82,18,0.1)', color: '#c85212' }}
-                >
-                  {item.quantity || 1}
-                </span>
-                <span className="tw-text-sm tw-font-semibold" style={{ color: '#2b1205' }}>
-                  {item.name}
-                  {item.quantity > 1 && (
-                    <span className="tw-ml-1 tw-text-xs tw-font-medium" style={{ color: '#9a6a52' }}>
-                      × {item.quantity}
+              smooth ? (
+                <li key={i} className="tw-flex tw-items-center tw-gap-2">
+                  <span
+                    className="tw-inline-flex tw-items-center tw-justify-center tw-w-5 tw-h-5 tw-rounded-md tw-text-[10px] tw-font-black tw-flex-shrink-0"
+                    style={{ background: 'rgba(200,82,18,0.1)', color: '#c85212' }}
+                  >
+                    {item.quantity || 1}
+                  </span>
+                  <span className="tw-text-sm tw-font-semibold" style={{ color: '#2b1205' }}>
+                    {item.name}
+                    {item.quantity > 1 && (
+                      <span className="tw-ml-1 tw-text-xs tw-font-medium" style={{ color: '#9a6a52' }}>
+                        × {item.quantity}
+                      </span>
+                    )}
+                  </span>
+                  {item.price && (
+                    <span className="tw-ml-auto tw-text-xs tw-font-bold tw-flex-shrink-0" style={{ color: '#7c4a2c' }}>
+                      Rs. {Number(item.price).toFixed(2)}
                     </span>
                   )}
-                </span>
-                {item.price && (
-                  <span className="tw-ml-auto tw-text-xs tw-font-bold tw-flex-shrink-0" style={{ color: '#7c4a2c' }}>
-                    Rs. {Number(item.price).toFixed(2)}
+                </li>
+              ) : (
+                <motion.li
+                  key={i}
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.05, duration: 0.3 }}
+                  className="tw-flex tw-items-center tw-gap-2"
+                >
+                  <span
+                    className="tw-inline-flex tw-items-center tw-justify-center tw-w-5 tw-h-5 tw-rounded-md tw-text-[10px] tw-font-black tw-flex-shrink-0"
+                    style={{ background: 'rgba(200,82,18,0.1)', color: '#c85212' }}
+                  >
+                    {item.quantity || 1}
                   </span>
-                )}
-              </motion.li>
+                  <span className="tw-text-sm tw-font-semibold" style={{ color: '#2b1205' }}>
+                    {item.name}
+                    {item.quantity > 1 && (
+                      <span className="tw-ml-1 tw-text-xs tw-font-medium" style={{ color: '#9a6a52' }}>
+                        × {item.quantity}
+                      </span>
+                    )}
+                  </span>
+                  {item.price && (
+                    <span className="tw-ml-auto tw-text-xs tw-font-bold tw-flex-shrink-0" style={{ color: '#7c4a2c' }}>
+                      Rs. {Number(item.price).toFixed(2)}
+                    </span>
+                  )}
+                </motion.li>
+              )
             ))}
           </ul>
         </div>
 
         {/* ── Notes ────────────────────────────────────────────────────────── */}
-        <AnimatePresence>
-          {order.notes && (
+        {smooth ? (
+          order.notes && (
+            <div
+              className="tw-rounded-xl tw-px-4 tw-py-2.5 tw-mb-3 tw-flex tw-items-start tw-gap-2"
+              style={{
+                background: 'linear-gradient(135deg,#fffbf5 0%,#fff6ec 100%)',
+                border: '1.5px dashed #f4c79a',
+              }}
+            >
+              <svg className="tw-w-4 tw-h-4 tw-flex-shrink-0 tw-mt-0.5" fill="none" viewBox="0 0 24 24" stroke="#c85212" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              <p className="tw-m-0 tw-text-sm" style={{ color: '#7c4a2c' }}>
+                <span className="tw-font-extrabold" style={{ color: '#5c2e0e' }}>Notes: </span>
+                {order.notes}
+              </p>
+            </div>
+          )
+        ) : (
+          <AnimatePresence>
+            {order.notes && (
             <motion.div
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
@@ -267,16 +311,80 @@ const OrderCard = ({ order, selected, onSelect, onStatusChange, isUpdating }) =>
                 {order.notes}
               </p>
             </motion.div>
-          )}
-        </AnimatePresence>
+            )}
+          </AnimatePresence>
+        )}
 
         {/* ── Footer: checkbox + actions ───────────────────────────────────── */}
         <div className="tw-flex tw-flex-wrap tw-items-center tw-justify-end tw-gap-3 tw-pt-3" style={{ borderTop: '1px solid #f0e4d8' }}>
 
           {/* Action buttons */}
           <div className="tw-flex tw-items-center tw-gap-2">
-            <AnimatePresence mode="wait">
-              {confirmCancel ? (
+            {smooth ? (
+              confirmCancel ? (
+                <div className="tw-flex tw-items-center tw-gap-2">
+                  <span className="tw-text-xs tw-font-semibold" style={{ color: '#9a6a52' }}>Sure?</span>
+                  <button
+                    onClick={() => setConfirmCancel(false)}
+                    className="tw-rounded-xl tw-px-3 tw-py-2 tw-text-xs tw-font-bold tw-transition-all tw-duration-200"
+                    style={{ background: '#f4ede8', color: '#7c4a2c', border: '1px solid #e8d4c6' }}
+                  >
+                    No
+                  </button>
+                  <button
+                    onClick={handleCancel}
+                    disabled={isUpdating}
+                    className="tw-rounded-xl tw-px-3 tw-py-2 tw-text-xs tw-font-bold tw-text-white tw-transition-all tw-duration-200"
+                    style={{ background: 'linear-gradient(135deg,#dc2626,#991b1b)', border: 'none' }}
+                  >
+                    Yes, Cancel
+                  </button>
+                </div>
+              ) : (
+                <div className="tw-flex tw-items-center tw-gap-2">
+                  {order.status !== 'ready' && order.status !== 'completed' && order.status !== 'cancelled' && (
+                    <button
+                      onClick={handleMarkReady}
+                      disabled={isUpdating}
+                      className="tw-flex tw-items-center tw-gap-1.5 tw-rounded-xl tw-px-4 tw-py-2.5 tw-text-sm tw-font-black tw-text-white"
+                      style={{
+                        background: 'linear-gradient(135deg,#15803d 0%,#166534 100%)',
+                        boxShadow: '0 4px 14px rgba(22,101,52,0.30)',
+                        border: 'none',
+                        cursor: isUpdating ? 'not-allowed' : 'pointer',
+                        opacity: isUpdating ? 0.6 : 1,
+                      }}
+                    >
+                      <svg className="tw-w-4 tw-h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Mark Ready
+                    </button>
+                  )}
+                  {order.status !== 'cancelled' && order.status !== 'completed' && (
+                    <button
+                      onClick={handleCancel}
+                      disabled={isUpdating}
+                      className="tw-flex tw-items-center tw-gap-1.5 tw-rounded-xl tw-px-4 tw-py-2.5 tw-text-sm tw-font-black tw-text-white"
+                      style={{
+                        background: 'linear-gradient(135deg,#dc2626 0%,#991b1b 100%)',
+                        boxShadow: '0 4px 14px rgba(220,38,38,0.25)',
+                        border: 'none',
+                        cursor: isUpdating ? 'not-allowed' : 'pointer',
+                        opacity: isUpdating ? 0.6 : 1,
+                      }}
+                    >
+                      <svg className="tw-w-4 tw-h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                      Cancel
+                    </button>
+                  )}
+                </div>
+              )
+            ) : (
+              <AnimatePresence mode="wait">
+                {confirmCancel ? (
                 <motion.div
                   key="confirm"
                   initial={{ opacity: 0, x: 10 }}
@@ -356,8 +464,9 @@ const OrderCard = ({ order, selected, onSelect, onStatusChange, isUpdating }) =>
                     </motion.button>
                   )}
                 </motion.div>
-              )}
-            </AnimatePresence>
+                )}
+              </AnimatePresence>
+            )}
           </div>
         </div>
       </div>

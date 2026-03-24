@@ -1,34 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import OrderCard from '../../components/staffAdmin/OrderCard.jsx';
 import DashboardUtilityBar from '../../components/common/DashboardUtilityBar.jsx';
-
-// ── Animation variants ────────────────────────────────────────────────────────
-const containerVariants = {
-  hidden: {},
-  show: {
-    transition: { staggerChildren: 0.07, delayChildren: 0.05 },
-  },
-  exit: {
-    transition: { staggerChildren: 0.04, staggerDirection: -1 },
-  },
-};
-
-const cardVariants = {
-  hidden: { opacity: 0, y: 22, scale: 0.98 },
-  show: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: { type: 'spring', stiffness: 200, damping: 26, mass: 0.9 },
-  },
-  exit: {
-    opacity: 0,
-    y: -12,
-    scale: 0.97,
-    transition: { duration: 0.25, ease: [0.4, 0, 0.2, 1] },
-  },
-};
 
 // ── Urgency counter helper ────────────────────────────────────────────────────
 const getUrgencyLevel = (pickupTime) => {
@@ -41,27 +13,17 @@ const getUrgencyLevel = (pickupTime) => {
 
 // ── Quick stat chip ───────────────────────────────────────────────────────────
 const StatChip = ({ label, value, bg, text, border, delay }) => (
-  <motion.div
-    initial={{ opacity: 0, scale: 0.88 }}
-    animate={{ opacity: 1, scale: 1 }}
-    transition={{ delay, duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+  <div
     className="tw-flex tw-flex-col tw-items-center tw-rounded-2xl tw-px-4 tw-py-2.5"
     style={{ background: bg, border: `1px solid ${border}` }}
   >
-    <motion.span
-      key={value}
-      initial={{ opacity: 0, y: -6 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ type: 'spring', stiffness: 260, damping: 24 }}
-      className="tw-text-2xl tw-font-black tw-leading-none"
-      style={{ color: text }}
-    >
+    <span className="tw-text-2xl tw-font-black tw-leading-none" style={{ color: text }}>
       {value}
-    </motion.span>
+    </span>
     <span className="tw-mt-0.5 tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-widest" style={{ color: text, opacity: 0.75 }}>
       {label}
     </span>
-  </motion.div>
+  </div>
 );
 
 // ── Main component ────────────────────────────────────────────────────────────
@@ -92,12 +54,7 @@ const CanteenPriorityQueueContent = ({
   }), [filteredOrders, selectedOrderIds]);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className="tw-space-y-5"
-    >
+    <div className="tw-space-y-5">
       {/* ── Search bar ─────────────────────────────────────────────────────── */}
       <DashboardUtilityBar
         value={searchText}
@@ -107,10 +64,7 @@ const CanteenPriorityQueueContent = ({
       />
 
       {/* ── Header card ────────────────────────────────────────────────────── */}
-      <motion.section
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+      <section
         className="tw-relative tw-overflow-hidden tw-rounded-3xl"
         style={{
           background: 'linear-gradient(135deg,#3d1408 0%,#7c2d0e 50%,#c85212 100%)',
@@ -155,7 +109,6 @@ const CanteenPriorityQueueContent = ({
           {/* Stat chips */}
           <div className="tw-flex tw-items-center tw-gap-2 tw-flex-wrap">
             <StatChip
-              delay={0.18}
               label="Total"
               value={stats.total}
               bg="rgba(255,255,255,0.12)"
@@ -164,7 +117,6 @@ const CanteenPriorityQueueContent = ({
             />
             {stats.late > 0 && (
               <StatChip
-                delay={0.24}
                 label="Late"
                 value={stats.late}
                 bg="rgba(239,68,68,0.2)"
@@ -174,7 +126,6 @@ const CanteenPriorityQueueContent = ({
             )}
             {stats.urgent > 0 && (
               <StatChip
-                delay={0.3}
                 label="Urgent"
                 value={stats.urgent}
                 bg="rgba(249,115,22,0.2)"
@@ -182,111 +133,76 @@ const CanteenPriorityQueueContent = ({
                 border="rgba(249,115,22,0.3)"
               />
             )}
-            <AnimatePresence>
-              {stats.selected > 0 && (
-                <motion.div
-                  key="selected-chip"
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  transition={{ duration: 0.25 }}
-                >
-                  <StatChip
-                    delay={0}
-                    label="Selected"
-                    value={stats.selected}
-                    bg="rgba(34,197,94,0.2)"
-                    text="#86efac"
-                    border="rgba(34,197,94,0.3)"
-                  />
-                </motion.div>
-              )}
-            </AnimatePresence>
+            {stats.selected > 0 && (
+              <StatChip
+                label="Selected"
+                value={stats.selected}
+                bg="rgba(34,197,94,0.2)"
+                text="#86efac"
+                border="rgba(34,197,94,0.3)"
+              />
+            )}
           </div>
         </div>
-      </motion.section>
+      </section>
 
       {/* ── Order list ─────────────────────────────────────────────────────── */}
       <section>
-        <AnimatePresence mode="wait">
-          {filteredOrders.length === 0 ? (
-            // Empty state
-            <motion.div
-              key="pq-empty"
-              initial={{ opacity: 0, y: 20, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -12, scale: 0.98 }}
-              transition={{ duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] }}
-              className="tw-flex tw-flex-col tw-items-center tw-justify-center tw-gap-4 tw-rounded-3xl tw-border tw-border-dashed tw-py-16 tw-text-center"
-              style={{
-                background: 'linear-gradient(135deg,#fdfaf7 0%,#faf4ee 100%)',
-                borderColor: '#e8d3c3',
-              }}
+        {filteredOrders.length === 0 ? (
+          <div
+            className="tw-flex tw-flex-col tw-items-center tw-justify-center tw-gap-4 tw-rounded-3xl tw-border tw-border-dashed tw-py-16 tw-text-center"
+            style={{
+              background: 'linear-gradient(135deg,#fdfaf7 0%,#faf4ee 100%)',
+              borderColor: '#e8d3c3',
+            }}
+          >
+            <div
+              className="tw-flex tw-h-16 tw-w-16 tw-items-center tw-justify-center tw-rounded-3xl"
+              style={{ background: 'linear-gradient(135deg,#fff4ec,#ffe8d6)', boxShadow: '0 8px 24px rgba(200,82,18,0.15)' }}
             >
-              {/* Animated icon */}
-              <motion.div
-                animate={{ y: [0, -6, 0] }}
-                transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-                className="tw-flex tw-h-16 tw-w-16 tw-items-center tw-justify-center tw-rounded-3xl"
-                style={{ background: 'linear-gradient(135deg,#fff4ec,#ffe8d6)', boxShadow: '0 8px 24px rgba(200,82,18,0.15)' }}
+              <svg className="tw-w-8 tw-h-8" fill="none" viewBox="0 0 24 24" stroke="#c85212" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+              </svg>
+            </div>
+
+            <div>
+              <p className="tw-m-0 tw-text-lg tw-font-black" style={{ color: '#2b1205' }}>
+                All clear!
+              </p>
+              <p className="tw-m-0 tw-mt-1 tw-text-sm tw-font-medium" style={{ color: '#9a6a52' }}>
+                {searchText.trim()
+                  ? 'No orders match your search.'
+                  : 'Your priority queue is empty right now.'}
+              </p>
+            </div>
+
+            {searchText.trim() && (
+              <button
+                onClick={() => setSearchText('')} // eslint-disable-line react/jsx-no-bind
+                className="tw-rounded-xl tw-px-4 tw-py-2 tw-text-xs tw-font-bold tw-transition-all tw-duration-200"
+                style={{ background: '#c85212', color: '#fff', border: 'none' }}
               >
-                <svg className="tw-w-8 tw-h-8" fill="none" viewBox="0 0 24 24" stroke="#c85212" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                </svg>
-              </motion.div>
-
-              <div>
-                <p className="tw-m-0 tw-text-lg tw-font-black" style={{ color: '#2b1205' }}>
-                  All clear!
-                </p>
-                <p className="tw-m-0 tw-mt-1 tw-text-sm tw-font-medium" style={{ color: '#9a6a52' }}>
-                  {searchText.trim()
-                    ? 'No orders match your search.'
-                    : 'Your priority queue is empty right now.'}
-                </p>
-              </div>
-
-              {searchText.trim() && (
-                <button
-                  onClick={() => setSearchText('')} // eslint-disable-line react/jsx-no-bind
-                  className="tw-rounded-xl tw-px-4 tw-py-2 tw-text-xs tw-font-bold tw-transition-all tw-duration-200"
-                  style={{ background: '#c85212', color: '#fff', border: 'none' }}
-                >
-                  Clear search
-                </button>
-              )}
-            </motion.div>
-          ) : (
-            // Orders grid
-            <motion.div
-              key="pq-grid"
-              variants={containerVariants}
-              initial="hidden"
-              animate="show"
-              exit="exit"
-              className="tw-flex tw-flex-col tw-gap-4"
-            >
-              {filteredOrders.map((order) => (
-                <motion.div
-                  key={order._id}
-                  variants={cardVariants}
-                  layout
-                  layoutId={`pq-order-${order._id}`}
-                >
-                  <OrderCard
-                    order={order}
-                    selected={selectedOrderIds.includes(order._id)}
-                    onSelect={handleSelectOrder}
-                    onStatusChange={handleStatusUpdate}
-                    isUpdating={updatingOrderId === order._id}
-                  />
-                </motion.div>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
+                Clear search
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="tw-flex tw-flex-col tw-gap-4">
+            {filteredOrders.map((order) => (
+              <OrderCard
+                key={order._id}
+                order={order}
+                selected={selectedOrderIds.includes(order._id)}
+                onSelect={handleSelectOrder}
+                onStatusChange={handleStatusUpdate}
+                isUpdating={updatingOrderId === order._id}
+                motionMode="smooth"
+              />
+            ))}
+          </div>
+        )}
       </section>
-    </motion.div>
+    </div>
   );
 };
 

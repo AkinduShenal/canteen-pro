@@ -787,27 +787,40 @@ a:hover {
 }
 
 .sidebar-canteen-card {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(160deg, #f8fbff 0%, #eef4ff 100%);
+  border: 1px solid #dbe7f8;
   border-radius: 12px;
-  padding: 0.7rem 0.8rem;
+  padding: 0.62rem 0.72rem;
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.08);
+}
+
+.sidebar-canteen-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.5), transparent 50%);
+  pointer-events: none;
 }
 
 .sidebar-canteen-label {
   margin: 0;
-  font-size: 0.76rem;
+  font-size: 0.74rem;
+  font-weight: 500;
   color: #64748b;
 }
 
 .sidebar-canteen-name {
-  margin: 0.15rem 0 0;
-  font-size: 0.92rem;
+  margin: 0.14rem 0 0;
+  font-size: 0.95rem;
   color: #1e293b;
   font-weight: 700;
+  line-height: 1.2;
 }
 
 .sidebar-canteen-location {
-  margin: 0.1rem 0 0;
+  margin: 0.12rem 0 0;
   font-size: 0.78rem;
   color: #64748b;
 }

@@ -93,6 +93,22 @@ const StaffAdminDashboard = () => {
         .replace(/\s{2,}/g, ' ')
         .trim()
     : displayName;
+  const assignedCanteenId = String(user?.assignedCanteen?._id || user?.assignedCanteen || '');
+  const resolvedAssignedCanteen = useMemo(
+    () =>
+      canteens.find(
+        (item) => String(item?._id || '') === assignedCanteenId,
+      ) || null,
+    [assignedCanteenId, canteens],
+  );
+  const assignedCanteenName =
+    user?.assignedCanteen?.name ||
+    resolvedAssignedCanteen?.name ||
+    (isCanteenUser ? sidebarDisplayName : '');
+  const assignedCanteenLocation =
+    user?.assignedCanteen?.location ||
+    resolvedAssignedCanteen?.location ||
+    '';
   const displayRole = user?.role === 'staff' ? 'canteen' : user?.role;
   const avatarInitial = (displayName || 'C').charAt(0).toUpperCase();
 
@@ -204,6 +220,29 @@ const StaffAdminDashboard = () => {
     hasAccess,
     isStaff,
   ]);
+
+  useEffect(() => {
+    if (!isStaff) return undefined;
+
+    let isMounted = true;
+
+    const loadCanteenDirectory = async () => {
+      try {
+        const { data } = await staffAdminApi.getAllCanteens();
+        if (isMounted && Array.isArray(data)) {
+          setCanteens(data);
+        }
+      } catch {
+        // keep dashboard usable without this optional enrichment
+      }
+    };
+
+    loadCanteenDirectory();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isStaff]);
 
   useEffect(() => {
     if (!hasAccess) return undefined;
@@ -368,16 +407,15 @@ const StaffAdminDashboard = () => {
   };
 
   const sortedOrders = useMemo(() => {
-    const assignedCanteenId = user?.assignedCanteen?._id || user?.assignedCanteen || '';
     const sourceOrders = isStaff
       ? orders.filter(
           (order) =>
-            String(order?.canteenId?._id || order?.canteenId || '') === String(assignedCanteenId),
+            String(order?.canteenId?._id || order?.canteenId || '') === assignedCanteenId,
         )
       : orders;
 
     return [...sourceOrders].sort((a, b) => new Date(a.pickupTime) - new Date(b.pickupTime));
-  }, [orders, isStaff, user?.assignedCanteen]);
+  }, [assignedCanteenId, isStaff, orders]);
 
   useEffect(() => {
     if (!isStaff) return undefined;
@@ -605,12 +643,12 @@ const StaffAdminDashboard = () => {
         </div>
 
         <div className="sidebar-footer">
-          {user?.assignedCanteen && user?.assignedCanteen?.name && (
+          {isCanteenUser && assignedCanteenName && (
             <div className="sidebar-canteen-card">
               <p className="sidebar-canteen-label">Canteen</p>
-              <p className="sidebar-canteen-name">{user.assignedCanteen.name}</p>
-              {user?.assignedCanteen?.location && (
-                <p className="sidebar-canteen-location">{user.assignedCanteen.location}</p>
+              <p className="sidebar-canteen-name">{assignedCanteenName}</p>
+              {assignedCanteenLocation && (
+                <p className="sidebar-canteen-location">{assignedCanteenLocation}</p>
               )}
             </div>
           )}

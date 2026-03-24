@@ -194,6 +194,56 @@
   color: var(--primary-color);
 }
 
+.delete-modal {
+  max-width: 500px;
+  text-align: center;
+}
+
+.delete-body {
+  padding: 1rem 0 2rem;
+}
+
+.warning-icon {
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+  animation: pulse 2s infinite;
+}
+
+.delete-body p {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.delete-body .description {
+  font-size: 1rem;
+  color: var(--text-light);
+  line-height: 1.5;
+}
+
+.btn-danger {
+  background-color: #ef233c;
+  color: white;
+  border: none;
+  padding: 1rem 2.2rem;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 15px rgba(239, 35, 60, 0.2);
+}
+
+.btn-danger:hover {
+  background-color: #d90429;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(239, 35, 60, 0.3);
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

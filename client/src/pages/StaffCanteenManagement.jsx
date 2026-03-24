@@ -11,7 +11,9 @@ const StaffCanteenManagement = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [editingCanteen, setEditingCanteen] = useState(null);
+  const [canteenToDelete, setCanteenToDelete] = useState(null);
 
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -52,15 +54,20 @@ const StaffCanteenManagement = () => {
     fetchCanteens();
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this canteen?')) {
-      try {
-        await api.delete(`/canteens/${id}`);
-        fetchCanteens();
-      } catch (err) {
-        console.error('Error deleting canteen:', err);
-        alert('Error deleting canteen.');
-      }
+  const openDeleteModal = (canteen) => {
+    setCanteenToDelete(canteen);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!canteenToDelete) return;
+    try {
+      await api.delete(`/canteens/${canteenToDelete._id}`);
+      setIsDeleteModalOpen(false);
+      fetchCanteens();
+    } catch (err) {
+      console.error('Error deleting canteen:', err);
+      alert('Error deleting canteen.');
     }
   };
 
@@ -116,7 +123,7 @@ const StaffCanteenManagement = () => {
                           <button className="btn-icon edit" onClick={() => openEditModal(canteen)} title="Edit">
                             ✎
                           </button>
-                          <button className="btn-icon delete" onClick={() => handleDelete(canteen._id)} title="Delete">
+                          <button className="btn-icon delete" onClick={() => openDeleteModal(canteen)} title="Delete">
                             🗑
                           </button>
                         </div>
@@ -141,6 +148,26 @@ const StaffCanteenManagement = () => {
                 onSuccess={handleFormSuccess} 
                 onCancel={() => setIsModalOpen(false)} 
               />
+            </div>
+          </div>
+        )}
+
+        {isDeleteModalOpen && (
+          <div className="modal-overlay">
+            <div className="modal-content delete-modal">
+              <div className="modal-header">
+                <h2>Delete Confirmation</h2>
+                <button className="close-btn" onClick={() => setIsDeleteModalOpen(false)}>&times;</button>
+              </div>
+              <div className="delete-body">
+                <div className="warning-icon">⚠️</div>
+                <p>Are you sure you want to delete the canteen <strong>{canteenToDelete?.name}</strong>?</p>
+                <p className="description">This action cannot be undone and all data associated with this canteen will be removed.</p>
+              </div>
+              <div className="modal-actions">
+                <button className="btn btn-outline" onClick={() => setIsDeleteModalOpen(false)}>Cancel</button>
+                <button className="btn btn-danger" onClick={handleDelete}>Delete Canteen</button>
+              </div>
             </div>
           </div>
         )}

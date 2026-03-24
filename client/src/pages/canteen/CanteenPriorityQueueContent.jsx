@@ -8,6 +8,7 @@ const CanteenPriorityQueueContent = ({
   handleSelectOrder,
   handleStatusUpdate,
   loading,
+  updatingOrderId,
   fetchOrders,
 }) => {
   const [searchText, setSearchText] = useState('');
@@ -58,7 +59,7 @@ const CanteenPriorityQueueContent = ({
               selected={selectedOrderIds.includes(order._id)}
               onSelect={handleSelectOrder}
               onStatusChange={handleStatusUpdate}
-              isUpdating={loading}
+              isUpdating={updatingOrderId === order._id}
             />
           ))
         )}

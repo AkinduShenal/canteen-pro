@@ -64,7 +64,10 @@ const CanteenStaffContent = () => {
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState('');
   const [showForm, setShowForm] = useState(false);
+  const [hoveredId, setHoveredId] = useState(null);
   const assignedCanteenId = user?.assignedCanteen?._id || user?.assignedCanteen || '';
+  const statusDotColor = statusFilter === 'active' ? '#16a34a' : '#dc2626';
+  const canteenName = user?.assignedCanteen?.name || 'Your Canteen';
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -84,12 +87,14 @@ const CanteenStaffContent = () => {
     setLoading(true);
     try {
       const { data } = await staffAdminApi.getCanteenStaffMembers({
-        canteenId: assignedCanteenId,
         search: debouncedSearch || undefined,
         status: statusFilter,
       });
 
-      const nextStaffMembers = Array.isArray(data) ? data : data?.staffMembers || [];
+      const apiStaffMembers = Array.isArray(data) ? data : data?.staffMembers || [];
+      const nextStaffMembers = apiStaffMembers.filter(
+        (item) => String(item?.assignedCanteen?._id || item?.assignedCanteen || '') === String(assignedCanteenId),
+      );
       const nextSummary =
         Array.isArray(data) || !data?.summary
           ? {
@@ -226,6 +231,18 @@ const CanteenStaffContent = () => {
     }
   };
 
+  const getInitials = (name) => {
+    if (!name) return '?';
+    return name
+      .split(' ')
+      .map((word) => word[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  const AVATAR_GRADIENT = 'linear-gradient(145deg, #4f6ef7 0%, #6366f1 45%, #818cf8 100%)';
+
   return (
     <section className="tw-w-full tw-space-y-5">
       <DashboardUtilityBar
@@ -338,21 +355,62 @@ const CanteenStaffContent = () => {
           </motion.article>
       </div>
 
-      <div className="tw-flex tw-flex-col tw-gap-3 sm:tw-flex-row sm:tw-items-end sm:tw-justify-end">
-        <div className="tw-flex tw-w-full tw-flex-col tw-gap-3 sm:tw-w-auto sm:tw-flex-row sm:tw-items-end">
-          <label className="tw-flex tw-w-full tw-flex-col sm:tw-w-auto">
+      <section className="tw-grid tw-gap-3 lg:tw-grid-cols-[1fr_auto] lg:tw-items-end">
+        <div className="tw-space-y-1">
+          <label htmlFor="canteen-status-filter" className="tw-block tw-text-xs tw-font-semibold tw-uppercase tw-tracking-[0.08em]" style={{ color: '#8a5a44' }}>
+            Staff status
+          </label>
+          <div className="tw-relative">
             <select
+              id="canteen-status-filter"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="tw-h-11 tw-w-full sm:tw-w-[210px] tw-rounded-xl tw-border tw-border-slate-200 tw-bg-white tw-px-3 tw-text-base tw-font-medium tw-text-slate-700 tw-outline-none tw-ring-sky-200 tw-transition focus:tw-border-sky-400 focus:tw-ring"
               aria-label="Filter staff by status"
+              style={{
+                height: 50,
+                width: '100%',
+                paddingLeft: 16,
+                paddingRight: 44,
+                borderRadius: 16,
+                border: statusFilter !== 'all' ? '1.5px solid #efb798' : '1.5px solid #e8dbd3',
+                background: statusFilter !== 'all'
+                  ? 'linear-gradient(135deg, #fffaf6 0%, #fff3eb 100%)'
+                  : '#ffffff',
+                boxShadow: statusFilter !== 'all'
+                  ? '0 4px 14px rgba(192,57,14,0.10)'
+                  : '0 1px 8px rgba(0,0,0,0.04)',
+                color: '#2b1d16',
+                fontSize: 14,
+                fontWeight: 600,
+                outline: 'none',
+                appearance: 'none',
+                WebkitAppearance: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                lineHeight: 1.2,
+              }}
             >
               <option value="all">All statuses</option>
               <option value="active">Active only</option>
               <option value="inactive">Inactive only</option>
             </select>
-          </label>
+            <div className="tw-pointer-events-none tw-absolute tw-inset-y-0 tw-right-3.5 tw-flex tw-items-center">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M4 6L8 10L12 6" stroke="#c0390e" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            {statusFilter !== 'all' && (
+              <motion.span
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="tw-pointer-events-none tw-absolute tw--top-1 tw--right-1 tw-h-2.5 tw-w-2.5 tw-rounded-full"
+                style={{ background: statusDotColor, boxShadow: '0 0 0 2px white' }}
+              />
+            )}
+          </div>
+        </div>
 
+        <div className="tw-flex tw-justify-end">
           <motion.button
             type="button"
             onClick={() => {
@@ -362,18 +420,15 @@ const CanteenStaffContent = () => {
             }}
             whileHover={{ scale: 1.03, y: -1 }}
             whileTap={{ scale: 0.97 }}
-            className="tw-inline-flex tw-h-11 tw-w-full sm:tw-w-auto tw-items-center tw-justify-center tw-gap-2 tw-rounded-2xl tw-px-5 tw-text-base tw-font-bold tw-text-white tw-cursor-pointer tw-select-none tw-border-0"
-            style={{
-              background: 'linear-gradient(135deg, #c0390e 0%, #f26400 100%)',
-              boxShadow: '0 8px 24px rgba(200,60,14,0.30)',
-            }}
+            className="tw-inline-flex tw-h-12 tw-items-center tw-justify-center tw-gap-2 tw-rounded-2xl tw-px-5 tw-text-base tw-font-bold tw-text-white tw-cursor-pointer tw-select-none tw-border-0"
+            style={{ background: 'linear-gradient(135deg, #c0390e 0%, #f26400 100%)', boxShadow: '0 8px 24px rgba(200,60,14,0.30)' }}
             disabled={saving}
           >
             <HiOutlineUserAdd className="tw-text-lg" />
             Add Staff Member
           </motion.button>
         </div>
-      </div>
+      </section>
 
       <AnimatePresence>
         {showForm && (
@@ -449,12 +504,16 @@ const CanteenStaffContent = () => {
                   </p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="tw-grid tw-gap-3 md:tw-grid-cols-2">
+                <form onSubmit={handleSubmit} className="tw-grid tw-gap-4 md:tw-grid-cols-2">
+                  <div className="md:tw-col-span-2 tw-rounded-2xl tw-border tw-px-4 tw-py-3 tw-text-xs tw-font-medium"
+                    style={{ background: 'linear-gradient(135deg, #fff8f2 0%, #fff3ea 100%)', borderColor: '#efd6c3', color: '#8a6355' }}>
+                    Staff members shown here are limited to <span className="tw-font-bold">{canteenName}</span>.
+                  </div>
               <input
                 value={form.name}
                 onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
                 placeholder="Full name"
-                className="tw-rounded-xl tw-border tw-border-slate-200 tw-px-3 tw-py-2.5 tw-text-sm tw-outline-none tw-ring-sky-200 tw-transition focus:tw-border-sky-400 focus:tw-ring"
+                className="tw-h-12 tw-rounded-2xl tw-border tw-border-orange-100 tw-bg-white tw-px-4 tw-text-sm tw-outline-none tw-transition focus:tw-border-orange-300 focus:tw-ring-2 focus:tw-ring-orange-100"
                 required
               />
               <input
@@ -462,7 +521,7 @@ const CanteenStaffContent = () => {
                 value={form.email}
                 onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
                 placeholder="Email address"
-                className="tw-rounded-xl tw-border tw-border-slate-200 tw-px-3 tw-py-2.5 tw-text-sm tw-outline-none tw-ring-sky-200 tw-transition focus:tw-border-sky-400 focus:tw-ring"
+                className="tw-h-12 tw-rounded-2xl tw-border tw-border-orange-100 tw-bg-white tw-px-4 tw-text-sm tw-outline-none tw-transition focus:tw-border-orange-300 focus:tw-ring-2 focus:tw-ring-orange-100"
                 required
               />
               <input
@@ -471,7 +530,7 @@ const CanteenStaffContent = () => {
                 value={form.password}
                 onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
                 placeholder={editingId ? 'Leave blank to keep existing password' : 'Password (min 6 characters)'}
-                className="tw-rounded-xl tw-border tw-border-slate-200 tw-px-3 tw-py-2.5 tw-text-sm tw-outline-none tw-ring-sky-200 tw-transition focus:tw-border-sky-400 focus:tw-ring md:tw-col-span-2"
+                className="tw-h-12 tw-rounded-2xl tw-border tw-border-orange-100 tw-bg-white tw-px-4 tw-text-sm tw-outline-none tw-transition focus:tw-border-orange-300 focus:tw-ring-2 focus:tw-ring-orange-100 md:tw-col-span-2"
               />
 
               <label className="tw-flex tw-items-center tw-gap-2 tw-rounded-xl tw-border tw-border-slate-200 tw-px-3 tw-py-2.5 tw-text-sm tw-text-slate-700 md:tw-col-span-2">
@@ -521,11 +580,46 @@ const CanteenStaffContent = () => {
         )}
       </AnimatePresence>
 
-      <section className="tw-rounded-2xl tw-border tw-border-slate-200 tw-bg-white tw-p-5 tw-shadow-sm">
-        <div className="tw-mb-4 tw-flex tw-items-center tw-justify-between">
-          <h3 className="tw-text-lg tw-font-semibold tw-text-slate-900">Staff Members</h3>
-          <p className="tw-text-sm tw-text-slate-500">Showing {staffMembers.length} result(s)</p>
+      <section
+        className="tw-rounded-3xl tw-border tw-overflow-hidden"
+        style={{
+          background: '#ffffff',
+          borderColor: '#eeddd2',
+          boxShadow: '0 2px 20px rgba(83,37,12,0.07), 0 1px 4px rgba(83,37,12,0.04)',
+        }}
+      >
+        <div
+          className="tw-flex tw-items-center tw-justify-between tw-px-6 tw-py-4"
+          style={{ background: 'linear-gradient(135deg, #fffdfb 0%, #fff8f2 100%)', borderBottom: '1px solid #f5e4d6' }}
+        >
+          <div className="tw-flex tw-items-center tw-gap-3">
+            <div
+              className="tw-flex tw-h-10 tw-w-10 tw-items-center tw-justify-center tw-rounded-2xl"
+              style={{
+                background: 'linear-gradient(135deg, #c0390e 0%, #f26400 100%)',
+                boxShadow: '0 6px 18px rgba(192,57,14,0.30)',
+              }}
+            >
+              <HiOutlineUserGroup className="tw-h-4 tw-w-4 tw-text-white" />
+            </div>
+            <div>
+              <h3 className="tw-text-lg tw-font-extrabold tw-m-0 tw-leading-tight" style={{ color: '#1e130c', letterSpacing: '-0.015em' }}>
+                {canteenName} Staff Members
+              </h3>
+              <p className="tw-m-0 tw-text-[11px] tw-font-medium" style={{ color: '#b07050' }}>
+                Only members assigned to this canteen
+              </p>
+            </div>
+          </div>
+          <div className="tw-flex tw-items-center tw-gap-1.5 tw-rounded-full tw-px-3.5 tw-py-1.5" style={{ background: '#fff0e6', border: '1px solid #f5d5be' }}>
+            <span className="tw-h-1.5 tw-w-1.5 tw-rounded-full tw-inline-block" style={{ background: '#c0390e' }} />
+            <span className="tw-text-xs tw-font-bold" style={{ color: '#b84010' }}>
+              {staffMembers.length} {staffMembers.length === 1 ? 'member' : 'members'}
+            </span>
+          </div>
         </div>
+
+        <div className="tw-px-4 tw-py-3">
 
         {loading ? (
           <div className="tw-rounded-xl tw-border tw-border-slate-200 tw-bg-slate-50 tw-px-4 tw-py-8 tw-text-center tw-text-sm tw-text-slate-500">
@@ -538,16 +632,54 @@ const CanteenStaffContent = () => {
             <p className="tw-mt-1 tw-text-sm tw-text-slate-500">No staff members are assigned to this canteen yet.</p>
           </div>
         ) : (
-          <div className="tw-space-y-3">
+          <div className="tw-space-y-2">
             {staffMembers.map((staff) => {
               const staffStatus = staff?.isActive === false ? 'inactive' : 'active';
+              const isActive = staff?.isActive !== false;
+              const isHovered = hoveredId === staff._id;
 
               return (
-                <article
+                <motion.article
                   key={staff._id}
-                  className="tw-flex tw-flex-col tw-gap-3 tw-rounded-xl tw-border tw-border-slate-200 tw-p-4 tw-transition hover:tw-shadow-md md:tw-flex-row md:tw-items-center md:tw-justify-between"
+                  onHoverStart={() => setHoveredId(staff._id)}
+                  onHoverEnd={() => setHoveredId(null)}
+                  className="tw-relative tw-flex tw-flex-col tw-gap-3 tw-rounded-2xl tw-p-4 tw-mb-2 md:tw-flex-row md:tw-items-center md:tw-justify-between"
+                  style={{
+                    background: isHovered ? 'linear-gradient(135deg, #fdfaf8 0%, #fff5ef 100%)' : '#fafafa',
+                    border: isHovered ? '1px solid #f0d5c0' : '1px solid #f0ece9',
+                    boxShadow: isHovered
+                      ? '0 8px 28px rgba(192,57,14,0.10), 0 2px 8px rgba(0,0,0,0.04)'
+                      : '0 1px 4px rgba(0,0,0,0.04)',
+                    transition: 'background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease',
+                  }}
                 >
-                  <div className="tw-min-w-0">
+                  <div className="tw-flex tw-items-center tw-gap-4 tw-min-w-0">
+                    <motion.div
+                      animate={{ scale: isHovered ? 1.05 : 1, y: isHovered ? -1 : 0 }}
+                      transition={{ type: 'spring', stiffness: 280, damping: 20 }}
+                      className="tw-relative tw-flex-shrink-0"
+                    >
+                      <div
+                        className="tw-flex tw-h-14 tw-w-14 tw-items-center tw-justify-center tw-rounded-2xl tw-text-white tw-font-extrabold tw-text-sm tw-select-none"
+                        style={{
+                          background: AVATAR_GRADIENT,
+                          boxShadow: isHovered ? '0 10px 28px rgba(79,110,247,0.38)' : '0 4px 16px rgba(79,110,247,0.22)',
+                          transition: 'box-shadow 0.25s ease',
+                          letterSpacing: '0.06em',
+                          fontSize: '0.8rem',
+                        }}
+                      >
+                        {getInitials(staff.name)}
+                      </div>
+                      <motion.span
+                        animate={isActive ? { scale: [1, 1.3, 1] } : { scale: 1 }}
+                        transition={isActive ? { duration: 2.4, repeat: Infinity, ease: 'easeInOut' } : {}}
+                        className="tw-absolute tw--bottom-1 tw--right-1 tw-h-4 tw-w-4 tw-rounded-full tw-border-2 tw-border-white"
+                        style={{ background: isActive ? '#22c55e' : '#f43f5e' }}
+                      />
+                    </motion.div>
+
+                    <div className="tw-min-w-0 tw-flex-1">
                     <div className="tw-flex tw-flex-wrap tw-items-center tw-gap-2">
                       <h4 className="tw-truncate tw-text-base tw-font-semibold tw-text-slate-900">{staff.name || 'Unnamed Staff'}</h4>
                       <span className={`tw-rounded-full tw-px-2.5 tw-py-1 tw-text-xs tw-font-semibold tw-capitalize ${statusChipClasses[staffStatus]}`}>
@@ -566,43 +698,68 @@ const CanteenStaffContent = () => {
                       </p>
                     </div>
                   </div>
+                  </div>
 
                   <div className="tw-flex tw-flex-wrap tw-items-center tw-gap-2">
-                    <button
+                    <motion.button
                       type="button"
                       onClick={() => handleEdit(staff)}
                       disabled={saving}
-                      className="tw-inline-flex tw-items-center tw-gap-1 tw-rounded-lg tw-border tw-border-slate-300 tw-px-3 tw-py-2 tw-text-sm tw-font-medium tw-text-slate-700 tw-transition hover:tw-bg-slate-100 disabled:tw-opacity-60"
+                      whileHover={!saving ? { scale: 1.06, y: -1 } : {}}
+                      whileTap={!saving ? { scale: 0.94 } : {}}
+                      className="tw-inline-flex tw-items-center tw-gap-1.5 tw-rounded-xl tw-px-4 tw-py-2 tw-text-xs tw-font-semibold disabled:tw-opacity-50"
+                      style={{
+                        background: 'linear-gradient(135deg, #fff4eb 0%, #ffe8da 100%)',
+                        color: '#8f3d17',
+                        boxShadow: '0 8px 18px rgba(192,57,14,0.16)',
+                      }}
                     >
                       <HiOutlinePencilAlt />
                       Edit
-                    </button>
+                    </motion.button>
 
-                    <button
+                    <motion.button
                       type="button"
                       onClick={() => handleQuickStatusToggle(staff)}
                       disabled={saving}
-                      className="tw-inline-flex tw-items-center tw-gap-1 tw-rounded-lg tw-border tw-border-amber-300 tw-px-3 tw-py-2 tw-text-sm tw-font-medium tw-text-amber-700 tw-transition hover:tw-bg-amber-50 disabled:tw-opacity-60"
+                      whileHover={!saving ? { scale: 1.06, y: -1 } : {}}
+                      whileTap={!saving ? { scale: 0.94 } : {}}
+                      className="tw-inline-flex tw-items-center tw-gap-1.5 tw-rounded-xl tw-px-4 tw-py-2 tw-text-xs tw-font-semibold disabled:tw-opacity-50"
+                      style={{
+                        background: staffStatus === 'active'
+                          ? 'linear-gradient(135deg, #fff3f4 0%, #ffe7ea 100%)'
+                          : 'linear-gradient(135deg, #ecfdf3 0%, #def7e9 100%)',
+                        color: staffStatus === 'active' ? '#be123c' : '#047857',
+                        boxShadow: staffStatus === 'active'
+                          ? '0 8px 18px rgba(225,29,72,0.16)'
+                          : '0 8px 18px rgba(5,150,105,0.16)',
+                      }}
                     >
                       {staffStatus === 'active' ? <HiOutlineXCircle /> : <HiOutlineBadgeCheck />}
                       {staffStatus === 'active' ? 'Set Inactive' : 'Set Active'}
-                    </button>
+                    </motion.button>
 
-                    <button
+                    <motion.button
                       type="button"
                       onClick={() => handleDelete(staff._id)}
                       disabled={saving}
-                      className="tw-inline-flex tw-items-center tw-gap-1 tw-rounded-lg tw-border tw-border-rose-300 tw-px-3 tw-py-2 tw-text-sm tw-font-medium tw-text-rose-700 tw-transition hover:tw-bg-rose-50 disabled:tw-opacity-60"
+                      whileHover={!saving ? { scale: 1.1, y: -1 } : {}}
+                      whileTap={!saving ? { scale: 0.9 } : {}}
+                      className="tw-inline-flex tw-h-9 tw-w-9 tw-items-center tw-justify-center tw-rounded-xl disabled:tw-opacity-50"
+                      style={{
+                        background: 'linear-gradient(135deg, #fff2f4 0%, #ffe5ea 100%)',
+                        boxShadow: '0 8px 18px rgba(225,29,72,0.16)',
+                      }}
                     >
                       <HiOutlineTrash />
-                      Delete
-                    </button>
+                    </motion.button>
                   </div>
-                </article>
+                </motion.article>
               );
             })}
           </div>
         )}
+        </div>
       </section>
     </section>
   );

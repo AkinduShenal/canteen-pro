@@ -56,6 +56,7 @@ const StaffAdminDashboard = () => {
   const [statusFilter, setStatusFilter] = useState('');
   const [priorityOnly, setPriorityOnly] = useState(false);
   const [selectedOrderIds, setSelectedOrderIds] = useState([]);
+  const [updatingOrderId, setUpdatingOrderId] = useState(null);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -223,6 +224,7 @@ const StaffAdminDashboard = () => {
     }
 
     setLoading(true);
+    setUpdatingOrderId(order._id);
     clearFlash();
     try {
       await staffAdminApi.updateOrderStatus(order._id, payload);
@@ -232,6 +234,7 @@ const StaffAdminDashboard = () => {
       showError(err, 'Failed to update order status');
     } finally {
       setLoading(false);
+      setUpdatingOrderId(null);
     }
   };
 
@@ -597,12 +600,9 @@ const StaffAdminDashboard = () => {
                     priorityOnly={priorityOnly}
                     setPriorityOnly={setPriorityOnly}
                     fetchOrders={fetchOrders}
-                    loading={loading}
-                    handleBulkReady={handleBulkReady}
-                    selectedOrderIds={selectedOrderIds}
                     sortedOrders={sortedOrders}
-                    handleSelectOrder={handleSelectOrder}
                     handleStatusUpdate={handleStatusUpdate}
+                    updatingOrderId={updatingOrderId}
                   />
                 )
               }
@@ -617,6 +617,7 @@ const StaffAdminDashboard = () => {
                     handleSelectOrder={handleSelectOrder}
                     handleStatusUpdate={handleStatusUpdate}
                     loading={loading}
+                    updatingOrderId={updatingOrderId}
                     fetchOrders={fetchOrders}
                   />
                 }

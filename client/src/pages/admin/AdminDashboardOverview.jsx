@@ -118,24 +118,33 @@ const StatCard = ({ title, value, tone, icon: Icon, trendText }) => (
   <motion.article
     variants={STAGGER_ITEM}
     layout
-    whileHover={{ y: -4, transition: { type: 'spring', stiffness: 320, damping: 20 } }}
-    className={`tw-relative tw-overflow-hidden tw-rounded-3xl tw-border tw-p-5 tw-shadow-md tw-transition-shadow tw-duration-300 hover:tw-shadow-xl ${tone.card}`}
+    whileHover={{ y: -4, scale: 1.01, boxShadow: '0 16px 34px rgba(2,6,23,0.20)', transition: { type: 'spring', stiffness: 300, damping: 22 } }}
+    className="tw-relative tw-overflow-hidden tw-rounded-3xl tw-border tw-border-white/20 tw-p-5 tw-shadow-md tw-transition-shadow tw-duration-300"
+    style={{ background: tone.cardGradient }}
   >
-    {/* decorative circle blob — inline bg so it always renders */}
+    {/* decorative circles */}
     <div
-      style={{ background: tone.blobColor, filter: 'blur(28px)', opacity: 0.25 }}
+      style={{ background: tone.circleColor, opacity: 0.2 }}
+      className="tw-pointer-events-none tw-absolute -tw-left-10 -tw-bottom-16 tw-h-44 tw-w-44 tw-rounded-full"
+    />
+    <div
+      style={{ background: tone.circleColor, opacity: 0.14 }}
+      className="tw-pointer-events-none tw-absolute tw-left-20 -tw-bottom-20 tw-h-36 tw-w-36 tw-rounded-full"
+    />
+    <div
+      style={{ background: tone.circleColor, opacity: 0.2 }}
       className="tw-pointer-events-none tw-absolute -tw-right-6 -tw-top-6 tw-h-28 tw-w-28 tw-rounded-full"
     />
 
     <div className="tw-flex tw-items-start tw-justify-between tw-gap-4">
       <div>
-        <p className="tw-mb-2 tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-slate-500">{title}</p>
-        <p className="tw-m-0 tw-text-4xl tw-font-extrabold tw-leading-none tw-text-slate-900 tw-tabular-nums md:tw-text-5xl">{value}</p>
+        <p className="tw-mb-2 tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-white/85">{title}</p>
+        <p className="tw-m-0 tw-text-4xl tw-font-extrabold tw-leading-none tw-text-white tw-tabular-nums md:tw-text-5xl">{value}</p>
       </div>
       {/* inline gradient so the icon container is always visibly coloured */}
       <div
-        style={{ background: tone.iconBg, minWidth: '3.25rem', minHeight: '3.25rem' }}
-        className="tw-flex tw-items-center tw-justify-center tw-rounded-2xl tw-text-white tw-shadow-lg"
+        style={{ minWidth: '3.25rem', minHeight: '3.25rem' }}
+        className="tw-flex tw-items-center tw-justify-center tw-rounded-2xl tw-bg-white/22 tw-text-white tw-shadow-lg tw-backdrop-blur-[2px]"
       >
         <Icon size={24} strokeWidth={2} />
       </div>
@@ -144,10 +153,10 @@ const StatCard = ({ title, value, tone, icon: Icon, trendText }) => (
     {trendText ? (
       <div className="tw-mt-4 tw-flex tw-items-center tw-gap-1.5">
         <span
-          style={{ background: '#10b981' }}
-          className="tw-inline-block tw-h-1.5 tw-w-1.5 tw-rounded-full tw-ring-2 tw-ring-emerald-200"
+          style={{ background: '#34d399' }}
+          className="tw-inline-block tw-h-1.5 tw-w-1.5 tw-rounded-full tw-ring-2 tw-ring-emerald-200/70"
         />
-        <p className="tw-mb-0 tw-text-xs tw-font-bold tw-text-emerald-600">{trendText}</p>
+        <p className="tw-mb-0 tw-text-xs tw-font-bold tw-text-white/90">{trendText}</p>
       </div>
     ) : null}
   </motion.article>
@@ -314,9 +323,8 @@ const AdminDashboardOverview = ({ dashboardStats, dashboardTrends, onNavigate })
           value={totalOrders}
           icon={HiOutlineClipboardDocumentList}
           tone={{
-            card: 'tw-border-sky-100 tw-bg-sky-50',
-            iconBg: 'linear-gradient(135deg, #38bdf8 0%, #2563eb 100%)',
-            blobColor: '#38bdf8',
+            cardGradient: 'linear-gradient(135deg, #22c1dc 0%, #3b82f6 100%)',
+            circleColor: '#93c5fd',
           }}
           trendText="↑ 12% vs last week"
         />
@@ -325,9 +333,8 @@ const AdminDashboardOverview = ({ dashboardStats, dashboardTrends, onNavigate })
           value={pending}
           icon={HiOutlineClock}
           tone={{
-            card: 'tw-border-amber-100 tw-bg-amber-50',
-            iconBg: 'linear-gradient(135deg, #fbbf24 0%, #f97316 100%)',
-            blobColor: '#fbbf24',
+            cardGradient: 'linear-gradient(135deg, #f59e0b 0%, #f97316 100%)',
+            circleColor: '#fdba74',
           }}
         />
         <StatCard
@@ -335,9 +342,8 @@ const AdminDashboardOverview = ({ dashboardStats, dashboardTrends, onNavigate })
           value={ready}
           icon={HiOutlineCheckCircle}
           tone={{
-            card: 'tw-border-emerald-100 tw-bg-emerald-50',
-            iconBg: 'linear-gradient(135deg, #34d399 0%, #0d9488 100%)',
-            blobColor: '#34d399',
+            cardGradient: 'linear-gradient(135deg, #14b8a6 0%, #22c55e 100%)',
+            circleColor: '#6ee7b7',
           }}
         />
         <StatCard
@@ -345,9 +351,8 @@ const AdminDashboardOverview = ({ dashboardStats, dashboardTrends, onNavigate })
           value={avgRating.toFixed(1)}
           icon={HiOutlineStar}
           tone={{
-            card: 'tw-border-violet-100 tw-bg-violet-50',
-            iconBg: 'linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%)',
-            blobColor: '#a78bfa',
+            cardGradient: 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)',
+            circleColor: '#a5b4fc',
           }}
         />
       </motion.section>

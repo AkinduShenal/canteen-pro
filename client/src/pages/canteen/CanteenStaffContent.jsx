@@ -5,11 +5,11 @@ import {
   HiX,
   HiOutlineBadgeCheck,
   HiOutlineMail,
+  HiOutlineOfficeBuilding,
   HiOutlinePencilAlt,
   HiOutlineTrash,
   HiOutlineUserAdd,
   HiOutlineUserGroup,
-  HiOutlineUser,
   HiOutlineXCircle,
 } from 'react-icons/hi';
 import DashboardUtilityBar from '../../components/common/DashboardUtilityBar.jsx';
@@ -242,6 +242,12 @@ const CanteenStaffContent = () => {
   };
 
   const AVATAR_GRADIENT = 'linear-gradient(145deg, #4f6ef7 0%, #6366f1 45%, #818cf8 100%)';
+  const actionButtonBase = {
+    minHeight: 40,
+    border: '1px solid rgba(148, 163, 184, 0.28)',
+    boxShadow: '0 3px 10px rgba(15, 23, 42, 0.08)',
+    transition: 'all 0.2s ease',
+  };
 
   return (
     <section className="tw-w-full tw-space-y-5">
@@ -680,38 +686,64 @@ const CanteenStaffContent = () => {
                     </motion.div>
 
                     <div className="tw-min-w-0 tw-flex-1">
-                    <div className="tw-flex tw-flex-wrap tw-items-center tw-gap-2">
-                      <h4 className="tw-truncate tw-text-base tw-font-semibold tw-text-slate-900">{staff.name || 'Unnamed Staff'}</h4>
-                      <span className={`tw-rounded-full tw-px-2.5 tw-py-1 tw-text-xs tw-font-semibold tw-capitalize ${statusChipClasses[staffStatus]}`}>
+                    <div className="tw-flex tw-flex-wrap tw-items-center tw-gap-2 tw-mb-1.5">
+                      <h4
+                        className="tw-text-[15px] tw-font-bold tw-m-0 tw-truncate"
+                        style={{
+                          color: '#18100a',
+                          letterSpacing: '-0.01em',
+                        }}
+                      >
+                        {staff.name || 'Unnamed Staff'}
+                      </h4>
+                      <span
+                        className={`tw-inline-flex tw-items-center tw-gap-1 tw-rounded-full tw-px-2.5 tw-py-0.5 tw-text-[10px] tw-font-bold tw-uppercase tw-tracking-[0.09em] ${statusChipClasses[staffStatus]}`}
+                      >
+                        <span
+                          className="tw-inline-block tw-h-1.5 tw-w-1.5 tw-rounded-full"
+                          style={{ background: staffStatus === 'active' ? '#22c55e' : '#f43f5e' }}
+                        />
                         {staffStatus}
                       </span>
                     </div>
 
-                    <div className="tw-mt-1 tw-flex tw-flex-wrap tw-gap-x-4 tw-gap-y-1 tw-text-sm tw-text-slate-600">
-                      <p className="tw-inline-flex tw-items-center tw-gap-1">
-                        <HiOutlineMail className="tw-text-slate-400" />
+                    <div className="tw-mt-1 tw-flex tw-flex-wrap tw-gap-x-4 tw-gap-y-1">
+                      <p className="tw-inline-flex tw-items-center tw-gap-1.5 tw-text-sm tw-font-medium" style={{ color: '#6f5b4f' }}>
+                        <span
+                          className="tw-flex tw-h-5 tw-w-5 tw-items-center tw-justify-center tw-rounded-md"
+                          style={{ background: '#fff0e6' }}
+                        >
+                          <HiOutlineMail className="tw-h-3 tw-w-3" style={{ color: '#c0390e' }} />
+                        </span>
                         {staff.email}
                       </p>
-                      <p className="tw-inline-flex tw-items-center tw-gap-1">
-                        <HiOutlineUser className="tw-text-slate-400" />
+                      <p className="tw-inline-flex tw-items-center tw-gap-1.5 tw-text-sm tw-font-medium" style={{ color: '#6f5b4f' }}>
+                        <span
+                          className="tw-flex tw-h-5 tw-w-5 tw-items-center tw-justify-center tw-rounded-md"
+                          style={{ background: '#fff0e6' }}
+                        >
+                          <HiOutlineOfficeBuilding className="tw-h-3 tw-w-3" style={{ color: '#c0390e' }} />
+                        </span>
                         {staff?.assignedCanteen?.name || 'Assigned canteen'}
                       </p>
                     </div>
                   </div>
                   </div>
 
-                  <div className="tw-flex tw-flex-wrap tw-items-center tw-gap-2">
+                  <div className="tw-flex tw-flex-wrap tw-items-center tw-gap-2.5">
                     <motion.button
                       type="button"
                       onClick={() => handleEdit(staff)}
                       disabled={saving}
                       whileHover={!saving ? { scale: 1.06, y: -1 } : {}}
                       whileTap={!saving ? { scale: 0.94 } : {}}
-                      className="tw-inline-flex tw-items-center tw-gap-1.5 tw-rounded-xl tw-px-4 tw-py-2 tw-text-xs tw-font-semibold disabled:tw-opacity-50"
+                      className="tw-inline-flex tw-items-center tw-gap-1.5 tw-rounded-2xl tw-px-4 tw-py-2 tw-text-xs tw-font-semibold disabled:tw-opacity-50"
+                      aria-label={`Edit ${staff.name || 'staff member'}`}
                       style={{
-                        background: 'linear-gradient(135deg, #fff4eb 0%, #ffe8da 100%)',
-                        color: '#8f3d17',
-                        boxShadow: '0 8px 18px rgba(192,57,14,0.16)',
+                        ...actionButtonBase,
+                        background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+                        color: '#374151',
+                        borderColor: '#dbe3ee',
                       }}
                     >
                       <HiOutlinePencilAlt />
@@ -724,15 +756,18 @@ const CanteenStaffContent = () => {
                       disabled={saving}
                       whileHover={!saving ? { scale: 1.06, y: -1 } : {}}
                       whileTap={!saving ? { scale: 0.94 } : {}}
-                      className="tw-inline-flex tw-items-center tw-gap-1.5 tw-rounded-xl tw-px-4 tw-py-2 tw-text-xs tw-font-semibold disabled:tw-opacity-50"
+                      className="tw-inline-flex tw-items-center tw-gap-1.5 tw-rounded-2xl tw-px-4 tw-py-2 tw-text-xs tw-font-semibold disabled:tw-opacity-50"
+                      aria-label={`${staffStatus === 'active' ? 'Set inactive' : 'Set active'} for ${staff.name || 'staff member'}`}
                       style={{
+                        ...actionButtonBase,
                         background: staffStatus === 'active'
-                          ? 'linear-gradient(135deg, #fff3f4 0%, #ffe7ea 100%)'
-                          : 'linear-gradient(135deg, #ecfdf3 0%, #def7e9 100%)',
+                          ? 'linear-gradient(135deg, #fff7f9 0%, #ffeef2 100%)'
+                          : 'linear-gradient(135deg, #f2fdf6 0%, #e8f9ef 100%)',
                         color: staffStatus === 'active' ? '#be123c' : '#047857',
+                        borderColor: staffStatus === 'active' ? '#fecdd3' : '#bbf7d0',
                         boxShadow: staffStatus === 'active'
-                          ? '0 8px 18px rgba(225,29,72,0.16)'
-                          : '0 8px 18px rgba(5,150,105,0.16)',
+                          ? '0 3px 10px rgba(225, 29, 72, 0.12)'
+                          : '0 3px 10px rgba(5, 150, 105, 0.12)',
                       }}
                     >
                       {staffStatus === 'active' ? <HiOutlineXCircle /> : <HiOutlineBadgeCheck />}
@@ -745,10 +780,14 @@ const CanteenStaffContent = () => {
                       disabled={saving}
                       whileHover={!saving ? { scale: 1.1, y: -1 } : {}}
                       whileTap={!saving ? { scale: 0.9 } : {}}
-                      className="tw-inline-flex tw-h-9 tw-w-9 tw-items-center tw-justify-center tw-rounded-xl disabled:tw-opacity-50"
+                      className="tw-inline-flex tw-h-10 tw-w-10 tw-items-center tw-justify-center tw-rounded-2xl disabled:tw-opacity-50"
+                      aria-label={`Delete ${staff.name || 'staff member'}`}
                       style={{
-                        background: 'linear-gradient(135deg, #fff2f4 0%, #ffe5ea 100%)',
-                        boxShadow: '0 8px 18px rgba(225,29,72,0.16)',
+                        ...actionButtonBase,
+                        background: 'linear-gradient(135deg, #fff7f8 0%, #ffeff2 100%)',
+                        color: '#be123c',
+                        borderColor: '#fecdd3',
+                        boxShadow: '0 3px 10px rgba(225, 29, 72, 0.14)',
                       }}
                     >
                       <HiOutlineTrash />

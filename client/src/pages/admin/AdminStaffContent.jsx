@@ -274,6 +274,12 @@ const AdminStaffContent = () => {
 
   // All avatars use the blue-indigo gradient from the reference image
   const AVATAR_GRADIENT = 'linear-gradient(145deg, #4f6ef7 0%, #6366f1 45%, #818cf8 100%)';
+  const actionButtonBase = {
+    minHeight: 40,
+    border: '1px solid rgba(148, 163, 184, 0.28)',
+    boxShadow: '0 3px 10px rgba(15, 23, 42, 0.08)',
+    transition: 'all 0.2s ease',
+  };
 
   return (
     <section className="tw-w-full tw-space-y-5">
@@ -860,8 +866,8 @@ const AdminStaffContent = () => {
 
                       {/* Right: Actions */}
                       <motion.div
-                        className="tw-flex tw-items-center tw-gap-2 tw-flex-shrink-0 tw-self-start md:tw-self-auto"
-                        animate={{ opacity: isHovered ? 1 : 0.5 }}
+                        className="tw-flex tw-flex-wrap tw-items-center tw-gap-2.5 tw-flex-shrink-0 tw-self-start md:tw-self-auto"
+                        animate={{ opacity: 1 }}
                         transition={{ duration: 0.2 }}
                       >
                         {/* Edit */}
@@ -871,17 +877,19 @@ const AdminStaffContent = () => {
                           disabled={saving}
                           whileHover={!saving ? { scale: 1.06, y: -1 } : {}}
                           whileTap={!saving ? { scale: 0.94 } : {}}
-                          className="tw-inline-flex tw-items-center tw-gap-1.5 tw-rounded-xl tw-px-4 tw-py-2 tw-text-xs tw-font-semibold disabled:tw-opacity-50"
+                          className="tw-inline-flex tw-items-center tw-gap-1.5 tw-rounded-2xl tw-px-4 tw-py-2 tw-text-xs tw-font-semibold disabled:tw-opacity-50"
+                          aria-label={`Edit ${staff.name || 'staff member'}`}
                           style={{
-                            background: 'linear-gradient(135deg, #fff4eb 0%, #ffe8da 100%)',
-                            color: '#8f3d17',
-                            boxShadow: '0 8px 18px rgba(192,57,14,0.16)',
+                            ...actionButtonBase,
+                            background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+                            color: '#374151',
+                            borderColor: '#dbe3ee',
                             cursor: saving ? 'not-allowed' : 'pointer',
                             letterSpacing: '0.015em',
                           }}
                           title="Edit staff member"
                         >
-                          <HiOutlinePencilAlt className="tw-h-3.5 tw-w-3.5" style={{ color: '#c0390e' }} />
+                          <HiOutlinePencilAlt className="tw-h-3.5 tw-w-3.5" />
                           Edit
                         </motion.button>
 
@@ -892,15 +900,19 @@ const AdminStaffContent = () => {
                           disabled={saving}
                           whileHover={!saving ? { scale: 1.1, y: -1 } : {}}
                           whileTap={!saving ? { scale: 0.9 } : {}}
-                          className="tw-inline-flex tw-h-9 tw-w-9 tw-items-center tw-justify-center tw-rounded-xl disabled:tw-opacity-50"
+                          className="tw-inline-flex tw-h-10 tw-w-10 tw-items-center tw-justify-center tw-rounded-2xl disabled:tw-opacity-50"
+                          aria-label={`Delete ${staff.name || 'staff member'}`}
                           style={{
-                            background: 'linear-gradient(135deg, #fff2f4 0%, #ffe5ea 100%)',
-                            boxShadow: '0 8px 18px rgba(225,29,72,0.16)',
+                            ...actionButtonBase,
+                            background: 'linear-gradient(135deg, #fff7f8 0%, #ffeff2 100%)',
+                            color: '#be123c',
+                            borderColor: '#fecdd3',
+                            boxShadow: '0 3px 10px rgba(225, 29, 72, 0.14)',
                             cursor: saving ? 'not-allowed' : 'pointer',
                           }}
                           title="Delete staff member"
                         >
-                          <HiOutlineTrash className="tw-h-3.5 tw-w-3.5" style={{ color: '#e11d48' }} />
+                          <HiOutlineTrash className="tw-h-3.5 tw-w-3.5" />
                         </motion.button>
                       </motion.div>
                     </motion.article>

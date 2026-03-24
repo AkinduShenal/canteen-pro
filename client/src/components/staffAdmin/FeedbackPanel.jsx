@@ -64,7 +64,8 @@ const FeedbackPanel = ({
                     variants={itemVariants}
                     layout
                     className="tw-rounded-2xl tw-border tw-bg-white tw-p-4"
-                    style={{ borderColor: isHidden ? '#fecdd3' : '#ecdccf', boxShadow: '0 6px 18px rgba(90,45,20,0.06)' }}
+                    whileHover={{ y: -2 }}
+                    style={{ borderColor: isHidden ? '#fecdd3' : '#ecdccf', boxShadow: '0 10px 24px rgba(90,45,20,0.07)' }}
                   >
                     <div className="tw-flex tw-flex-wrap tw-items-start tw-justify-between tw-gap-3">
                       <div className="tw-min-w-0 tw-flex-1">
@@ -95,10 +96,17 @@ const FeedbackPanel = ({
                             <HiOutlineUser className="tw-h-4 tw-w-4" style={{ color: '#b45309' }} />
                             <span className="tw-font-semibold">{entry?.student?.name || 'Unknown Student'}</span>
                           </p>
-                          <p className="tw-m-0 tw-flex tw-items-center tw-gap-2 tw-text-sm" style={{ color: '#5f3a27' }}>
-                            <HiOutlineOfficeBuilding className="tw-h-4 tw-w-4" style={{ color: '#b45309' }} />
-                            <span className="tw-font-semibold">{entry?.canteen?.name || 'Unknown Canteen'}</span>
-                          </p>
+                          <div
+                            className="tw-inline-flex tw-w-fit tw-items-center tw-gap-2 tw-self-start tw-rounded-xl tw-border tw-px-2.5 tw-py-1.5 tw-text-sm tw-font-bold"
+                            style={{
+                              background: 'linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)',
+                              borderColor: '#fdba74',
+                              color: '#9a3412',
+                            }}
+                          >
+                            <HiOutlineOfficeBuilding className="tw-h-4 tw-w-4" style={{ color: '#c2410c' }} />
+                            <span className="tw-truncate">{entry?.canteen?.name || 'Unknown Canteen'}</span>
+                          </div>
                         </div>
 
                         <div
@@ -118,18 +126,20 @@ const FeedbackPanel = ({
                           type="button"
                           onClick={() => onRemove(entry.orderId)}
                           disabled={loading}
-                          whileHover={{ scale: 1.03 }}
+                          whileHover={{ scale: 1.02, y: -1 }}
                           whileTap={{ scale: 0.97 }}
-                          className="tw-inline-flex tw-items-center tw-gap-1.5 tw-rounded-xl tw-px-3.5 tw-py-2 tw-text-xs tw-font-bold tw-text-white"
+                          className="tw-inline-flex tw-items-center tw-gap-1.5 tw-rounded-xl tw-border tw-px-3.5 tw-py-2 tw-text-xs tw-font-bold"
                           style={{
-                            background: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)',
-                            boxShadow: '0 8px 16px rgba(185,28,28,0.25)',
+                            background: 'linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%)',
+                            borderColor: '#fda4af',
+                            color: '#be123c',
+                            boxShadow: '0 8px 16px rgba(190,24,93,0.14)',
                             opacity: loading ? 0.7 : 1,
                             cursor: loading ? 'not-allowed' : 'pointer',
                           }}
                         >
                           <HiOutlineTrash className="tw-h-3.5 tw-w-3.5" />
-                          Remove Feedback
+                          Hide feedback
                         </motion.button>
                       )}
                     </div>

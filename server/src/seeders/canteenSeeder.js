@@ -17,32 +17,25 @@ const connectDB = async () => {
 
 const canteensData = [
   {
-    name: 'Main Campus Dining Hall',
-    location: 'North Wing, Building A',
+    name: 'Basement canteen',
+    location: 'Basement Level',
     openTime: '07:00 AM',
-    closeTime: '09:00 PM',
+    closeTime: '08:00 PM',
     contactNumber: '+1 234 567 8901',
   },
   {
-    name: 'Tech Park Cafe',
-    location: 'Engineering Block',
-    openTime: '08:00 AM',
-    closeTime: '08:00 PM',
+    name: 'New building canteen',
+    location: 'New Building',
+    openTime: '07:30 AM',
+    closeTime: '07:30 PM',
     contactNumber: '+1 234 567 8902',
   },
   {
-    name: 'Student Union Food Court',
-    location: 'Central Campus',
-    openTime: '10:00 AM',
-    closeTime: '11:00 PM',
+    name: 'Anohana canteen',
+    location: 'Main Campus',
+    openTime: '08:00 AM',
+    closeTime: '09:00 PM',
     contactNumber: '+1 234 567 8903',
-  },
-  {
-    name: 'Library Coffee Shop',
-    location: 'Library Ground Floor',
-    openTime: '07:30 AM',
-    closeTime: '10:00 PM',
-    contactNumber: '+1 234 567 8904',
   }
 ];
 
@@ -55,7 +48,7 @@ const importData = async () => {
     
     // Insert new
     await Canteen.insertMany(canteensData);
-    console.log('4 Campus Canteens Imported Successfully!');
+    console.log('3 Campus Canteens Imported Successfully!');
     process.exit();
   } catch (error) {
     console.error(`Error: ${error.message}`);

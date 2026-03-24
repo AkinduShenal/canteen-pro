@@ -25,6 +25,7 @@ const Navbar = () => {
         <Link to="/" className="nav-link">Home</Link>
         {user ? (
           <>
+            <Link to="/canteens" className="nav-link">Canteens</Link>
             <Link to="/profile" className="nav-link">Profile</Link>
             <button onClick={handleLogout} className="btn btn-outline" style={{ padding: '0.6rem 1.5rem', borderWidth: '2px', cursor: 'pointer' }}>
               Logout

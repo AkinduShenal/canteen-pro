@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   HiOutlineChartBar,
   HiOutlineCheckCircle,
@@ -19,10 +19,8 @@ import {
 } from 'recharts';
 import { motion, AnimatePresence } from 'framer-motion';
 import DashboardUtilityBar from '../../components/common/DashboardUtilityBar.jsx';
-import { staffAdminApi } from '../../services/staffAdminApi.js';
 
 const DAY_LABELS = ['Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun', 'Mon'];
-const LIVE_REFRESH_MS = 4000;
 const SAMPLE_ORDERS_SERIES = [2, 3, 2, 4, 3, 5, 6];
 const SAMPLE_REVENUE_SERIES = [1280, 1900, 1640, 2450, 2120, 2980, 3520];
 const SAMPLE_STATS = {
@@ -212,32 +210,14 @@ const QuickActionItem = ({ icon: Icon, title, subtitle, tone, onClick }) => (
 /* ─────────────────────── AdminDashboardOverview ─────────────────────── */
 const AdminDashboardOverview = ({ dashboardStats, dashboardTrends, onNavigate }) => {
   const [searchText, setSearchText] = useState('');
-  const [liveMetrics, setLiveMetrics] = useState(null);
-
-  const fetchLiveMetrics = useCallback(async () => {
-    try {
-      const { data } = await staffAdminApi.getDashboardMetrics();
-      setLiveMetrics(data || null);
-    } catch (error) {
-      // Keep UI stable with prop/fallback data when API is temporarily unavailable.
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchLiveMetrics();
-    const intervalId = setInterval(fetchLiveMetrics, LIVE_REFRESH_MS);
-    return () => clearInterval(intervalId);
-  }, [fetchLiveMetrics]);
 
   const resolvedStats = useMemo(() => ({
     ...(dashboardStats || {}),
-    ...(liveMetrics?.stats || {}),
-  }), [dashboardStats, liveMetrics?.stats]);
+  }), [dashboardStats]);
 
   const resolvedTrends = useMemo(() => ({
     ...(dashboardTrends || {}),
-    ...(liveMetrics?.trends || {}),
-  }), [dashboardTrends, liveMetrics?.trends]);
+  }), [dashboardTrends]);
 
   const liveTotalOrders = Number(resolvedStats.totalOrders) || 0;
   const livePending = Number(resolvedStats.pending) || 0;

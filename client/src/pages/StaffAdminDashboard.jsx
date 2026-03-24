@@ -47,11 +47,13 @@ const StaffAdminDashboard = () => {
   const { user, logout, updateUser } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
+  const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5001/api').replace(/\/$/, '');
 
   const [orders, setOrders] = useState([]);
   const [feedbackItems, setFeedbackItems] = useState([]);
   const [canteens, setCanteens] = useState([]);
   const [dashboardMetrics, setDashboardMetrics] = useState(null);
+  const [isMetricsStreamConnected, setIsMetricsStreamConnected] = useState(false);
 
   const [statusFilter, setStatusFilter] = useState('');
   const [priorityOnly, setPriorityOnly] = useState(false);
@@ -203,12 +205,43 @@ const StaffAdminDashboard = () => {
   useEffect(() => {
     if (!hasAccess) return undefined;
 
+    if (isMetricsStreamConnected) return undefined;
+
     const intervalId = setInterval(() => {
       fetchDashboardMetrics();
     }, 5000);
 
     return () => clearInterval(intervalId);
-  }, [fetchDashboardMetrics, hasAccess]);
+  }, [fetchDashboardMetrics, hasAccess, isMetricsStreamConnected]);
+
+  useEffect(() => {
+    if (!hasAccess || !user?.token) {
+      setIsMetricsStreamConnected(false);
+      return undefined;
+    }
+
+    const streamUrl = `${API_BASE_URL}/staff-admin/dashboard/metrics/stream?token=${encodeURIComponent(user.token)}`;
+    const eventSource = new EventSource(streamUrl);
+
+    eventSource.addEventListener('metrics', (event) => {
+      try {
+        const payload = JSON.parse(event.data || '{}');
+        setDashboardMetrics(payload || null);
+        setIsMetricsStreamConnected(true);
+      } catch (error) {
+        // ignore malformed message and keep fallback polling active
+      }
+    });
+
+    eventSource.addEventListener('error', () => {
+      setIsMetricsStreamConnected(false);
+    });
+
+    return () => {
+      setIsMetricsStreamConnected(false);
+      eventSource.close();
+    };
+  }, [API_BASE_URL, hasAccess, user?.token]);
 
   const handleStatusUpdate = async (order, nextStatus, providedReason) => {
     const payload = { status: nextStatus };

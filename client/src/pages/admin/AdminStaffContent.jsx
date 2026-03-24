@@ -340,10 +340,10 @@ const AdminStaffContent = () => {
       </motion.section>
 
       {/* ── FILTERS + ADD BUTTON ── */}
-      <section className="tw-grid tw-gap-3 lg:tw-grid-cols-[1fr_1fr_auto] lg:tw-items-center">
+      <section className="tw-flex tw-flex-col tw-gap-3 xl:tw-flex-row xl:tw-items-end">
 
         {/* Status filter */}
-        <div className="tw-space-y-1">
+        <div className="tw-space-y-1 xl:tw-flex-1">
           <label htmlFor="staff-status-filter" className="tw-block tw-text-xs tw-font-semibold tw-uppercase tw-tracking-[0.08em]" style={{ color: '#8a5a44' }}>
             Staff status
           </label>
@@ -398,7 +398,7 @@ const AdminStaffContent = () => {
         </div>
 
         {/* Canteen filter */}
-        <div className="tw-space-y-1">
+        <div className="tw-space-y-1 xl:tw-flex-1">
           <label htmlFor="staff-canteen-filter" className="tw-block tw-text-xs tw-font-semibold tw-uppercase tw-tracking-[0.08em]" style={{ color: '#8a5a44' }}>
             Canteen
           </label>
@@ -453,7 +453,7 @@ const AdminStaffContent = () => {
           </div>
         </div>
 
-        <div className="tw-flex tw-justify-end">
+        <div className="tw-flex tw-justify-end xl:tw-self-end">
           <motion.button
             type="button"
             onClick={() => { setEditingId(''); setForm(emptyForm); setShowForm(true); }}

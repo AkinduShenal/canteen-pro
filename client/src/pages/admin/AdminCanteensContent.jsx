@@ -21,6 +21,20 @@ const emptyForm = {
   openTime: '',
   closeTime: '',
   contactNumber: '',
+  password: '',
+};
+
+const buildCanteenLoginEmail = (name) => {
+  const localPart = String(name || '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/[\s-]+/g, '')
+    .slice(0, 30);
+
+  return `${localPart || 'canteen'}@gmail.com`;
 };
 
 const normalizeTimeValue = (value) => String(value || '').slice(0, 5);
@@ -51,13 +65,15 @@ const getCanteenDescription = (canteen) => {
 
 const sanitizeContactNumber = (value) => String(value || '').replace(/\D/g, '').slice(0, 10);
 
-const validateCanteenForm = (form) => {
+const validateCanteenForm = (form, options = {}) => {
+  const { requirePassword = false } = options;
   const errors = {};
   const name = String(form?.name || '').trim();
   const location = String(form?.location || '').trim();
   const openTime = normalizeTimeValue(form?.openTime);
   const closeTime = normalizeTimeValue(form?.closeTime);
   const contactNumber = sanitizeContactNumber(form?.contactNumber);
+  const password = String(form?.password || '');
 
   if (!name) {
     errors.name = 'Canteen name is required.';
@@ -89,6 +105,14 @@ const validateCanteenForm = (form) => {
     errors.contactNumber = 'Contact number is required.';
   } else if (!/^0\d{9}$/.test(contactNumber)) {
     errors.contactNumber = 'Enter a valid 10-digit number (e.g., 0117544801).';
+  }
+
+  if (requirePassword) {
+    if (!password) {
+      errors.password = 'Password is required.';
+    } else if (password.length < 6) {
+      errors.password = 'Password must be at least 6 characters.';
+    }
   }
 
   return errors;
@@ -179,7 +203,7 @@ const InputField = ({ id, label, icon: Icon, error, helperText, onBlur, ...props
         id={id}
         className="tw-w-full tw-rounded-xl tw-border tw-text-sm tw-text-gray-700 tw-outline-none tw-transition-all tw-duration-200 placeholder:tw-text-[#a5a5a5]"
         style={{
-          height: 50,
+          height: 46,
           background: error ? '#fff7f7' : '#fffdfa',
           borderColor: error ? '#ef9a9a' : '#e7d3c1',
           paddingLeft: Icon ? 44 : 16,
@@ -257,7 +281,12 @@ const AdminCanteensContent = ({ canteens, loading, onCreate, onUpdate, onDelete 
     };
   }, [canteens, filteredCanteens]);
 
-  const formErrors = useMemo(() => validateCanteenForm(form), [form]);
+  const generatedLoginEmail = useMemo(() => buildCanteenLoginEmail(form.name), [form.name]);
+
+  const formErrors = useMemo(
+    () => validateCanteenForm(form, { requirePassword: !editingId }),
+    [form, editingId],
+  );
 
   const isFormValid = useMemo(() => Object.keys(formErrors).length === 0, [formErrors]);
 
@@ -289,6 +318,7 @@ const AdminCanteensContent = ({ canteens, loading, onCreate, onUpdate, onDelete 
       openTime: normalizeTimeValue(canteen.openTime),
       closeTime: normalizeTimeValue(canteen.closeTime),
       contactNumber: sanitizeContactNumber(canteen.contactNumber),
+      password: '',
     });
     setTouchedFields({});
     setSubmitAttempted(false);
@@ -304,6 +334,7 @@ const AdminCanteensContent = ({ canteens, loading, onCreate, onUpdate, onDelete 
       openTime: true,
       closeTime: true,
       contactNumber: true,
+      password: !editingId,
     });
     if (!isFormValid) return;
 
@@ -317,7 +348,11 @@ const AdminCanteensContent = ({ canteens, loading, onCreate, onUpdate, onDelete 
     if (editingId) {
       await onUpdate(editingId, payload);
     } else {
-      await onCreate(payload);
+      await onCreate({
+        ...payload,
+        email: generatedLoginEmail,
+        password: form.password,
+      });
     }
     resetForm();
   };
@@ -343,7 +378,8 @@ const AdminCanteensContent = ({ canteens, loading, onCreate, onUpdate, onDelete 
   const closedCount = useAnimatedCounter(canteenSummary.closedNow);
   const showingCount = useAnimatedCounter(canteenSummary.showing);
 
-  const completedFields = 5 - Object.keys(formErrors).length;
+  const totalRequiredFields = editingId ? 5 : 6;
+  const completedFields = totalRequiredFields - Object.keys(formErrors).length;
 
   return (
     <>
@@ -722,7 +758,7 @@ const AdminCanteensContent = ({ canteens, loading, onCreate, onUpdate, onDelete 
               exit="exit"
               className="tw-relative tw-w-full tw-overflow-hidden tw-rounded-[32px] tw-border"
               style={{
-                maxWidth: 640,
+                maxWidth: 560,
                 background: '#fffcf9',
                 borderColor: '#f0d9c5',
                 boxShadow: '0 32px 72px rgba(55,22,7,0.32)',
@@ -734,7 +770,7 @@ const AdminCanteensContent = ({ canteens, loading, onCreate, onUpdate, onDelete 
                 style={{ background: 'linear-gradient(90deg, #9e3408 0%, #e8550e 60%, #f5a030 100%)' }}
               />
 
-              <div className="tw-px-7 tw-pt-7 tw-pb-8 sm:tw-px-8">
+              <div className="tw-px-6 tw-pt-6 tw-pb-6 sm:tw-px-7">
                 {/* close button */}
                 <motion.button
                   type="button"
@@ -750,7 +786,7 @@ const AdminCanteensContent = ({ canteens, loading, onCreate, onUpdate, onDelete 
                 </motion.button>
 
                 {/* modal heading */}
-                <div className="tw-mb-7 tw-pr-10">
+                <div className="tw-mb-5 tw-pr-10">
                   <span
                     className="tw-inline-block tw-rounded-full tw-px-3 tw-py-1 tw-text-[10px] tw-font-black tw-uppercase tw-tracking-[0.15em] tw-mb-3"
                     style={{ background: '#fff0e6', color: '#b84010' }}
@@ -758,7 +794,7 @@ const AdminCanteensContent = ({ canteens, loading, onCreate, onUpdate, onDelete 
                     Admin
                   </span>
                   <h3
-                    className="tw-m-0 tw-text-[1.9rem] tw-font-extrabold tw-leading-tight"
+                    className="tw-m-0 tw-text-[1.7rem] tw-font-extrabold tw-leading-tight"
                     style={{ color: '#2b1d16', fontFamily: "'Playfair Display', Georgia, serif" }}
                   >
                     {editingId ? 'Update Canteen' : 'Register Canteen'}
@@ -774,7 +810,7 @@ const AdminCanteensContent = ({ canteens, loading, onCreate, onUpdate, onDelete 
                 </div>
 
                 {/* form */}
-                <form onSubmit={handleSubmit} className="tw-space-y-4">
+                <form onSubmit={handleSubmit} className="tw-space-y-3">
                   {(submitAttempted && !isFormValid) && (
                     <motion.div
                       initial={{ opacity: 0, y: -4 }}
@@ -862,10 +898,39 @@ const AdminCanteensContent = ({ canteens, loading, onCreate, onUpdate, onDelete 
                     required
                   />
 
+                  {!editingId && (
+                    <>
+                      <InputField
+                        id="canteen-login-email"
+                        label="Auto Login Email"
+                        icon={HiOutlineOfficeBuilding}
+                        type="email"
+                        value={generatedLoginEmail}
+                        readOnly
+                        helperText="This email is auto-generated from the canteen name."
+                      />
+
+                      <InputField
+                        id="canteen-login-password"
+                        label="Login Password"
+                        icon={HiOutlineExclamation}
+                        type="password"
+                        placeholder="Set a password for this canteen account"
+                        autoComplete="new-password"
+                        minLength={6}
+                        error={getFieldError('password')}
+                        onBlur={() => markTouched('password')}
+                        value={form.password}
+                        onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))}
+                        required
+                      />
+                    </>
+                  )}
+
                   {/* progress indicator */}
                   <div className="tw-flex tw-items-center tw-gap-2.5 tw-pt-1">
                     <div className="tw-flex tw-gap-1.5">
-                      {['name', 'location', 'openTime', 'closeTime', 'contactNumber'].map((field) => (
+                      {['name', 'location', 'openTime', 'closeTime', 'contactNumber', ...(!editingId ? ['password'] : [])].map((field) => (
                         <motion.div
                           key={field}
                           animate={{
@@ -878,7 +943,7 @@ const AdminCanteensContent = ({ canteens, loading, onCreate, onUpdate, onDelete 
                       ))}
                     </div>
                     <span className="tw-text-xs tw-font-medium" style={{ color: '#b09080' }}>
-                      {completedFields} of 5 complete
+                      {completedFields} of {totalRequiredFields} complete
                     </span>
                   </div>
 

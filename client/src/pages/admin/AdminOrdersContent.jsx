@@ -41,14 +41,39 @@ const getUrgencyLevel = (pickupTime) => {
   return 'scheduled';
 };
 
+const SPRING_SMOOTH = { type: 'spring', stiffness: 220, damping: 24, mass: 0.9 };
+const SPRING_GENTLE = { type: 'spring', stiffness: 180, damping: 22, mass: 1 };
+
+const listVariants = {
+  hidden: {},
+  show: {
+    transition: { staggerChildren: 0.045, delayChildren: 0.03 },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 12 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: SPRING_GENTLE,
+  },
+  exit: {
+    opacity: 0,
+    y: 8,
+    scale: 0.985,
+    transition: { duration: 0.16, ease: 'easeOut' },
+  },
+};
+
 // ─── Stat Card ────────────────────────────────────────────────────────────────
 
 const StatCard = ({ icon, label, value, tone, delay }) => (
   <motion.article
     initial={{ opacity: 0, y: 14 }}
     animate={{ opacity: 1, y: 0 }}
-    transition={{ delay, duration: 0.35, ease: 'easeOut' }}
-    whileHover={{ y: -5, scale: 1.015, boxShadow: '0 20px 34px rgba(15,23,42,0.16)', transition: { duration: 0.22 } }}
+    transition={{ ...SPRING_GENTLE, delay }}
+    whileHover={{ y: -4, scale: 1.01, boxShadow: '0 20px 34px rgba(15,23,42,0.16)', transition: SPRING_SMOOTH }}
     className="tw-relative tw-overflow-hidden tw-rounded-2xl tw-border tw-p-3 tw-shadow-md tw-cursor-default"
     style={{ background: tone.cardBg, borderColor: tone.border }}
   >
@@ -78,9 +103,9 @@ const StatCard = ({ icon, label, value, tone, delay }) => (
     {/* Number */}
     <motion.p
       key={value}
-      initial={{ opacity: 0, scale: 0.75 }}
+      initial={{ opacity: 0, scale: 0.85 }}
       animate={{ opacity: 1, scale: 1 }}
-      transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+      transition={{ type: 'spring', stiffness: 280, damping: 24 }}
       className="tw-text-4xl tw-font-black tw-leading-none tw-tracking-tight"
       style={{ color: tone.valueColor }}
     >
@@ -398,7 +423,7 @@ const AdminOrdersContent = () => {
       <motion.section
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.22 }}
+        transition={{ ...SPRING_GENTLE, delay: 0.12 }}
         className="tw-rounded-2xl tw-border tw-border-slate-200/80 tw-bg-white tw-shadow-sm tw-overflow-hidden"
       >
         {/* Filters grid */}
@@ -455,7 +480,7 @@ const AdminOrdersContent = () => {
             <div className="tw-flex tw-items-center tw-gap-1.5">
               <motion.span
                 animate={{ opacity: [1, 0.2, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
+                transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
                 className="tw-w-1.5 tw-h-1.5 tw-rounded-full tw-bg-emerald-500"
               />
               <span className="tw-text-xs tw-font-semibold tw-text-slate-400">Real-time refresh enabled (5s)</span>
@@ -468,7 +493,7 @@ const AdminOrdersContent = () => {
           SECTION 3 — ORDERS GRID
       ══════════════════════════════════════════ */}
       <section>
-        <AnimatePresence mode="popLayout">
+        <AnimatePresence mode="wait">
           {filteredOrders.length === 0 ? (
             <motion.div
               key="empty"
@@ -496,25 +521,33 @@ const AdminOrdersContent = () => {
               )}
             </motion.div>
           ) : (
-            <div className="tw-grid tw-gap-4 xl:tw-grid-cols-2">
-              {filteredOrders.map((order, idx) => (
+            <motion.div
+              key="orders-grid"
+              variants={listVariants}
+              initial="hidden"
+              animate="show"
+              exit="hidden"
+              layout
+              transition={{ layout: SPRING_SMOOTH }}
+              className="tw-grid tw-gap-4 xl:tw-grid-cols-2"
+            >
+              {filteredOrders.map((order) => (
                 <motion.div
                   key={order._id}
+                  variants={itemVariants}
                   layout
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.97 }}
-                  transition={{ delay: Math.min(idx * 0.04, 0.28), duration: 0.3 }}
+                  transition={{ layout: SPRING_SMOOTH }}
                   className="tw-h-full"
                 >
                   <AdminOrderCard
                     order={order}
                     onStatusChange={handleStatusUpdate}
                     isUpdating={updatingOrderId === order._id}
+                    readOnly
                   />
                 </motion.div>
               ))}
-            </div>
+            </motion.div>
           )}
         </AnimatePresence>
       </section>

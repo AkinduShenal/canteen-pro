@@ -48,11 +48,30 @@ const STAGGER_ITEM = {
 
 const buildSeries = (value) => [0, 0, 0, 0, 0, 0, Math.max(0, Number(value) || 0)];
 
+const normalizeSeries = (series, fallbackValue = 0) => {
+  const normalized = Array.from({ length: 7 }, (_, index) =>
+    Math.max(0, Number(series?.[index]) || 0),
+  );
+
+  if (normalized.some((value) => value > 0)) return normalized;
+  return buildSeries(fallbackValue);
+};
+
 /* ─────────────────────── TrendChart ─────────────────────── */
 const TrendChart = ({ values, labels = DAY_LABELS, color, areaColor, maxLabelPrefix, maxLabelSuffix = '', variant = 'line' }) => {
+  const safeValues = useMemo(
+    () => Array.from({ length: 7 }, (_, index) => Math.max(0, Number(values?.[index]) || 0)),
+    [values],
+  );
+
+  const safeLabels = useMemo(
+    () => (Array.isArray(labels) && labels.length === 7 ? labels : DAY_LABELS),
+    [labels],
+  );
+
   const chartData = useMemo(
-    () => labels.map((label, index) => ({ label, value: Number(values[index] || 0) })),
-    [labels, values]
+    () => safeLabels.map((label, index) => ({ label, value: safeValues[index] })),
+    [safeLabels, safeValues],
   );
 
   const CustomTooltip = ({ active, payload, label }) => {
@@ -70,7 +89,7 @@ const TrendChart = ({ values, labels = DAY_LABELS, color, areaColor, maxLabelPre
 
   return (
     <div className="tw-h-[260px] tw-w-full tw-overflow-hidden tw-rounded-2xl tw-border tw-border-slate-100 tw-bg-gradient-to-br tw-from-slate-50/80 tw-to-white tw-p-3 tw-shadow-inner md:tw-p-5">
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" minWidth={280} minHeight={220}>
         {variant === 'bar' ? (
           <BarChart data={chartData} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
@@ -225,14 +244,14 @@ const CanteenDashboardOverview = ({ dashboardStats, dashboardTrends, onNavigate 
   const livePending = Number(resolvedStats.pending) || 0;
   const liveReady = Number(resolvedStats.ready) || 0;
   const liveAvgRating = Number(resolvedStats.averageRating) || 0;
-  const liveRevenueSeries =
-    Array.isArray(resolvedTrends?.revenueSeries) && resolvedTrends.revenueSeries.length === 7
-      ? resolvedTrends.revenueSeries
-      : buildSeries(liveTotalOrders * 560);
-  const liveOrdersSeries =
-    Array.isArray(resolvedTrends?.ordersSeries) && resolvedTrends.ordersSeries.length === 7
-      ? resolvedTrends.ordersSeries
-      : buildSeries(liveTotalOrders);
+  const liveRevenueSeries = normalizeSeries(
+    resolvedTrends?.revenueSeries,
+    liveTotalOrders * 560,
+  );
+  const liveOrdersSeries = normalizeSeries(
+    resolvedTrends?.ordersSeries,
+    liveTotalOrders,
+  );
 
   const hasLiveSeries = [...liveRevenueSeries, ...liveOrdersSeries].some((value) => Number(value) > 0);
   const hasLiveStats =

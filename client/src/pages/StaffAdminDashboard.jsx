@@ -205,7 +205,7 @@ const StaffAdminDashboard = () => {
 
     const intervalId = setInterval(() => {
       fetchDashboardMetrics();
-    }, 10000);
+    }, 5000);
 
     return () => clearInterval(intervalId);
   }, [fetchDashboardMetrics, hasAccess]);
@@ -266,9 +266,14 @@ const StaffAdminDashboard = () => {
     setLoading(true);
     clearFlash();
     try {
-      await staffAdminApi.createCanteen(payload);
+      const { data } = await staffAdminApi.createCanteen(payload);
       setSuccess('Canteen registered');
-      toast.success('Canteen registered successfully!');
+      const loginEmail = data?.staffLoginEmail || payload?.email;
+      if (loginEmail) {
+        toast.success(`Canteen registered. Login email: ${loginEmail}`);
+      } else {
+        toast.success('Canteen registered successfully!');
+      }
       await fetchAdminData();
     } catch (err) {
       showError(err, 'Failed to register canteen');

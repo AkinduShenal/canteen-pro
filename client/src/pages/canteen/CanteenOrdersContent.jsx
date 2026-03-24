@@ -29,11 +29,13 @@ const sortOptions = [
   { value: 'created-asc',  label: 'Oldest first' },
 ];
 
+const LATE_GRACE_MINUTES = 10;
+
 const getUrgencyLevel = (pickupTime) => {
   const now = new Date();
   const pickup = new Date(pickupTime);
   const diffMins = Math.floor((pickup - now) / (1000 * 60));
-  if (diffMins < 0) return 'late';
+  if (diffMins < -LATE_GRACE_MINUTES) return 'late';
   if (diffMins <= 15) return 'urgent';
   if (diffMins <= 45) return 'soon';
   return 'scheduled';

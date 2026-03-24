@@ -114,7 +114,7 @@ const ProgressSteps = ({ status }) => {
 
 // ─── Main Card ────────────────────────────────────────────────────────────────
 
-const AdminOrderCard = ({ order, onStatusChange, isUpdating }) => {
+const AdminOrderCard = ({ order, onStatusChange, isUpdating, readOnly = false }) => {
   const [showItems, setShowItems]           = useState(true);
   const [showCancelInput, setShowCancelInput] = useState(false);
   const [cancelReason, setCancelReason]     = useState('');
@@ -128,6 +128,7 @@ const AdminOrderCard = ({ order, onStatusChange, isUpdating }) => {
   const totalPrice   = (order.items || []).reduce((s, i) => s + (i.price || 0) * (i.quantity || 1), 0);
 
   const handleActionClick = (action) => {
+    if (readOnly) return;
     if (action.value === 'cancelled') setShowCancelInput(true);
     else onStatusChange(order, action.value, undefined);
   };
@@ -333,7 +334,7 @@ const AdminOrderCard = ({ order, onStatusChange, isUpdating }) => {
 
           {/* ── Cancel reason ── */}
           <AnimatePresence>
-            {showCancelInput && (
+            {!readOnly && showCancelInput && (
               <motion.div
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 'auto', opacity: 1 }}
@@ -365,7 +366,7 @@ const AdminOrderCard = ({ order, onStatusChange, isUpdating }) => {
           </AnimatePresence>
 
           {/* ── Actions ── */}
-          {nextActions.length > 0 && !showCancelInput ? (
+          {!readOnly && nextActions.length > 0 && !showCancelInput ? (
             <div className="tw-flex tw-gap-2">
               {nextActions.map((action) => (
                 <motion.button
@@ -389,7 +390,7 @@ const AdminOrderCard = ({ order, onStatusChange, isUpdating }) => {
                 </motion.button>
               ))}
             </div>
-          ) : !showCancelInput && (
+          ) : !readOnly && !showCancelInput && (
             <p className="tw-text-xs tw-text-slate-400 tw-italic tw-text-center tw-pt-1">
               No further actions available for this order.
             </p>

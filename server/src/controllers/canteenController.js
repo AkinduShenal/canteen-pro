@@ -1,4 +1,27 @@
 import Canteen from '../models/Canteen.js';
+import Order from '../models/Order.js';
+
+// Helper: Queue
+const getQueueStatus = async (canteenId) => {
+  const count = await Order.countDocuments({
+    canteenId,
+    status: { $in: ['pending', 'accepted'] }
+  });
+
+  if (count < 5) return 'Low';
+  if (count <= 10) return 'Medium';
+  return 'High';
+};
+
+// Helper: Open/Closed
+const getStatus = (openTime, closeTime) => {
+  if (!openTime || !closeTime) return 'Closed';
+  const now = new Date().getHours();
+  const open = parseInt(openTime.split(':')[0]);
+  const close = parseInt(closeTime.split(':')[0]);
+
+  return (now >= open && now < close) ? 'Open' : 'Closed';
+};
 
 // @desc    Create a new canteen
 // @route   POST /api/canteens
@@ -36,7 +59,16 @@ export const createCanteen = async (req, res) => {
 export const getCanteens = async (req, res) => {
   try {
     const canteens = await Canteen.find({});
-    res.json(canteens);
+
+    const updated = await Promise.all(
+      canteens.map(async (c) => ({
+        ...c._doc,
+        status: getStatus(c.openTime, c.closeTime),
+        queue: await getQueueStatus(c._id)
+      }))
+    );
+
+    res.json(updated);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -49,7 +81,11 @@ export const getCanteenById = async (req, res) => {
   try {
     const canteen = await Canteen.findById(req.params.id);
     if (canteen) {
-      res.json(canteen);
+      res.json({
+        ...canteen._doc,
+        status: getStatus(canteen.openTime, canteen.closeTime),
+        queue: await getQueueStatus(canteen._id)
+      });
     } else {
       res.status(404).json({ message: 'Canteen not found' });
     }

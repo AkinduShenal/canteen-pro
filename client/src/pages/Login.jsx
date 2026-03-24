@@ -19,9 +19,14 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const { data } = await api.post('/auth/login', { email, password });
-      login(data); // Save to context and localStorage
-      navigate('/canteens'); // Redirect to Canteen Directory
+      const res = await api.post('/auth/login', { email, password });
+      login(res.data); // Save to context and localStorage
+      
+      // after successful login
+      localStorage.setItem("token", res.data.token);
+
+      // redirect
+      window.location.href = "/canteens";
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid email or password. Please try again.');
     } finally {

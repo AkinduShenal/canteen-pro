@@ -21,7 +21,7 @@ const Login = () => {
     try {
       const { data } = await api.post('/auth/login', { email, password });
       login(data); // Save to context and localStorage
-      navigate('/'); // Redirect to Home dashboard
+      navigate('/canteens'); // Redirect to Canteen Directory
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid email or password. Please try again.');
     } finally {

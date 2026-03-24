@@ -5,6 +5,7 @@ import {
   getCanteenById,
   updateCanteen,
   deleteCanteen,
+  toggleCanteenStatus,
 } from '../controllers/canteenController.js';
 import { protect, staff } from '../middleware/authMiddleware.js';
 
@@ -16,5 +17,7 @@ router
   .get(getCanteenById)
   .put(protect, staff, updateCanteen)
   .delete(protect, staff, deleteCanteen);
+
+router.route('/:id/status').put(protect, staff, toggleCanteenStatus);
 
 export default router;

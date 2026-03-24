@@ -166,3 +166,30 @@ export const deleteCanteen = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// @desc    Toggle canteen open/closed status
+// @route   PUT /api/canteens/:id/status
+// @access  Private/Staff
+export const toggleCanteenStatus = async (req, res) => {
+  try {
+    const canteen = await Canteen.findById(req.params.id);
+
+    if (canteen) {
+      canteen.isOpen = !canteen.isOpen;
+      const updatedCanteen = await canteen.save();
+      
+      // Calculate display status for the response
+      const response = {
+        ...updatedCanteen._doc,
+        status: getStatus(updatedCanteen.openTime, updatedCanteen.closeTime, updatedCanteen.isOpen),
+        queue: await getQueueStatus(updatedCanteen._id)
+      };
+      
+      res.json(response);
+    } else {
+      res.status(404).json({ message: 'Canteen not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

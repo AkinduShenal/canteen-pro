@@ -16,7 +16,8 @@ const CanteenForm = ({ canteen, onSuccess, onCancel }) => {
     location: '',
     openTime: '08:00',
     closeTime: '20:00',
-    contactNumber: ''
+    contactNumber: '',
+    isOpen: true
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -29,7 +30,8 @@ const CanteenForm = ({ canteen, onSuccess, onCancel }) => {
         location: canteen.location || '',
         openTime: canteen.openTime || '08:00',
         closeTime: canteen.closeTime || '20:00',
-        contactNumber: canteen.contactNumber || ''
+        contactNumber: canteen.contactNumber || '',
+        isOpen: canteen.isOpen !== undefined ? canteen.isOpen : true
       });
     } else {
       // Reset form if no canteen (adding new)
@@ -38,14 +40,15 @@ const CanteenForm = ({ canteen, onSuccess, onCancel }) => {
         location: '',
         openTime: '08:00',
         closeTime: '20:00',
-        contactNumber: ''
+        contactNumber: '',
+        isOpen: true
       });
     }
   }, [canteen]);
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    const { name, value, type, checked } = e.target;
+    setFormData({ ...formData, [name]: type === 'checkbox' ? checked : value });
   };
 
   const handleSubmit = async (e) => {
@@ -134,6 +137,20 @@ const CanteenForm = ({ canteen, onSuccess, onCancel }) => {
             required
             placeholder="e.g. 011-2345678"
           />
+        </div>
+
+        <div className="form-group full-width checkbox-group" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <input
+            id="isOpen"
+            type="checkbox"
+            name="isOpen"
+            checked={formData.isOpen}
+            onChange={handleInputChange}
+            style={{ width: '20px', height: '20px', cursor: 'pointer' }}
+          />
+          <label htmlFor="isOpen" style={{ marginBottom: 0, cursor: 'pointer' }}>
+            Active / Open for Business
+          </label>
         </div>
       </div>
 

@@ -14,7 +14,10 @@ const getQueueStatus = async (canteenId) => {
 };
 
 // Helper: Open/Closed
-const getStatus = (openTime, closeTime) => {
+const getStatus = (openTime, closeTime, isOpen) => {
+  // Manual override
+  if (isOpen === false) return 'Closed';
+  
   if (!openTime || !closeTime) return 'Closed';
   const now = new Date().getHours();
   const open = parseInt(openTime.split(':')[0]);
@@ -41,6 +44,7 @@ export const createCanteen = async (req, res) => {
       openTime,
       closeTime,
       contactNumber,
+      isOpen: req.body.isOpen !== undefined ? req.body.isOpen : true
     });
 
     if (canteen) {
@@ -63,7 +67,7 @@ export const getCanteens = async (req, res) => {
     const updated = await Promise.all(
       canteens.map(async (c) => ({
         ...c._doc,
-        status: getStatus(c.openTime, c.closeTime),
+        status: getStatus(c.openTime, c.closeTime, c.isOpen),
         queue: await getQueueStatus(c._id)
       }))
     );
@@ -83,7 +87,7 @@ export const getCanteenById = async (req, res) => {
     if (canteen) {
       res.json({
         ...canteen._doc,
-        status: getStatus(canteen.openTime, canteen.closeTime),
+        status: getStatus(canteen.openTime, canteen.closeTime, canteen.isOpen),
         queue: await getQueueStatus(canteen._id)
       });
     } else {
@@ -109,6 +113,10 @@ export const updateCanteen = async (req, res) => {
       canteen.openTime = openTime || canteen.openTime;
       canteen.closeTime = closeTime || canteen.closeTime;
       canteen.contactNumber = contactNumber || canteen.contactNumber;
+
+      if (req.body.isOpen !== undefined) {
+        canteen.isOpen = req.body.isOpen;
+      }
 
       const updatedCanteen = await canteen.save();
       res.json(updatedCanteen);

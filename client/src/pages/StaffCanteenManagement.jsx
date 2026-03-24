@@ -94,6 +94,7 @@ const StaffCanteenManagement = () => {
                   <th>Canteen Name</th>
                   <th>Location</th>
                   <th>Operating Hours</th>
+                  <th>Availability</th>
                   <th>Contact</th>
                   <th>Actions</th>
                 </tr>
@@ -110,6 +111,13 @@ const StaffCanteenManagement = () => {
                       <td>{canteen.location}</td>
                       <td>
                         <span className="badge-time">{canteen.openTime} - {canteen.closeTime}</span>
+                      </td>
+                      <td>
+                        {canteen.isOpen === false ? (
+                          <span className="badge-status-closed">Manual: Closed</span>
+                        ) : (
+                          <span className="badge-status-open">Auto (Open)</span>
+                        )}
                       </td>
                       <td>{canteen.contactNumber}</td>
                       <td>

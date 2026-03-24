@@ -94,6 +94,24 @@
   border: 1px solid var(--border-light);
 }
 
+.badge-status-open {
+  background-color: rgba(0, 150, 136, 0.1);
+  color: #009688;
+  padding: 0.4rem 1rem;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.badge-status-closed {
+  background-color: rgba(239, 35, 60, 0.1);
+  color: #ef233c;
+  padding: 0.4rem 1rem;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
 .action-buttons {
   display: flex;
   gap: 1rem;

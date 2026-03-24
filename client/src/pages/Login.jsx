@@ -3,6 +3,7 @@ import Navbar from '../components/Navbar.jsx';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext.jsx';
 import api from '../services/api.js';
+import { GoogleLogin } from '@react-oauth/google';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -32,6 +33,24 @@ const Login = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      setLoading(true);
+      const res = await api.post('/auth/google', { token: credentialResponse.credential });
+      login(res.data);
+      localStorage.setItem("token", res.data.token);
+      window.location.href = "/canteens";
+    } catch (err) {
+      setError('Google Sign-In failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleError = () => {
+    setError('Google Sign-In was unsuccessful.');
   };
 
   return (
@@ -88,7 +107,24 @@ const Login = () => {
               <button type="submit" className="btn btn-primary" style={{ marginTop: '0.5rem', width: '100%' }} disabled={loading}>
                 {loading ? 'Signing In...' : 'Sign In'}
               </button>
-              <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+              
+              <div style={{ margin: '1.5rem 0', display: 'flex', alignItems: 'center', textAlign: 'center', color: 'var(--text-light)' }}>
+                <div style={{ flex: 1, height: '1px', backgroundColor: '#e5e7eb' }}></div>
+                <span style={{ margin: '0 10px', fontSize: '0.9rem' }}>OR</span>
+                <div style={{ flex: 1, height: '1px', backgroundColor: '#e5e7eb' }}></div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+                <GoogleLogin 
+                  onSuccess={handleGoogleSuccess}
+                  onError={handleGoogleError}
+                  theme="filled_blue"
+                  shape="rectangular"
+                  width="100%"
+                />
+              </div>
+
+              <div style={{ textAlign: 'center', marginTop: '1rem' }}>
                 <span style={{ color: 'var(--text-light)' }}>Don't have an account? </span>
                 <Link to="/register" style={{ fontWeight: '600' }}>Create one</Link>
               </div>

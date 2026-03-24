@@ -15,51 +15,6 @@
   margin-bottom: 1.5rem;
 }
 
-.announcement-banner {
-  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
-  border-left: 5px solid #d97706;
-  border-radius: 16px;
-  padding: 1.2rem;
-  margin-bottom: 2rem;
-  display: flex;
-  align-items: flex-start;
-  gap: 1.2rem;
-  box-shadow: 0 4px 15px rgba(217, 119, 6, 0.1);
-  animation: slideInDown 0.5s ease-out;
-}
-
-@keyframes slideInDown {
-  from { opacity: 0; transform: translateY(-20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.announcement-icon {
-  font-size: 1.8rem;
-  line-height: 1;
-}
-
-.announcement-content {
-  flex: 1;
-}
-
-.announcement-title {
-  display: block;
-  font-size: 0.85rem;
-  font-weight: 800;
-  color: #92400e;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 0.3rem;
-}
-
-.announcement-message {
-  color: #7b341e;
-  font-size: 1.05rem;
-  font-weight: 500;
-  margin: 0;
-  line-height: 1.5;
-}
-
 .back-btn {
   background: none;
   border: none;

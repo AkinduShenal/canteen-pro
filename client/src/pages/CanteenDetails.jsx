@@ -11,8 +11,6 @@ const CanteenDetails = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const [announcement, setAnnouncement] = useState(null);
-
   useEffect(() => {
     const fetchCanteen = async () => {
       try {
@@ -26,18 +24,7 @@ const CanteenDetails = () => {
       }
     };
 
-    const fetchAnnouncement = async () => {
-      try {
-        const { data } = await api.get(`/announcements/${id}`);
-        setAnnouncement(data);
-      } catch (err) {
-        console.error('Error fetching announcement:', err);
-        // Silently fail for announcement, as it's optional
-      }
-    };
-
     fetchCanteen();
-    fetchAnnouncement();
   }, [id]);
 
   if (loading) {
@@ -79,16 +66,6 @@ const CanteenDetails = () => {
             ← Back to Directory
           </button>
         </div>
-
-        {announcement && (
-          <div className="announcement-banner">
-            <div className="announcement-icon">📢</div>
-            <div className="announcement-content">
-              <span className="announcement-title">Announcement</span>
-              <p className="announcement-message">{announcement.message}</p>
-            </div>
-          </div>
-        )}
 
         <div className="canteen-details-card">
           <div className="details-image-section">

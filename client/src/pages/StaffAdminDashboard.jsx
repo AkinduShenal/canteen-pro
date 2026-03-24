@@ -53,6 +53,7 @@ const StaffAdminDashboard = () => {
   const [feedbackItems, setFeedbackItems] = useState([]);
   const [canteens, setCanteens] = useState([]);
   const [dashboardMetrics, setDashboardMetrics] = useState(null);
+  const [dashboardMetricsLoading, setDashboardMetricsLoading] = useState(true);
   const [isMetricsStreamConnected, setIsMetricsStreamConnected] = useState(false);
 
   const [statusFilter, setStatusFilter] = useState('');
@@ -171,8 +172,10 @@ const StaffAdminDashboard = () => {
     try {
       const { data } = await staffAdminApi.getDashboardMetrics();
       setDashboardMetrics(data || null);
+      setDashboardMetricsLoading(false);
     } catch (err) {
       // Keep dashboard usable even if metrics endpoint fails temporarily.
+      setDashboardMetricsLoading(false);
     }
   }, [hasAccess]);
 
@@ -227,6 +230,7 @@ const StaffAdminDashboard = () => {
       try {
         const payload = JSON.parse(event.data || '{}');
         setDashboardMetrics(payload || null);
+        setDashboardMetricsLoading(false);
         setIsMetricsStreamConnected(true);
       } catch (error) {
         // ignore malformed message and keep fallback polling active
@@ -637,12 +641,14 @@ const StaffAdminDashboard = () => {
                   <AdminDashboardOverview
                     dashboardStats={dashboardStats}
                     dashboardTrends={dashboardTrends}
+                    isLoading={dashboardMetricsLoading}
                     onNavigate={(path) => navigate(`/dashboard/${path}`)}
                   />
                 ) : (
                   <CanteenDashboardOverview
                     dashboardStats={dashboardStats}
                     dashboardTrends={dashboardTrends}
+                    isLoading={dashboardMetricsLoading}
                     onNavigate={(path) => navigate(`/dashboard/${path}`)}
                   />
                 )

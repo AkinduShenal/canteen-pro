@@ -207,8 +207,51 @@ const QuickActionItem = ({ icon: Icon, title, subtitle, tone, onClick }) => (
   </motion.button>
 );
 
+const DashboardLoadingSkeleton = () => (
+  <motion.div
+    initial={{ opacity: 0, y: 8 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.3 }}
+    className="tw-space-y-6"
+  >
+    <motion.div
+      animate={{ opacity: [0.55, 1, 0.55] }}
+      transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
+      className="tw-rounded-2xl tw-border tw-bg-white tw-p-4"
+      style={{ borderColor: '#e7eaf0' }}
+    >
+      <div className="tw-h-4 tw-w-48 tw-rounded-full tw-bg-slate-200" />
+      <div className="tw-mt-2 tw-h-3 tw-w-72 tw-rounded-full tw-bg-slate-100" />
+    </motion.div>
+
+    <div className="tw-grid tw-grid-cols-1 tw-gap-4 lg:tw-grid-cols-2 xl:tw-grid-cols-4">
+      {[1, 2, 3, 4].map((idx) => (
+        <motion.div
+          key={idx}
+          animate={{ opacity: [0.5, 0.95, 0.5] }}
+          transition={{ duration: 1.25, repeat: Infinity, delay: idx * 0.1, ease: 'easeInOut' }}
+          className="tw-h-[126px] tw-rounded-3xl tw-bg-slate-200/80"
+        />
+      ))}
+    </div>
+
+    <div className="tw-grid tw-grid-cols-1 tw-gap-5 xl:tw-grid-cols-12">
+      <motion.div
+        animate={{ opacity: [0.5, 0.95, 0.5] }}
+        transition={{ duration: 1.3, repeat: Infinity, ease: 'easeInOut' }}
+        className="tw-h-[360px] tw-rounded-3xl tw-bg-slate-200/75 xl:tw-col-span-9"
+      />
+      <motion.div
+        animate={{ opacity: [0.5, 0.95, 0.5] }}
+        transition={{ duration: 1.3, repeat: Infinity, delay: 0.12, ease: 'easeInOut' }}
+        className="tw-h-[360px] tw-rounded-3xl tw-bg-slate-200/75 xl:tw-col-span-3"
+      />
+    </div>
+  </motion.div>
+);
+
 /* ─────────────────────── AdminDashboardOverview ─────────────────────── */
-const AdminDashboardOverview = ({ dashboardStats, dashboardTrends, onNavigate }) => {
+const AdminDashboardOverview = ({ dashboardStats, dashboardTrends, onNavigate, isLoading = false }) => {
   const [searchText, setSearchText] = useState('');
 
   const resolvedStats = useMemo(() => ({
@@ -294,6 +337,10 @@ const AdminDashboardOverview = ({ dashboardStats, dashboardTrends, onNavigate })
       (item) => item.title.toLowerCase().includes(term) || item.subtitle.toLowerCase().includes(term)
     );
   }, [quickActions, searchText]);
+
+  if (isLoading) {
+    return <DashboardLoadingSkeleton />;
+  }
 
   return (
     <motion.div

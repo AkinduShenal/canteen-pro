@@ -571,7 +571,22 @@ const StaffAdminDashboard = () => {
       />
       <aside className="dashboard-sidebar">
         <div>
-          <h2 className="sidebar-brand">CanteenPro</h2>
+          <div className="sidebar-brand-wrap" aria-label="CanteenPro">
+            <svg
+              className="sidebar-brand-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" stroke="currentColor" />
+              <path d="M7 2v20" stroke="currentColor" />
+              <path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7" stroke="currentColor" />
+            </svg>
+            <h2 className="sidebar-brand">CanteenPro</h2>
+          </div>
           <p className="sidebar-role">{isAdmin ? 'Administrator' : 'Canteen Staff'}</p>
 
           <nav className="sidebar-nav">

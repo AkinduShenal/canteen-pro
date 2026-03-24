@@ -682,14 +682,41 @@ a:hover {
   height: 100vh;
 }
 
-.sidebar-brand {
-  margin-bottom: 0.2rem;
+.sidebar-brand-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-bottom: 0.45rem;
   color: var(--primary-color);
+  min-width: 0;
+}
+
+.sidebar-brand-icon {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  filter: drop-shadow(0 1px 3px rgba(234, 88, 12, 0.14));
+}
+
+.sidebar-brand {
+  margin: 0;
+  color: var(--primary-color);
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.9rem, 2vw, 2.25rem);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  text-shadow: 1px 1px 0 rgba(255, 186, 8, 0.16);
+  white-space: nowrap;
 }
 
 .sidebar-role {
-  font-size: 0.9rem;
-  margin-bottom: 1rem;
+  margin: 0 0 1rem;
+  color: #6b5b59;
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 0.92rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
 }
 
 .sidebar-nav {
@@ -1525,6 +1552,16 @@ a:hover {
 }
 
 @media (max-width: 640px) {
+  .sidebar-brand {
+    font-size: 1.95rem;
+  }
+
+  .sidebar-brand-icon {
+    width: 28px;
+    height: 28px;
+    flex-basis: 28px;
+  }
+
   .stats-grid {
     grid-template-columns: 1fr;
   }

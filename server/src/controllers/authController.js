@@ -152,7 +152,7 @@ export const deleteUserProfile = async (req, res) => {
 // @access  Public
 export const googleAuth = async (req, res) => {
   try {
-    const { token } = req.body;
+    const { token, role } = req.body;
     
     // Verify Google token
     const ticket = await client.verifyIdToken({
@@ -189,7 +189,7 @@ export const googleAuth = async (req, res) => {
         email,
         googleId,
         profilePicture,
-        role: 'student' // default role
+        role: role || 'student' // use provided role or default to student
       });
       
       res.status(201).json({

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import Navbar from '../components/Navbar.jsx';
 import './CanteenDirectory.css';
 
 const CanteenDirectory = () => {
+  const navigate = useNavigate();
   const [canteens, setCanteens] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -65,7 +67,12 @@ const CanteenDirectory = () => {
                       Queue: {queue}
                     </div>
                   </div>
-                  <button className="view-details-btn">View Details</button>
+                  <button 
+                    className="view-details-btn"
+                    onClick={() => navigate(`/canteen/${canteen._id}`)}
+                  >
+                    View Details
+                  </button>
                 </div>
               </div>
             );

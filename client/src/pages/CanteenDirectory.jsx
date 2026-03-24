@@ -20,20 +20,6 @@ const CanteenDirectory = () => {
     fetchCanteens();
   }, []);
 
-  // Simple mock to check if open based on time roughly, 
-  // for a real app we would parse strict dates. 
-  // Here we just randomly pick open or closed to showcase UI state
-  // or just say Open if it's currently between 8am and 8pm.
-  const checkIfOpen = (openTime, closeTime) => {
-    const currHour = new Date().getHours();
-    return currHour >= 7 && currHour <= 21; // Mock check for demonstration
-  };
-
-  const getQueueStatus = () => {
-    const statuses = ['Low', 'Medium', 'High'];
-    return statuses[Math.floor(Math.random() * statuses.length)];
-  };
-
   if (loading) {
     return <div className="canteen-directory-loader">Loading Canteens...</div>;
   }
@@ -47,8 +33,8 @@ const CanteenDirectory = () => {
       
       <div className="canteen-grid">
         {canteens.map((canteen) => {
-          const isOpen = checkIfOpen(canteen.openTime, canteen.closeTime);
-          const queue = getQueueStatus();
+          const isOpen = canteen.status === 'Open';
+          const queue = canteen.queue || 'Low';
           
           return (
             <div key={canteen._id} className="canteen-card">

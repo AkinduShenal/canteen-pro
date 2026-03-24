@@ -14,13 +14,11 @@ const getQueueStatus = async (canteenId) => {
 };
 
 const getStatus = (openTime, closeTime, isOpen) => {
-  // Manual override: If isOpen is explicitly false, it's Closed.
-  // If it's true, it overrides the time-based logic to be Open.
-  // This supports the requirement for manual control override.
-  if (isOpen === false) return 'Closed';
+  // Manual override: If isOpen is explicitly true or false, use it.
   if (isOpen === true) return 'Open';
+  if (isOpen === false) return 'Closed';
 
-  // Fallback to automatic time-based logic (if isOpen was somehow undefined)
+  // Automatic: If isOpen is null or undefined, calculate based on time.
   if (!openTime || !closeTime) return 'Closed';
 
   const parseTime = (timeStr) => {
@@ -65,7 +63,7 @@ export const createCanteen = async (req, res) => {
       openTime,
       closeTime,
       contactNumber,
-      isOpen: req.body.isOpen !== undefined ? req.body.isOpen : true
+      isOpen: req.body.isOpen !== undefined ? req.body.isOpen : null
     });
 
     if (canteen) {
@@ -175,7 +173,17 @@ export const toggleCanteenStatus = async (req, res) => {
     const canteen = await Canteen.findById(req.params.id);
 
     if (canteen) {
-      canteen.isOpen = !canteen.isOpen;
+      // If currently null (Automatic), get the current status to decide what to toggle to.
+      if (canteen.isOpen === null || canteen.isOpen === undefined) {
+        const currentStatus = getStatus(canteen.openTime, canteen.closeTime, canteen.isOpen);
+        // If it's currently Open (auto), toggle to Manually Closed (false).
+        // If it's currently Closed (auto), toggle to Manually Open (true).
+        canteen.isOpen = (currentStatus === 'Open') ? false : true;
+      } else {
+        // Normal toggle for Boolean values
+        canteen.isOpen = !canteen.isOpen;
+      }
+
       const updatedCanteen = await canteen.save();
       
       // Calculate display status for the response

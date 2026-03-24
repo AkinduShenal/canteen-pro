@@ -23,7 +23,7 @@ const canteenSchema = new mongoose.Schema({
   },
   isOpen: {
     type: Boolean,
-    default: true
+    default: null
   }
 }, { timestamps: true });
 

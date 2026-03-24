@@ -16,15 +16,9 @@ const StaffCanteenManagement = () => {
   const [canteenToDelete, setCanteenToDelete] = useState(null);
 
   const { user } = useContext(AuthContext);
-  const navigate = useNavigate();
-
   useEffect(() => {
-    if (!user || (user.role !== 'staff' && user.role !== 'admin')) {
-      navigate('/canteens');
-      return;
-    }
     fetchCanteens();
-  }, [user, navigate]);
+  }, []);
 
   const fetchCanteens = async () => {
     try {

@@ -7,6 +7,8 @@ import Profile from './pages/Profile.jsx';
 import CanteenDirectory from './pages/CanteenDirectory.jsx';
 import CanteenDetails from './pages/CanteenDetails.jsx';
 import StaffCanteenManagement from './pages/StaffCanteenManagement.jsx';
+import Unauthorized from './pages/Unauthorized.jsx';
+import RoleProtectedRoute from './components/RoleProtectedRoute.jsx';
 
 function App() {
   return (
@@ -19,7 +21,15 @@ function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/canteens" element={<CanteenDirectory />} />
           <Route path="/canteen/:id" element={<CanteenDetails />} />
-          <Route path="/staff/canteens" element={<StaffCanteenManagement />} />
+          <Route 
+            path="/staff/canteens" 
+            element={
+              <RoleProtectedRoute allowedRoles={['staff', 'admin']}>
+                <StaffCanteenManagement />
+              </RoleProtectedRoute>
+            } 
+          />
+          <Route path="/unauthorized" element={<Unauthorized />} />
         </Routes>
       </div>
     </Router>

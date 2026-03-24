@@ -98,6 +98,18 @@ const ORDER_BLUEPRINTS = [
       { name: 'Vegetable Rotti', quantity: 2, price: 140 },
     ],
   },
+  {
+    token: 'BST-S003',
+    canteen: 'Basement Canteen',
+    studentEmail: 'samplestudentone@gmail.com',
+    status: 'completed',
+    pickupOffsetMins: -65,
+    notes: '',
+    items: [
+      { name: 'Cheese Sandwich', quantity: 1, price: 260 },
+      { name: 'Iced Coffee', quantity: 1, price: 280 },
+    ],
+  },
 
   {
     token: 'NEW-S001',
@@ -180,18 +192,6 @@ const ORDER_BLUEPRINTS = [
       { name: 'Cheese Kottu', quantity: 1, price: 760 },
     ],
   },
-  {
-    token: 'ANO-S002',
-    canteen: 'Anohana Canteen',
-    studentEmail: 'samplestudenttwo@gmail.com',
-    status: 'cancelled',
-    pickupOffsetMins: -20,
-    notes: 'Out of stock demo',
-    items: [
-      { name: 'Milo', quantity: 1, price: 200 },
-      { name: 'Vegetable Roll', quantity: 2, price: 90 },
-    ],
-  },
 ];
 
 const seedOrders = async () => {
@@ -202,6 +202,8 @@ const seedOrders = async () => {
     if (canteens.length === 0) {
       throw new Error('No canteens found. Run seed:canteens first.');
     }
+
+    await Order.deleteMany({ token: { $regex: /^(BST|NEW|ANO)-/ } });
 
     for (const student of SAMPLE_STUDENTS) {
       const existing = await User.findOne({ email: student.email });

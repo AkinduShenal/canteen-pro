@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { useContext, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AdminOrderCard from '../../components/admin/AdminOrderCard.jsx';
 import DashboardUtilityBar from '../../components/common/DashboardUtilityBar.jsx';
@@ -146,15 +146,6 @@ const CanteenOrdersContent = ({
       (order) => String(order?.canteenId?._id || order?.canteenId || '') === String(assignedCanteenId),
     );
   }, [sortedOrders, assignedCanteenId]);
-
-  useEffect(() => {
-    fetchOrders({ priorityOnly });
-  }, [fetchOrders, priorityOnly, statusFilter]);
-
-  useEffect(() => {
-    const t = setInterval(() => fetchOrders({ priorityOnly }), 5000);
-    return () => clearInterval(t);
-  }, [fetchOrders, priorityOnly]);
 
   const filteredOrders = useMemo(() => {
     const query = searchText.trim().toLowerCase();

@@ -325,15 +325,36 @@ const StaffAdminDashboard = () => {
   };
 
   const sortedOrders = useMemo(() => {
-    return [...orders].sort((a, b) => new Date(a.pickupTime) - new Date(b.pickupTime));
-  }, [orders]);
+    const assignedCanteenId = user?.assignedCanteen?._id || user?.assignedCanteen || '';
+    const sourceOrders = isStaff
+      ? orders.filter(
+          (order) =>
+            String(order?.canteenId?._id || order?.canteenId || '') === String(assignedCanteenId),
+        )
+      : orders;
+
+    return [...sourceOrders].sort((a, b) => new Date(a.pickupTime) - new Date(b.pickupTime));
+  }, [orders, isStaff, user?.assignedCanteen]);
+
+  useEffect(() => {
+    if (!isStaff) return undefined;
+    if (!['orders', 'priority-queue'].includes(activeTab)) return undefined;
+
+    const intervalId = setInterval(() => {
+      fetchOrders({ priorityOnly: activeTab === 'priority-queue' || priorityOnly });
+    }, 5000);
+
+    return () => clearInterval(intervalId);
+  }, [activeTab, fetchOrders, isStaff, priorityOnly]);
 
   const fallbackDashboardStats = useMemo(() => {
+    const scopedOrderSource = isStaff ? sortedOrders : orders;
+
     return {
-      totalOrders: orders.length,
-      pending: orders.filter((order) => order.status === 'pending').length,
-      preparing: orders.filter((order) => ['accepted', 'preparing'].includes(order.status)).length,
-      ready: orders.filter((order) => order.status === 'ready').length,
+      totalOrders: scopedOrderSource.length,
+      pending: scopedOrderSource.filter((order) => order.status === 'pending').length,
+      preparing: scopedOrderSource.filter((order) => ['accepted', 'preparing'].includes(order.status)).length,
+      ready: scopedOrderSource.filter((order) => order.status === 'ready').length,
       feedbackCount: feedbackItems.filter((item) => !item?.feedback?.isHidden).length,
       canteenStaffCount: 0,
       averageRating:
@@ -351,7 +372,7 @@ const StaffAdminDashboard = () => {
             )
           : 0,
     };
-  }, [feedbackItems, orders]);
+  }, [feedbackItems, isStaff, orders, sortedOrders]);
 
   const dashboardStats = useMemo(() => {
     if (!dashboardMetrics?.stats) {

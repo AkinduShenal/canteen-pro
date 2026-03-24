@@ -51,7 +51,6 @@ const StaffAdminDashboard = () => {
   const [orders, setOrders] = useState([]);
   const [feedbackItems, setFeedbackItems] = useState([]);
   const [canteens, setCanteens] = useState([]);
-  const [reports, setReports] = useState(null);
   const [dashboardMetrics, setDashboardMetrics] = useState(null);
 
   const [statusFilter, setStatusFilter] = useState('');
@@ -154,13 +153,8 @@ const StaffAdminDashboard = () => {
     setLoading(true);
     clearFlash();
     try {
-      const [canteenRes, reportsRes] = await Promise.all([
-        staffAdminApi.getAllCanteens(),
-        staffAdminApi.getBasicReports(),
-      ]);
-
+      const canteenRes = await staffAdminApi.getAllCanteens();
       setCanteens(canteenRes.data || []);
-      setReports(reportsRes.data || null);
     } catch (err) {
       showError(err, 'Failed to load admin dashboard data');
     } finally {
@@ -672,7 +666,7 @@ const StaffAdminDashboard = () => {
                 }
               />
             )}
-            {isAdmin && <Route path="reports" element={<AdminReportsContent reports={reports} />} />}
+            {isAdmin && <Route path="reports" element={<AdminReportsContent />} />}
             <Route path="*" element={<Navigate to={defaultTabPath} replace />} />
           </Routes>
         </div>

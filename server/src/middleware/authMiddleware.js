@@ -30,9 +30,17 @@ export const protect = async (req, res, next) => {
 };
 
 export const admin = (req, res, next) => {
-  if (req.user && (req.user.role === 'admin' || req.user.role === 'staff')) {
+  if (req.user && req.user.role === 'admin') {
     next();
   } else {
-    res.status(403).json({ message: 'Not authorized as an admin or staff' });
+    res.status(403).json({ message: 'Not authorized as an admin' });
+  }
+};
+
+export const staff = (req, res, next) => {
+  if (req.user && (req.user.role === 'staff' || req.user.role === 'admin')) {
+    next();
+  } else {
+    res.status(403).json({ message: 'Not authorized as staff' });
   }
 };

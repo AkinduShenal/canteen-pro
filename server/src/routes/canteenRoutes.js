@@ -6,15 +6,15 @@ import {
   updateCanteen,
   deleteCanteen,
 } from '../controllers/canteenController.js';
-import { protect, admin } from '../middleware/authMiddleware.js';
+import { protect, staff } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-router.route('/').get(getCanteens).post(protect, admin, createCanteen);
+router.route('/').get(getCanteens).post(protect, staff, createCanteen);
 router
   .route('/:id')
   .get(getCanteenById)
-  .put(protect, admin, updateCanteen)
-  .delete(protect, admin, deleteCanteen);
+  .put(protect, staff, updateCanteen)
+  .delete(protect, staff, deleteCanteen);
 
 export default router;

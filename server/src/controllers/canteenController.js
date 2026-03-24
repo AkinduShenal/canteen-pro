@@ -13,17 +13,38 @@ const getQueueStatus = async (canteenId) => {
   return 'High';
 };
 
-// Helper: Open/Closed
 const getStatus = (openTime, closeTime, isOpen) => {
-  // Manual override
+  // Manual override: If isOpen is explicitly false, it's Closed.
+  // If it's true, it overrides the time-based logic to be Open.
+  // This supports the requirement for manual control override.
   if (isOpen === false) return 'Closed';
-  
-  if (!openTime || !closeTime) return 'Closed';
-  const now = new Date().getHours();
-  const open = parseInt(openTime.split(':')[0]);
-  const close = parseInt(closeTime.split(':')[0]);
+  if (isOpen === true) return 'Open';
 
-  return (now >= open && now < close) ? 'Open' : 'Closed';
+  // Fallback to automatic time-based logic (if isOpen was somehow undefined)
+  if (!openTime || !closeTime) return 'Closed';
+
+  const parseTime = (timeStr) => {
+    const [time, modifier] = timeStr.split(' ');
+    let [hours, minutes] = time.split(':');
+    hours = parseInt(hours, 10);
+    if (modifier === 'PM' && hours < 12) hours += 12;
+    if (modifier === 'AM' && hours === 12) hours = 0;
+    return hours * 60 + (parseInt(minutes, 10) || 0);
+  };
+
+  const now = new Date();
+  // Use current IST time as per system prompt metadata if needed, 
+  // but standard Date() is usually fine for local execution.
+  // The system metadata says it's 2026-03-25T03:04:08+05:30.
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+  try {
+    const openMinutes = parseTime(openTime);
+    const closeMinutes = parseTime(closeTime);
+    return (currentMinutes >= openMinutes && currentMinutes < closeMinutes) ? 'Open' : 'Closed';
+  } catch (e) {
+    return 'Closed';
+  }
 };
 
 // @desc    Create a new canteen

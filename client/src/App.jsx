@@ -6,6 +6,7 @@ import Register from './pages/Register.jsx';
 import Profile from './pages/Profile.jsx';
 import CanteenDirectory from './pages/CanteenDirectory.jsx';
 import CanteenDetails from './pages/CanteenDetails.jsx';
+import StaffCanteenManagement from './pages/StaffCanteenManagement.jsx';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/canteens" element={<CanteenDirectory />} />
           <Route path="/canteen/:id" element={<CanteenDetails />} />
+          <Route path="/staff/canteens" element={<StaffCanteenManagement />} />
         </Routes>
       </div>
     </Router>

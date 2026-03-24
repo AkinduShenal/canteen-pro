@@ -1,0 +1,254 @@
+.management-container {
+  padding: 3rem 5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.management-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3.5rem;
+}
+
+.management-header h1 {
+  font-size: 2.8rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-main);
+}
+
+.subtitle {
+  color: var(--text-light);
+  font-size: 1.15rem;
+}
+
+.add-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 1.2rem 2.2rem;
+  border-radius: var(--radius-md);
+  box-shadow: 0 10px 25px rgba(232, 93, 4, 0.25);
+}
+
+.add-btn .icon {
+  font-size: 1.4rem;
+  font-weight: 400;
+}
+
+/* Table Styles - Premium & Modern */
+.table-responsive {
+  background: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  border: 1px solid var(--border-light);
+}
+
+.management-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.management-table th {
+  background-color: #faf8f5;
+  padding: 1.5rem 2rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+  color: var(--text-light);
+  border-bottom: 2px solid var(--border-light);
+}
+
+.management-table td {
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid var(--border-light);
+  color: var(--text-main);
+  font-size: 1.05rem;
+  vertical-align: middle;
+}
+
+.management-table tr:last-child td {
+  border-bottom: none;
+}
+
+.management-table tr:hover {
+  background-color: #fffaf0;
+}
+
+.font-bold {
+  font-weight: 700;
+  color: var(--text-main);
+  font-size: 1.15rem;
+}
+
+.badge-time {
+  background: var(--bg-color);
+  padding: 0.4rem 1rem;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: 1px solid var(--border-light);
+}
+
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.btn-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+  background: #f8f9fa;
+  font-size: 1.2rem;
+}
+
+.btn-icon.edit {
+  color: #4361ee;
+  border-color: rgba(67, 97, 238, 0.1);
+}
+
+.btn-icon.edit:hover {
+  background-color: #4361ee;
+  color: white;
+  transform: translateY(-2px);
+}
+
+.btn-icon.delete {
+  color: #ef233c;
+  border-color: rgba(239, 35, 60, 0.1);
+}
+
+.btn-icon.delete:hover {
+  background-color: #ef233c;
+  color: white;
+  transform: translateY(-2px);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 4rem !important;
+  color: var(--text-light);
+  font-style: italic;
+}
+
+/* Modal Styling */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(43, 29, 22, 0.7);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.modal-content {
+  background: white;
+  width: 100%;
+  max-width: 650px;
+  border-radius: var(--radius-lg);
+  padding: 3rem;
+  position: relative;
+  box-shadow: var(--shadow-lg);
+  animation: scaleUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2.5rem;
+}
+
+.modal-header h2 {
+  font-size: 2.2rem;
+  margin-bottom: 0;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 2.5rem;
+  color: var(--text-light);
+  cursor: pointer;
+  line-height: 1;
+}
+
+.close-btn:hover {
+  color: var(--primary-color);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.full-width {
+  grid-column: span 2;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: flex-end;
+}
+
+.loader-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 5rem;
+  gap: 1.5rem;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@media (max-width: 992px) {
+  .management-container {
+    padding: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .full-width {
+    grid-column: span 1;
+  }
+  .management-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.5rem;
+  }
+}

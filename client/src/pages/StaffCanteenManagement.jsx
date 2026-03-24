@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import Navbar from '../components/Navbar.jsx';
+import CanteenForm from '../components/CanteenForm.jsx';
 import { AuthContext } from '../context/AuthContext.jsx';
 import './StaffCanteenManagement.css';
 
@@ -11,13 +12,6 @@ const StaffCanteenManagement = () => {
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCanteen, setEditingCanteen] = useState(null);
-  const [formData, setFormData] = useState({
-    name: '',
-    location: '',
-    openTime: '08:00',
-    closeTime: '20:00',
-    contactNumber: ''
-  });
 
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -43,49 +37,19 @@ const StaffCanteenManagement = () => {
     }
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
-
   const openAddModal = () => {
     setEditingCanteen(null);
-    setFormData({
-      name: '',
-      location: '',
-      openTime: '08:00',
-      closeTime: '20:00',
-      contactNumber: ''
-    });
     setIsModalOpen(true);
   };
 
   const openEditModal = (canteen) => {
     setEditingCanteen(canteen);
-    setFormData({
-      name: canteen.name,
-      location: canteen.location,
-      openTime: canteen.openTime,
-      closeTime: canteen.closeTime,
-      contactNumber: canteen.contactNumber
-    });
     setIsModalOpen(true);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      if (editingCanteen) {
-        await api.put(`/canteens/${editingCanteen._id}`, formData);
-      } else {
-        await api.post('/canteens', formData);
-      }
-      setIsModalOpen(false);
-      fetchCanteens();
-    } catch (err) {
-      console.error('Error saving canteen:', err);
-      alert(err.response?.data?.message || 'Error saving canteen.');
-    }
+  const handleFormSuccess = () => {
+    setIsModalOpen(false);
+    fetchCanteens();
   };
 
   const handleDelete = async (id) => {
@@ -172,34 +136,11 @@ const StaffCanteenManagement = () => {
                 <h2>{editingCanteen ? 'Edit Canteen' : 'Add New Canteen'}</h2>
                 <button className="close-btn" onClick={() => setIsModalOpen(false)}>&times;</button>
               </div>
-              <form onSubmit={handleSubmit} className="management-form">
-                <div className="form-grid">
-                  <div className="form-group">
-                    <label>Name</label>
-                    <input name="name" value={formData.name} onChange={handleInputChange} required placeholder="Canteen Name" />
-                  </div>
-                  <div className="form-group">
-                    <label>Location</label>
-                    <input name="location" value={formData.location} onChange={handleInputChange} required placeholder="Building / Floor" />
-                  </div>
-                  <div className="form-group">
-                    <label>Open Time</label>
-                    <input type="time" name="openTime" value={formData.openTime} onChange={handleInputChange} required />
-                  </div>
-                  <div className="form-group">
-                    <label>Close Time</label>
-                    <input type="time" name="closeTime" value={formData.closeTime} onChange={handleInputChange} required />
-                  </div>
-                  <div className="form-group full-width">
-                    <label>Contact Number</label>
-                    <input name="contactNumber" value={formData.contactNumber} onChange={handleInputChange} required placeholder="011-XXXXXXX" />
-                  </div>
-                </div>
-                <div className="modal-actions">
-                  <button type="button" className="btn btn-outline" onClick={() => setIsModalOpen(false)}>Cancel</button>
-                  <button type="submit" className="btn btn-primary">{editingCanteen ? 'Update Canteen' : 'Saves Canteen'}</button>
-                </div>
-              </form>
+              <CanteenForm 
+                canteen={editingCanteen} 
+                onSuccess={handleFormSuccess} 
+                onCancel={() => setIsModalOpen(false)} 
+              />
             </div>
           </div>
         )}

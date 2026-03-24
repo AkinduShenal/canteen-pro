@@ -156,11 +156,13 @@
 .text-closed { color: #dc2626; }
 
 .details-actions {
-  margin-top: auto;
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 2.5rem;
 }
 
 .view-menu-btn {
-  width: 100%;
+  flex: 1;
   padding: 1.2rem;
   background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
   color: white;
@@ -179,8 +181,45 @@
   background: linear-gradient(135deg, #4338ca 0%, #3730a3 100%);
 }
 
-.view-menu-btn:active {
-  transform: translateY(-1px);
+.quick-toggle-btn {
+  flex: 1;
+  padding: 1.2rem;
+  border-radius: 16px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.quick-toggle-btn.close {
+  background-color: transparent;
+  color: #c2410c;
+  border: 2px solid #fdba74;
+}
+
+.quick-toggle-btn.close:hover {
+  background-color: #fff7ed;
+  border-color: #f97316;
+  transform: translateY(-3px);
+}
+
+.quick-toggle-btn.open {
+  background-color: transparent;
+  color: #15803d;
+  border: 2px solid #86efac;
+}
+
+.quick-toggle-btn.open:hover {
+  background-color: #f0fdf4;
+  border-color: #22c55e;
+  transform: translateY(-3px);
+}
+
+.quick-toggle-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* Loader Styling */

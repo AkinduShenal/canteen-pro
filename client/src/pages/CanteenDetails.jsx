@@ -1,15 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import Navbar from '../components/Navbar.jsx';
+import { AuthContext } from '../context/AuthContext.jsx';
 import './CanteenDetails.css';
 
 const CanteenDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
   const [canteen, setCanteen] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [toggling, setToggling] = useState(false);
 
   useEffect(() => {
     const fetchCanteen = async () => {
@@ -26,6 +29,20 @@ const CanteenDetails = () => {
 
     fetchCanteen();
   }, [id]);
+
+  const handleToggleStatus = async () => {
+    if (toggling) return;
+    try {
+      setToggling(true);
+      const { data } = await api.put(`/canteens/${id}/status`);
+      setCanteen(data);
+    } catch (err) {
+      console.error('Error toggling status:', err);
+      alert('Failed to update canteen status.');
+    } finally {
+      setToggling(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -119,6 +136,16 @@ const CanteenDetails = () => {
               >
                 View Menu
               </button>
+              
+              {(user?.role === 'staff' || user?.role === 'admin') && (
+                <button 
+                  className={`quick-toggle-btn ${isOpen ? 'close' : 'open'}`}
+                  onClick={handleToggleStatus}
+                  disabled={toggling}
+                >
+                  {toggling ? 'Updating...' : (isOpen ? 'Close Canteen' : 'Open Canteen')}
+                </button>
+              )}
             </div>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
+import Navbar from '../components/Navbar.jsx';
 import './CanteenDirectory.css';
 
 const CanteenDirectory = () => {
@@ -25,48 +26,51 @@ const CanteenDirectory = () => {
   }
 
   return (
-    <div className="canteen-directory-container">
-      <div className="canteen-directory-header">
-        <h1>Campus Canteens</h1>
-        <p>Explore all dining options across the university campus</p>
-      </div>
-      
-      <div className="canteen-grid">
-        {canteens.map((canteen) => {
-          const isOpen = canteen.status === 'Open';
-          const queue = canteen.queue || 'Low';
-          
-          return (
-            <div key={canteen._id} className="canteen-card">
-              <div className="canteen-card-image">
-                <div className={`status-badge ${isOpen ? 'open' : 'closed'}`}>
-                  {isOpen ? 'Open Now' : 'Closed'}
-                </div>
-              </div>
-              <div className="canteen-card-content">
-                <h2>{canteen.name}</h2>
-                <div className="canteen-info">
-                  <div className="info-item">
-                    <span className="icon">📍</span>
-                    <span>{canteen.location}</span>
-                  </div>
-                  <div className="info-item">
-                    <span className="icon">⏱️</span>
-                    <span>{canteen.openTime} - {canteen.closeTime}</span>
-                  </div>
-                  <div className="info-item">
-                    <span className="icon">📞</span>
-                    <span>{canteen.contactNumber}</span>
-                  </div>
-                  <div className={`queue-badge queue-${queue.toLowerCase()}`}>
-                    Queue: {queue}
+    <div className="app-container">
+      <Navbar />
+      <div className="canteen-directory-container">
+        <div className="canteen-directory-header">
+          <h1>Campus Canteens</h1>
+          <p>Explore all dining options across the university campus</p>
+        </div>
+        
+        <div className="canteen-grid">
+          {canteens.map((canteen) => {
+            const isOpen = canteen.status === 'Open';
+            const queue = canteen.queue || 'Low';
+            
+            return (
+              <div key={canteen._id} className="canteen-card">
+                <div className="canteen-card-image">
+                  <div className={`status-badge ${isOpen ? 'open' : 'closed'}`}>
+                    {isOpen ? 'Open Now' : 'Closed'}
                   </div>
                 </div>
-                <button className="view-details-btn">View Details</button>
+                <div className="canteen-card-content">
+                  <h2>{canteen.name}</h2>
+                  <div className="canteen-info">
+                    <div className="info-item">
+                      <span className="icon">📍</span>
+                      <span>{canteen.location}</span>
+                    </div>
+                    <div className="info-item">
+                      <span className="icon">⏱️</span>
+                      <span>{canteen.openTime} - {canteen.closeTime}</span>
+                    </div>
+                    <div className="info-item">
+                      <span className="icon">📞</span>
+                      <span>{canteen.contactNumber}</span>
+                    </div>
+                    <div className={`queue-badge queue-${queue.toLowerCase()}`}>
+                      Queue: {queue}
+                    </div>
+                  </div>
+                  <button className="view-details-btn">View Details</button>
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
     </div>
   );

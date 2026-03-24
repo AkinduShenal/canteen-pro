@@ -1,6 +1,8 @@
 import Order from '../../models/Order.js';
 import User from '../../models/User.js';
 
+const DASHBOARD_STREAM_REFRESH_MS = 7000;
+
 const buildDashboardMetricsPayload = async (currentUser) => {
   const baseMatch = {};
 
@@ -170,14 +172,20 @@ export const streamDashboardMetrics = async (req, res) => {
     const initialPayload = await buildDashboardMetricsPayload(req.user);
     sendEvent('metrics', initialPayload);
 
+    let isStreamingInProgress = false;
+
     const metricsInterval = setInterval(async () => {
+      if (isStreamingInProgress) return;
+      isStreamingInProgress = true;
       try {
         const payload = await buildDashboardMetricsPayload(req.user);
         sendEvent('metrics', payload);
       } catch (error) {
         sendEvent('error', { message: error.message || 'Failed to stream dashboard metrics' });
+      } finally {
+        isStreamingInProgress = false;
       }
-    }, 4000);
+    }, DASHBOARD_STREAM_REFRESH_MS);
 
     const heartbeatInterval = setInterval(() => {
       res.write(': ping\n\n');

@@ -3,13 +3,36 @@ import api from '../services/api.js';
 
 export const AuthContext = createContext();
 
+const AUTH_USER_KEY = 'user';
+
+const getStoredUser = () => {
+  const fromSession = sessionStorage.getItem(AUTH_USER_KEY);
+  if (fromSession) return fromSession;
+  return localStorage.getItem(AUTH_USER_KEY);
+};
+
+const setStoredUser = (value) => {
+  sessionStorage.setItem(AUTH_USER_KEY, value);
+  localStorage.setItem(AUTH_USER_KEY, value);
+};
+
+const clearStoredUser = () => {
+  sessionStorage.removeItem(AUTH_USER_KEY);
+  localStorage.removeItem(AUTH_USER_KEY);
+};
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
     const syncUser = async () => {
-      const storedUser = localStorage.getItem('user');
+      const storedUser = getStoredUser();
       if (!storedUser) return;
+
+      // Keep tab-local auth isolated even if another tab logs in as a different canteen.
+      if (!sessionStorage.getItem(AUTH_USER_KEY)) {
+        sessionStorage.setItem(AUTH_USER_KEY, storedUser);
+      }
 
       try {
         const parsedUser = JSON.parse(storedUser);
@@ -23,11 +46,11 @@ export const AuthProvider = ({ children }) => {
             token: parsedUser.token,
           };
           setUser(refreshedUser);
-          localStorage.setItem('user', JSON.stringify(refreshedUser));
+          setStoredUser(JSON.stringify(refreshedUser));
         }
       } catch {
         setUser(null);
-        localStorage.removeItem('user');
+        clearStoredUser();
       }
     };
 
@@ -36,12 +59,12 @@ export const AuthProvider = ({ children }) => {
 
   const login = (userData) => {
     setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
+    setStoredUser(JSON.stringify(userData));
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('user');
+    clearStoredUser();
   };
 
   const updateUser = async (userData) => {

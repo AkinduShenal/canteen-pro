@@ -235,13 +235,14 @@ const StaffAdminDashboard = () => {
 
     eventSource.addEventListener('error', () => {
       setIsMetricsStreamConnected(false);
+      fetchDashboardMetrics();
     });
 
     return () => {
       setIsMetricsStreamConnected(false);
       eventSource.close();
     };
-  }, [API_BASE_URL, hasAccess, user?.token]);
+  }, [API_BASE_URL, fetchDashboardMetrics, hasAccess, user?.token]);
 
   const handleStatusUpdate = async (order, nextStatus, providedReason) => {
     const payload = { status: nextStatus };

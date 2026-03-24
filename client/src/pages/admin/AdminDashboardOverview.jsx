@@ -264,8 +264,16 @@ const AdminDashboardOverview = ({ dashboardStats, dashboardTrends, onNavigate })
         icon: HiOutlineChartBar,
         title: 'View Reports',
         subtitle: 'Analytics & insights',
-        tone: 'tw-bg-sky-50 hover:tw-bg-sky-100/80',
+        tone: 'tw-bg-violet-50 hover:tw-bg-violet-100/80',
         onClick: () => onNavigate('reports'),
+      },
+      {
+        key: 'feedback',
+        icon: HiOutlineStar,
+        title: 'View Feedback',
+        subtitle: 'Customer ratings & comments',
+        tone: 'tw-bg-sky-50 hover:tw-bg-sky-100/80',
+        onClick: () => onNavigate('feedback'),
       },
     ],
     [onNavigate, pending, ready]

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   HiOutlineClock,
@@ -63,7 +63,7 @@ const validateCanteenForm = (form) => {
     errors.name = 'Canteen name is required.';
   } else if (name.length < 3 || name.length > 60) {
     errors.name = 'Canteen name should be between 3 and 60 characters.';
-  } else if (!/^[A-Za-z0-9&()'’.,\-\s]+$/.test(name)) {
+  } else if (!/^[A-Za-z0-9&()''.,\-\s]+$/.test(name)) {
     errors.name = 'Use letters, numbers, spaces and basic symbols only.';
   }
 
@@ -139,6 +139,23 @@ const modalVariants = {
     y: 20,
     transition: { duration: 0.18 },
   },
+};
+
+// ─── Animated Counter hook ───────────────────────────────────────────────────
+
+const useAnimatedCounter = (target, duration = 700) => {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    let start = 0;
+    const step = target / (duration / 16);
+    const timer = setInterval(() => {
+      start += step;
+      if (start >= target) { setCount(target); clearInterval(timer); }
+      else setCount(Math.floor(start));
+    }, 16);
+    return () => clearInterval(timer);
+  }, [target, duration]);
+  return count;
 };
 
 // ─── sub-components ─────────────────────────────────────────────────────────
@@ -320,6 +337,14 @@ const AdminCanteensContent = ({ canteens, loading, onCreate, onUpdate, onDelete 
     setDeleteTarget(null);
   };
 
+  // Animated counters for stat cards
+  const totalCount = useAnimatedCounter(canteenSummary.total);
+  const openCount = useAnimatedCounter(canteenSummary.openNow);
+  const closedCount = useAnimatedCounter(canteenSummary.closedNow);
+  const showingCount = useAnimatedCounter(canteenSummary.showing);
+
+  const completedFields = 5 - Object.keys(formErrors).length;
+
   return (
     <>
       {/* ── toolbar ─────────────────────────────────────────────── */}
@@ -329,114 +354,160 @@ const AdminCanteensContent = ({ canteens, loading, onCreate, onUpdate, onDelete 
         placeholder="Search canteens by name, location, contact..."
       />
 
-      {/* ── summary/options strip ──────────────────────────────── */}
+      {/* ── REDESIGNED summary/stat cards ──────────────────────── */}
       <motion.section
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.32, ease: 'easeOut', delay: 0.03 }}
         className="tw-mb-5 tw-grid tw-grid-cols-1 md:tw-grid-cols-2 xl:tw-grid-cols-4 tw-gap-3"
       >
+        {/* Total Canteens */}
         <motion.article
-          whileHover={{ y: -3, boxShadow: '0 16px 28px rgba(127, 46, 13, 0.12)' }}
-          className="tw-relative tw-overflow-hidden tw-rounded-2xl tw-border tw-p-4 tw-shadow-lg tw-transition-all"
+          whileHover={{ y: -5, scale: 1.01 }}
+          transition={{ type: 'spring', stiffness: 280, damping: 20 }}
+          className="tw-relative tw-overflow-hidden tw-rounded-2xl tw-border tw-p-5 tw-cursor-default"
           style={{
+            background: 'linear-gradient(135deg, #fffdfb 0%, #fff4ec 100%)',
+            borderColor: '#f5e5d8',
+            boxShadow: '0 8px 28px rgba(127,46,13,0.10)',
             minHeight: 112,
-            background: 'linear-gradient(135deg, #fffdfb 0%, #fff7f1 100%)',
-            borderColor: '#f5e9de',
-            boxShadow: '0 10px 22px rgba(127, 46, 13, 0.08)',
           }}
         >
-          <div
-            className="tw-absolute tw-right-4 tw-top-4 tw-flex tw-h-10 tw-w-10 tw-items-center tw-justify-center tw-rounded-xl tw-text-white"
-            style={{
-              background: 'linear-gradient(135deg, #d9480f 0%, #f97316 100%)',
-              boxShadow: '0 8px 14px rgba(217, 72, 15, 0.22)',
-            }}
-          >
-            <HiOutlineOfficeBuilding className="tw-h-5 tw-w-5" />
+          {/* decorative blobs */}
+          <div className="tw-absolute tw--right-8 tw--top-8 tw-w-32 tw-h-32 tw-rounded-full tw-opacity-[0.07]" style={{ background: '#b53a0c' }} />
+          <div className="tw-absolute tw-right-5 tw-bottom-0 tw-w-16 tw-h-16 tw-rounded-full tw-opacity-[0.04]" style={{ background: '#b53a0c' }} />
+
+          <div className="tw-relative tw-flex tw-items-start tw-justify-between">
+            <div>
+              <p className="tw-m-0 tw-mb-2 tw-text-[11px] tw-font-semibold tw-uppercase tw-tracking-[0.08em]" style={{ color: '#c4866a' }}>
+                Total Canteens
+              </p>
+              <p
+                className="tw-m-0 tw-text-4xl tw-font-semibold tw-leading-none tw-tabular-nums"
+                style={{ color: '#b53a0c' }}
+              >
+                {totalCount}
+              </p>
+            </div>
+            <div
+              className="tw-flex tw-h-11 tw-w-11 tw-items-center tw-justify-center tw-rounded-2xl tw-text-white tw-shrink-0"
+              style={{ background: 'linear-gradient(135deg, #d9480f, #f97316)', boxShadow: '0 6px 16px rgba(217,72,15,0.28)' }}
+            >
+              <HiOutlineOfficeBuilding className="tw-h-5 tw-w-5" />
+            </div>
           </div>
-          <p className="tw-m-0 tw-text-[11px] tw-font-semibold tw-uppercase tw-tracking-[0.08em]" style={{ color: '#8c5a3b' }}>
-            Total canteens
-          </p>
-          <p className="tw-m-0 tw-mt-2 tw-text-4xl tw-font-semibold tw-leading-none" style={{ color: '#2b1d16' }}>{canteenSummary.total}</p>
         </motion.article>
 
+        {/* Open Now */}
         <motion.article
-          whileHover={{ y: -3, boxShadow: '0 16px 28px rgba(15, 118, 110, 0.12)' }}
-          className="tw-relative tw-overflow-hidden tw-rounded-2xl tw-border tw-p-4 tw-shadow-lg tw-transition-all"
+          whileHover={{ y: -5, scale: 1.01 }}
+          transition={{ type: 'spring', stiffness: 280, damping: 20 }}
+          className="tw-relative tw-overflow-hidden tw-rounded-2xl tw-border tw-p-5 tw-cursor-default"
           style={{
+            background: 'linear-gradient(135deg, #f0fdf9 0%, #e2faf3 100%)',
+            borderColor: '#c0eedd',
+            boxShadow: '0 8px 28px rgba(5,150,105,0.09)',
             minHeight: 112,
-            background: 'linear-gradient(135deg, #f4fdf9 0%, #e8faf2 100%)',
-            borderColor: '#cbeee0',
-            boxShadow: '0 10px 22px rgba(15, 118, 110, 0.08)',
           }}
         >
-          <div
-            className="tw-absolute tw-right-4 tw-top-4 tw-flex tw-h-10 tw-w-10 tw-items-center tw-justify-center tw-rounded-xl tw-text-white"
-            style={{
-              background: 'linear-gradient(135deg, #10b981 0%, #34d399 100%)',
-              boxShadow: '0 8px 14px rgba(16, 185, 129, 0.22)',
-            }}
-          >
-            <HiOutlineClock className="tw-h-5 tw-w-5" />
+          <div className="tw-absolute tw--right-8 tw--top-8 tw-w-32 tw-h-32 tw-rounded-full tw-opacity-[0.07]" style={{ background: '#065f46' }} />
+          <div className="tw-absolute tw-right-5 tw-bottom-0 tw-w-16 tw-h-16 tw-rounded-full tw-opacity-[0.04]" style={{ background: '#065f46' }} />
+
+          <div className="tw-relative tw-flex tw-items-start tw-justify-between">
+            <div>
+              <p className="tw-m-0 tw-mb-2 tw-text-[11px] tw-font-semibold tw-uppercase tw-tracking-[0.08em]" style={{ color: '#059669' }}>
+                Open Now
+              </p>
+              <p
+                className="tw-m-0 tw-text-4xl tw-font-semibold tw-leading-none tw-tabular-nums"
+                style={{ color: '#065f46' }}
+              >
+                {openCount}
+              </p>
+            </div>
+            <div
+              className="tw-flex tw-h-11 tw-w-11 tw-items-center tw-justify-center tw-rounded-2xl tw-text-white tw-shrink-0"
+              style={{ background: 'linear-gradient(135deg, #059669, #34d399)', boxShadow: '0 6px 16px rgba(5,150,105,0.28)' }}
+            >
+              <HiOutlineClock className="tw-h-5 tw-w-5" />
+            </div>
           </div>
-          <p className="tw-m-0 tw-text-[11px] tw-font-semibold tw-uppercase tw-tracking-[0.08em]" style={{ color: '#0f766e' }}>
-            Open now
-          </p>
-          <p className="tw-m-0 tw-mt-2 tw-text-4xl tw-font-semibold tw-leading-none" style={{ color: '#065f46' }}>{canteenSummary.openNow}</p>
         </motion.article>
 
+        {/* Closed Now */}
         <motion.article
-          whileHover={{ y: -3, boxShadow: '0 16px 28px rgba(190, 24, 93, 0.12)' }}
-          className="tw-relative tw-overflow-hidden tw-rounded-2xl tw-border tw-p-4 tw-shadow-lg tw-transition-all"
+          whileHover={{ y: -5, scale: 1.01 }}
+          transition={{ type: 'spring', stiffness: 280, damping: 20 }}
+          className="tw-relative tw-overflow-hidden tw-rounded-2xl tw-border tw-p-5 tw-cursor-default"
           style={{
+            background: 'linear-gradient(135deg, #fff8f8 0%, #ffeff2 100%)',
+            borderColor: '#f9cdd6',
+            boxShadow: '0 8px 28px rgba(190,24,93,0.09)',
             minHeight: 112,
-            background: 'linear-gradient(135deg, #fff7f8 0%, #ffeff2 100%)',
-            borderColor: '#f9d5de',
-            boxShadow: '0 10px 22px rgba(190, 24, 93, 0.08)',
           }}
         >
-          <div
-            className="tw-absolute tw-right-4 tw-top-4 tw-flex tw-h-10 tw-w-10 tw-items-center tw-justify-center tw-rounded-xl tw-text-white"
-            style={{
-              background: 'linear-gradient(135deg, #f43f5e 0%, #fb7185 100%)',
-              boxShadow: '0 8px 14px rgba(244, 63, 94, 0.20)',
-            }}
-          >
-            <HiOutlineExclamation className="tw-h-5 tw-w-5" />
+          <div className="tw-absolute tw--right-8 tw--top-8 tw-w-32 tw-h-32 tw-rounded-full tw-opacity-[0.07]" style={{ background: '#9f1239' }} />
+          <div className="tw-absolute tw-right-5 tw-bottom-0 tw-w-16 tw-h-16 tw-rounded-full tw-opacity-[0.04]" style={{ background: '#9f1239' }} />
+
+          <div className="tw-relative tw-flex tw-items-start tw-justify-between">
+            <div>
+              <p className="tw-m-0 tw-mb-2 tw-text-[11px] tw-font-semibold tw-uppercase tw-tracking-[0.08em]" style={{ color: '#be123c' }}>
+                Closed Now
+              </p>
+              <p
+                className="tw-m-0 tw-text-4xl tw-font-semibold tw-leading-none tw-tabular-nums"
+                style={{ color: '#9f1239' }}
+              >
+                {closedCount}
+              </p>
+            </div>
+            <div
+              className="tw-flex tw-h-11 tw-w-11 tw-items-center tw-justify-center tw-rounded-2xl tw-text-white tw-shrink-0"
+              style={{ background: 'linear-gradient(135deg, #e11d48, #fb7185)', boxShadow: '0 6px 16px rgba(225,29,72,0.26)' }}
+            >
+              <HiOutlineExclamation className="tw-h-5 tw-w-5" />
+            </div>
           </div>
-          <p className="tw-m-0 tw-text-[11px] tw-font-semibold tw-uppercase tw-tracking-[0.08em]" style={{ color: '#be123c' }}>
-            Closed now
-          </p>
-          <p className="tw-m-0 tw-mt-2 tw-text-4xl tw-font-semibold tw-leading-none" style={{ color: '#9f1239' }}>{canteenSummary.closedNow}</p>
         </motion.article>
 
+        {/* Showing */}
         <motion.article
-          whileHover={{ y: -3, boxShadow: '0 16px 28px rgba(37, 99, 235, 0.12)' }}
-          className="tw-relative tw-overflow-hidden tw-rounded-2xl tw-border tw-p-4 tw-shadow-lg tw-transition-all"
+          whileHover={{ y: -5, scale: 1.01 }}
+          transition={{ type: 'spring', stiffness: 280, damping: 20 }}
+          className="tw-relative tw-overflow-hidden tw-rounded-2xl tw-border tw-p-5 tw-cursor-default"
           style={{
+            background: 'linear-gradient(135deg, #f5f9ff 0%, #eaf0ff 100%)',
+            borderColor: '#d0e2fb',
+            boxShadow: '0 8px 28px rgba(37,99,235,0.09)',
             minHeight: 112,
-            background: 'linear-gradient(135deg, #f5f9ff 0%, #ebf3ff 100%)',
-            borderColor: '#d5e5fb',
-            boxShadow: '0 10px 22px rgba(37, 99, 235, 0.08)',
           }}
         >
-          <div
-            className="tw-absolute tw-right-4 tw-top-4 tw-flex tw-h-10 tw-w-10 tw-items-center tw-justify-center tw-rounded-xl tw-text-white"
-            style={{
-              background: 'linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)',
-              boxShadow: '0 8px 14px rgba(59, 130, 246, 0.20)',
-            }}
-          >
-            <HiOutlineLocationMarker className="tw-h-5 tw-w-5" />
+          <div className="tw-absolute tw--right-8 tw--top-8 tw-w-32 tw-h-32 tw-rounded-full tw-opacity-[0.07]" style={{ background: '#1e3a8a' }} />
+          <div className="tw-absolute tw-right-5 tw-bottom-0 tw-w-16 tw-h-16 tw-rounded-full tw-opacity-[0.04]" style={{ background: '#1e3a8a' }} />
+
+          <div className="tw-relative tw-flex tw-items-start tw-justify-between">
+            <div>
+              <p className="tw-m-0 tw-mb-2 tw-text-[11px] tw-font-semibold tw-uppercase tw-tracking-[0.08em]" style={{ color: '#3b82f6' }}>
+                Showing
+              </p>
+              <p
+                className="tw-m-0 tw-text-4xl tw-font-semibold tw-leading-none tw-tabular-nums"
+                style={{ color: '#1e3a8a' }}
+              >
+                {showingCount}
+              </p>
+            </div>
+            <div
+              className="tw-flex tw-h-11 tw-w-11 tw-items-center tw-justify-center tw-rounded-2xl tw-text-white tw-shrink-0"
+              style={{ background: 'linear-gradient(135deg, #2563eb, #60a5fa)', boxShadow: '0 6px 16px rgba(37,99,235,0.26)' }}
+            >
+              <HiOutlineLocationMarker className="tw-h-5 tw-w-5" />
+            </div>
           </div>
-          <p className="tw-m-0 tw-text-[11px] tw-font-semibold tw-uppercase tw-tracking-[0.08em]" style={{ color: '#1d4ed8' }}>
-            Showing
-          </p>
-          <p className="tw-m-0 tw-mt-2 tw-text-4xl tw-font-semibold tw-leading-none" style={{ color: '#1e3a8a' }}>{canteenSummary.showing}</p>
         </motion.article>
       </motion.section>
 
+      {/* ── Add button (ORIGINAL) ──────────────────────────────── */}
       <motion.section
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -460,7 +531,7 @@ const AdminCanteensContent = ({ canteens, loading, onCreate, onUpdate, onDelete 
         </motion.button>
       </motion.section>
 
-      {/* ── grid / empty state ───────────────────────────────────── */}
+      {/* ── grid / empty state (ORIGINAL) ───────────────────────── */}
       <AnimatePresence mode="wait">
         {filteredCanteens.length === 0 ? (
           <motion.div
@@ -523,15 +594,8 @@ const AdminCanteensContent = ({ canteens, loading, onCreate, onUpdate, onDelete 
                           'linear-gradient(128deg, #b53a0c 0%, #e8550e 55%, #f2780a 100%)',
                       }}
                     >
-                      {/* decorative circle */}
-                      <div
-                        className="tw-absolute tw--right-6 tw--top-6 tw-h-28 tw-w-28 tw-rounded-full tw-opacity-20"
-                        style={{ background: '#fff' }}
-                      />
-                      <div
-                        className="tw-absolute tw-right-12 tw-bottom-0 tw-h-16 tw-w-16 tw-rounded-full tw-opacity-10"
-                        style={{ background: '#fff' }}
-                      />
+                      <div className="tw-absolute tw--right-6 tw--top-6 tw-h-28 tw-w-28 tw-rounded-full tw-opacity-20" style={{ background: '#fff' }} />
+                      <div className="tw-absolute tw-right-12 tw-bottom-0 tw-h-16 tw-w-16 tw-rounded-full tw-opacity-10" style={{ background: '#fff' }} />
 
                       <div className="tw-relative tw-flex tw-items-start tw-justify-between tw-gap-3">
                         <div className="tw-min-w-0">
@@ -573,35 +637,19 @@ const AdminCanteensContent = ({ canteens, loading, onCreate, onUpdate, onDelete 
 
                     {/* card body */}
                     <div className="tw-px-5 tw-py-4">
-                      <p
-                        className="tw-m-0 tw-text-sm tw-leading-relaxed"
-                        style={{ color: '#6b4f43' }}
-                      >
+                      <p className="tw-m-0 tw-text-sm tw-leading-relaxed" style={{ color: '#6b4f43' }}>
                         {getCanteenDescription(canteen)}
                       </p>
 
-                      {/* meta row */}
                       <div className="tw-mt-4 tw-grid tw-grid-cols-2 tw-gap-3">
-                        <div
-                          className="tw-flex tw-items-center tw-gap-2 tw-rounded-xl tw-px-3 tw-py-2.5"
-                          style={{ background: '#fdf5ee' }}
-                        >
-                          <HiOutlineClock
-                            className="tw-h-4 tw-w-4 tw-shrink-0"
-                            style={{ color: '#c0550f' }}
-                          />
+                        <div className="tw-flex tw-items-center tw-gap-2 tw-rounded-xl tw-px-3 tw-py-2.5" style={{ background: '#fdf5ee' }}>
+                          <HiOutlineClock className="tw-h-4 tw-w-4 tw-shrink-0" style={{ color: '#c0550f' }} />
                           <span className="tw-text-sm tw-font-semibold" style={{ color: '#3d2010' }}>
                             {normalizeTimeValue(canteen.openTime)} – {normalizeTimeValue(canteen.closeTime)}
                           </span>
                         </div>
-                        <div
-                          className="tw-flex tw-items-center tw-gap-2 tw-rounded-xl tw-px-3 tw-py-2.5"
-                          style={{ background: '#fdf5ee' }}
-                        >
-                          <HiOutlinePhone
-                            className="tw-h-4 tw-w-4 tw-shrink-0"
-                            style={{ color: '#c0550f' }}
-                          />
+                        <div className="tw-flex tw-items-center tw-gap-2 tw-rounded-xl tw-px-3 tw-py-2.5" style={{ background: '#fdf5ee' }}>
+                          <HiOutlinePhone className="tw-h-4 tw-w-4 tw-shrink-0" style={{ color: '#c0550f' }} />
                           <span className="tw-text-sm tw-font-semibold tw-truncate" style={{ color: '#3d2010' }}>
                             {canteen.contactNumber}
                           </span>
@@ -610,7 +658,6 @@ const AdminCanteensContent = ({ canteens, loading, onCreate, onUpdate, onDelete 
 
                       <div className="tw-mt-4 tw-h-px" style={{ background: '#f0e3da' }} />
 
-                      {/* actions */}
                       <div className="tw-mt-3.5 tw-flex tw-items-center tw-gap-2.5">
                         <motion.button
                           type="button"
@@ -649,7 +696,7 @@ const AdminCanteensContent = ({ canteens, loading, onCreate, onUpdate, onDelete 
         )}
       </AnimatePresence>
 
-      {/* ── modal ───────────────────────────────────────────────── */}
+      {/* ── REDESIGNED Register / Edit modal ────────────────────── */}
       <AnimatePresence>
         {isModalOpen && (
           <motion.div
@@ -660,8 +707,8 @@ const AdminCanteensContent = ({ canteens, loading, onCreate, onUpdate, onDelete 
             exit="exit"
             className="tw-fixed tw-inset-0 tw-z-[120] tw-flex tw-items-center tw-justify-center tw-p-4"
             style={{
-              background: 'rgba(255, 250, 246, 0.5)',
-              backdropFilter: 'blur(2.5px) saturate(115%)',
+              background: 'rgba(22, 8, 2, 0.48)',
+              backdropFilter: 'blur(4px) saturate(120%)',
             }}
             onClick={(e) => {
               if (e.target === e.currentTarget && !loading) resetForm();
@@ -678,19 +725,17 @@ const AdminCanteensContent = ({ canteens, loading, onCreate, onUpdate, onDelete 
                 maxWidth: 640,
                 background: '#fffcf9',
                 borderColor: '#f0d9c5',
-                boxShadow: '0 28px 58px rgba(55, 22, 7, 0.2)',
+                boxShadow: '0 32px 72px rgba(55,22,7,0.32)',
               }}
             >
-              {/* modal gradient bar */}
+              {/* top accent bar */}
               <div
                 className="tw-h-1.5 tw-w-full"
-                style={{
-                  background: 'linear-gradient(90deg, #b53a0c 0%, #f26400 55%, #f2a040 100%)',
-                }}
+                style={{ background: 'linear-gradient(90deg, #9e3408 0%, #e8550e 60%, #f5a030 100%)' }}
               />
 
-              <div className="tw-px-7 tw-pt-6 tw-pb-7 sm:tw-px-8">
-                {/* close */}
+              <div className="tw-px-7 tw-pt-7 tw-pb-8 sm:tw-px-8">
+                {/* close button */}
                 <motion.button
                   type="button"
                   whileHover={{ scale: 1.1, rotate: 90 }}
@@ -705,30 +750,25 @@ const AdminCanteensContent = ({ canteens, loading, onCreate, onUpdate, onDelete 
                 </motion.button>
 
                 {/* modal heading */}
-                <div className="tw-mb-6">
-                  <div className="tw-mb-1 tw-flex tw-items-center tw-gap-2">
-                    <span
-                      className="tw-rounded-full tw-px-3 tw-py-1 tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest"
-                      style={{ background: '#fff0e6', color: '#b84010' }}
-                    >
-                      Admin
-                    </span>
-                  </div>
+                <div className="tw-mb-7 tw-pr-10">
+                  <span
+                    className="tw-inline-block tw-rounded-full tw-px-3 tw-py-1 tw-text-[10px] tw-font-black tw-uppercase tw-tracking-[0.15em] tw-mb-3"
+                    style={{ background: '#fff0e6', color: '#b84010' }}
+                  >
+                    Admin
+                  </span>
                   <h3
-                    className="tw-text-3xl tw-font-extrabold tw-leading-tight"
-                    style={{
-                      color: '#2b1d16',
-                      fontFamily: "'Playfair Display', Georgia, serif",
-                    }}
+                    className="tw-m-0 tw-text-[1.9rem] tw-font-extrabold tw-leading-tight"
+                    style={{ color: '#2b1d16', fontFamily: "'Playfair Display', Georgia, serif" }}
                   >
                     {editingId ? 'Update Canteen' : 'Register Canteen'}
                   </h3>
-                  <p className="tw-mt-1 tw-text-sm" style={{ color: '#8a6355' }}>
+                  <p className="tw-mt-2 tw-m-0 tw-text-sm tw-leading-relaxed" style={{ color: '#8a6355' }}>
                     {editingId
                       ? 'Make changes and save the updated canteen profile.'
                       : 'Fill in the details to register a new canteen location.'}
                   </p>
-                  <p className="tw-mt-2 tw-text-xs" style={{ color: '#a27666' }}>
+                  <p className="tw-mt-1.5 tw-m-0 tw-text-xs" style={{ color: '#a27666' }}>
                     Keep it simple—clear names and accurate times make it easier for students to order.
                   </p>
                 </div>
@@ -739,9 +779,10 @@ const AdminCanteensContent = ({ canteens, loading, onCreate, onUpdate, onDelete 
                     <motion.div
                       initial={{ opacity: 0, y: -4 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="tw-rounded-xl tw-border tw-px-3 tw-py-2 tw-text-xs tw-font-medium"
-                      style={{ background: '#fff4f4', borderColor: '#f6c8c8', color: '#a72b2b' }}
+                      className="tw-rounded-xl tw-border tw-px-3.5 tw-py-2.5 tw-text-xs tw-font-semibold tw-flex tw-items-center tw-gap-2"
+                      style={{ background: '#fff4f4', borderColor: '#fca5a5', color: '#a72b2b' }}
                     >
+                      <HiOutlineExclamation className="tw-h-4 tw-w-4 tw-shrink-0" />
                       Please fix the highlighted fields before submitting.
                     </motion.div>
                   )}
@@ -821,31 +862,56 @@ const AdminCanteensContent = ({ canteens, loading, onCreate, onUpdate, onDelete 
                     required
                   />
 
+                  {/* progress indicator */}
+                  <div className="tw-flex tw-items-center tw-gap-2.5 tw-pt-1">
+                    <div className="tw-flex tw-gap-1.5">
+                      {['name', 'location', 'openTime', 'closeTime', 'contactNumber'].map((field) => (
+                        <motion.div
+                          key={field}
+                          animate={{
+                            background: !formErrors[field] ? '#f07020' : '#e5d0c4',
+                            width: !formErrors[field] ? 18 : 7,
+                          }}
+                          transition={{ duration: 0.25 }}
+                          className="tw-h-1.5 tw-rounded-full"
+                        />
+                      ))}
+                    </div>
+                    <span className="tw-text-xs tw-font-medium" style={{ color: '#b09080' }}>
+                      {completedFields} of 5 complete
+                    </span>
+                  </div>
+
                   {/* submit row */}
-                  <div className="tw-flex tw-flex-wrap tw-items-center tw-gap-3 tw-pt-2">
+                  <div className="tw-flex tw-flex-wrap tw-items-center tw-gap-3 tw-pt-1">
                     <motion.button
                       type="submit"
                       whileHover={isFormValid && !loading ? { scale: 1.03, y: -2 } : {}}
                       whileTap={isFormValid && !loading ? { scale: 0.97 } : {}}
-                      className="tw-rounded-full tw-px-8 tw-py-3 tw-text-sm tw-font-bold tw-text-white tw-border-0 tw-outline-none tw-cursor-pointer"
+                      className="tw-rounded-2xl tw-px-8 tw-py-3.5 tw-text-sm tw-font-bold tw-text-white tw-border-0 tw-outline-none"
                       style={{
                         background:
                           isFormValid && !loading
-                            ? 'linear-gradient(135deg, #c0390e 0%, #f26400 100%)'
-                            : '#d9c4b8',
+                            ? 'linear-gradient(135deg, #c0390e 0%, #f07020 100%)'
+                            : '#ddc8bc',
                         boxShadow:
                           isFormValid && !loading
-                            ? '0 10px 24px rgba(200,58,14,0.32)'
+                            ? '0 10px 28px rgba(200,58,14,0.34)'
                             : 'none',
                         cursor: loading || !isFormValid ? 'not-allowed' : 'pointer',
                       }}
                       disabled={loading || !isFormValid}
                     >
-                      {loading
-                        ? 'Saving…'
-                        : editingId
-                        ? 'Save Changes'
-                        : 'Register Canteen'}
+                      {loading ? (
+                        <span className="tw-flex tw-items-center tw-gap-2">
+                          <motion.span
+                            animate={{ rotate: 360 }}
+                            transition={{ repeat: Infinity, duration: 0.75, ease: 'linear' }}
+                            className="tw-inline-block tw-w-3.5 tw-h-3.5 tw-rounded-full tw-border-2 tw-border-white/30 tw-border-t-white"
+                          />
+                          Saving…
+                        </span>
+                      ) : editingId ? 'Save Changes' : 'Register Canteen'}
                     </motion.button>
 
                     {editingId && (
@@ -854,7 +920,7 @@ const AdminCanteensContent = ({ canteens, loading, onCreate, onUpdate, onDelete 
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.97 }}
                         onClick={resetForm}
-                        className="tw-rounded-full tw-border tw-px-7 tw-py-3 tw-text-sm tw-font-semibold tw-cursor-pointer tw-outline-none tw-transition-colors"
+                        className="tw-rounded-2xl tw-border tw-px-7 tw-py-3.5 tw-text-sm tw-font-semibold tw-cursor-pointer tw-outline-none tw-transition-colors"
                         style={{
                           background: '#fff',
                           borderColor: '#e2cdb8',
@@ -875,7 +941,7 @@ const AdminCanteensContent = ({ canteens, loading, onCreate, onUpdate, onDelete 
         )}
       </AnimatePresence>
 
-      {/* ── delete confirmation modal ───────────────────────────── */}
+      {/* ── REDESIGNED delete confirmation modal ─────────────────── */}
       <AnimatePresence>
         {deleteTarget && (
           <motion.div
@@ -886,8 +952,8 @@ const AdminCanteensContent = ({ canteens, loading, onCreate, onUpdate, onDelete 
             exit="exit"
             className="tw-fixed tw-inset-0 tw-z-[130] tw-flex tw-items-center tw-justify-center tw-p-4"
             style={{
-              background: 'rgba(34, 15, 8, 0.35)',
-              backdropFilter: 'blur(2px)',
+              background: 'rgba(34, 15, 8, 0.50)',
+              backdropFilter: 'blur(4px)',
             }}
             onClick={(e) => {
               if (e.target === e.currentTarget) closeDeleteModal();
@@ -901,10 +967,10 @@ const AdminCanteensContent = ({ canteens, loading, onCreate, onUpdate, onDelete 
               exit="exit"
               className="tw-relative tw-w-full tw-overflow-hidden tw-rounded-3xl tw-border"
               style={{
-                maxWidth: 520,
+                maxWidth: 460,
                 background: '#fffdfb',
                 borderColor: '#f0d7c8',
-                boxShadow: '0 26px 56px rgba(45, 18, 8, 0.26)',
+                boxShadow: '0 28px 64px rgba(45,18,8,0.32)',
               }}
               role="dialog"
               aria-modal="true"
@@ -912,17 +978,16 @@ const AdminCanteensContent = ({ canteens, loading, onCreate, onUpdate, onDelete 
             >
               <div
                 className="tw-h-1.5 tw-w-full"
-                style={{
-                  background: 'linear-gradient(90deg, #b42318 0%, #dc2626 55%, #f97316 100%)',
-                }}
+                style={{ background: 'linear-gradient(90deg, #991b1b, #dc2626 55%, #f97316 100%)' }}
               />
 
-              <div className="tw-px-6 tw-pb-6 tw-pt-5 sm:tw-px-7">
+              <div className="tw-p-7">
+                {/* close */}
                 <motion.button
                   type="button"
-                  whileHover={!loading ? { scale: 1.06, rotate: 90 } : {}}
+                  whileHover={!loading ? { scale: 1.08, rotate: 90 } : {}}
                   whileTap={!loading ? { scale: 0.9 } : {}}
-                  className="tw-absolute tw-right-4 tw-top-4 tw-inline-flex tw-h-9 tw-w-9 tw-items-center tw-justify-center tw-rounded-full tw-border-0 tw-outline-none"
+                  className="tw-absolute tw-right-4 tw-top-4 tw-inline-flex tw-h-8 tw-w-8 tw-items-center tw-justify-center tw-rounded-full tw-border-0 tw-outline-none"
                   style={{
                     background: '#f8ece7',
                     color: '#8b2d13',
@@ -932,50 +997,57 @@ const AdminCanteensContent = ({ canteens, loading, onCreate, onUpdate, onDelete 
                   disabled={loading}
                   aria-label="Close delete dialog"
                 >
-                  <HiX className="tw-h-4 tw-w-4" />
+                  <HiX className="tw-h-3.5 tw-w-3.5" />
                 </motion.button>
 
-                <div className="tw-flex tw-items-start tw-gap-3 tw-pr-10">
-                  <div
-                    className="tw-flex tw-h-11 tw-w-11 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-2xl"
-                    style={{ background: '#fee8e2', color: '#b42318' }}
+                {/* icon + title */}
+                <div className="tw-flex tw-gap-4 tw-items-start tw-pr-8">
+                  <motion.div
+                    animate={{ scale: [1, 1.08, 1] }}
+                    transition={{ repeat: Infinity, duration: 2.4, ease: 'easeInOut' }}
+                    className="tw-flex tw-h-12 tw-w-12 tw-shrink-0 tw-items-center tw-justify-center tw-rounded-2xl"
+                    style={{ background: 'linear-gradient(135deg, #fee2e2, #fecaca)', color: '#b91c1c' }}
                   >
-                    <HiOutlineExclamation className="tw-h-5 tw-w-5" />
-                  </div>
+                    <HiOutlineTrash className="tw-h-5 tw-w-5" />
+                  </motion.div>
                   <div>
-                    <p className="tw-m-0 tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest" style={{ color: '#b4532c' }}>
-                      Warning
+                    <p className="tw-m-0 tw-text-[10px] tw-font-black tw-uppercase tw-tracking-[0.14em] tw-mb-1" style={{ color: '#b4532c' }}>
+                      Irreversible Action
                     </p>
                     <h4
                       id="delete-canteen-title"
-                      className="tw-m-0 tw-mt-1 tw-text-2xl tw-font-extrabold"
+                      className="tw-m-0 tw-text-2xl tw-font-extrabold"
                       style={{ color: '#2b1d16', fontFamily: "'Playfair Display', Georgia, serif" }}
                     >
                       Delete this canteen?
                     </h4>
                     <p className="tw-m-0 tw-mt-2 tw-text-sm tw-leading-relaxed" style={{ color: '#7f5a4a' }}>
-                      <span className="tw-font-semibold" style={{ color: '#3f2519' }}>{deleteTarget.name}</span>
-                      {' '}will be permanently removed. This action cannot be undone.
+                      <span className="tw-font-bold" style={{ color: '#3f2519' }}>{deleteTarget.name}</span>
+                      {' '}will be permanently removed and cannot be recovered.
                     </p>
                   </div>
                 </div>
 
-                <div className="tw-mt-5 tw-grid tw-grid-cols-1 tw-gap-2.5 sm:tw-grid-cols-2">
+                <div className="tw-my-5 tw-h-px" style={{ background: '#f5e5dc' }} />
+
+                <div className="tw-flex tw-gap-3">
                   <motion.button
                     type="button"
                     whileHover={!loading ? { scale: 1.01 } : {}}
                     whileTap={!loading ? { scale: 0.98 } : {}}
                     onClick={closeDeleteModal}
-                    className="tw-rounded-xl tw-border tw-px-4 tw-py-2.5 tw-text-sm tw-font-semibold tw-outline-none tw-transition-colors"
+                    className="tw-flex-1 tw-rounded-xl tw-border tw-py-3 tw-text-sm tw-font-semibold tw-outline-none tw-transition-colors"
                     style={{
                       background: '#fff',
-                      borderColor: '#e6cfbf',
+                      borderColor: '#e8d0bc',
                       color: '#6e4e3f',
                       cursor: loading ? 'not-allowed' : 'pointer',
                     }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = '#fdf5ee')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = '#fff')}
                     disabled={loading}
                   >
-                    Keep Canteen
+                    Keep It
                   </motion.button>
 
                   <motion.button
@@ -983,17 +1055,26 @@ const AdminCanteensContent = ({ canteens, loading, onCreate, onUpdate, onDelete 
                     whileHover={!loading ? { scale: 1.01, y: -1 } : {}}
                     whileTap={!loading ? { scale: 0.98 } : {}}
                     onClick={confirmDelete}
-                    className="tw-rounded-xl tw-border-0 tw-px-4 tw-py-2.5 tw-text-sm tw-font-bold tw-text-white tw-outline-none"
+                    className="tw-flex-1 tw-rounded-xl tw-border-0 tw-py-3 tw-text-sm tw-font-bold tw-text-white tw-outline-none"
                     style={{
                       background: loading
                         ? '#d8b7af'
-                        : 'linear-gradient(135deg, #b42318 0%, #dc2626 100%)',
-                      boxShadow: loading ? 'none' : '0 10px 22px rgba(220,38,38,0.28)',
+                        : 'linear-gradient(135deg, #b91c1c, #dc2626)',
+                      boxShadow: loading ? 'none' : '0 8px 22px rgba(220,38,38,0.26)',
                       cursor: loading ? 'not-allowed' : 'pointer',
                     }}
                     disabled={loading}
                   >
-                    {loading ? 'Deleting…' : 'Yes, Delete'}
+                    {loading ? (
+                      <span className="tw-flex tw-items-center tw-justify-center tw-gap-2">
+                        <motion.span
+                          animate={{ rotate: 360 }}
+                          transition={{ repeat: Infinity, duration: 0.75, ease: 'linear' }}
+                          className="tw-inline-block tw-w-3.5 tw-h-3.5 tw-rounded-full tw-border-2 tw-border-white/30 tw-border-t-white"
+                        />
+                        Deleting…
+                      </span>
+                    ) : 'Yes, Delete'}
                   </motion.button>
                 </div>
               </div>
@@ -1005,4 +1086,4 @@ const AdminCanteensContent = ({ canteens, loading, onCreate, onUpdate, onDelete 
   );
 };
 
-export default AdminCanteensContent;
+export default AdminCanteensContent; 

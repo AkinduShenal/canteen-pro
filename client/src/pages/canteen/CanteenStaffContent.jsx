@@ -239,28 +239,32 @@ const CanteenStaffContent = () => {
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            whileHover={{ y: -3, boxShadow: '0 18px 32px rgba(127, 46, 13, 0.2)' }}
-            className="tw-relative tw-overflow-hidden tw-rounded-2xl tw-border tw-p-4 tw-shadow-lg tw-transition-all"
+            whileHover={{ y: -4, scale: 1.01 }}
+            className="tw-relative tw-overflow-hidden tw-rounded-3xl tw-border tw-p-4 tw-shadow-sm tw-transition-all"
             style={{
-              minHeight: 110,
-              background: 'linear-gradient(135deg, #fff8f2 0%, #fff1e5 100%)',
-              borderColor: '#f0ddcf',
-              boxShadow: '0 12px 24px rgba(127, 46, 13, 0.12)',
+              minHeight: 112,
+              background: 'linear-gradient(135deg, #fffdfb 0%, #fff4ec 100%)',
+              borderColor: '#f5e5d8',
+              boxShadow: '0 8px 28px rgba(127,46,13,0.10)',
             }}
           >
+            <div className="tw-absolute tw--right-8 tw--top-8 tw-h-32 tw-w-32 tw-rounded-full tw-opacity-[0.08]" style={{ background: '#b53a0c' }} />
+            <div className="tw-absolute tw-right-5 tw-bottom-0 tw-h-16 tw-w-16 tw-rounded-full tw-opacity-[0.05]" style={{ background: '#b53a0c' }} />
+
             <div
-              className="tw-absolute tw-right-4 tw-top-4 tw-flex tw-h-10 tw-w-10 tw-items-center tw-justify-center tw-rounded-xl tw-text-white"
+              className="tw-absolute tw-right-4 tw-top-4 tw-flex tw-h-12 tw-w-12 tw-items-center tw-justify-center tw-rounded-2xl tw-text-white"
               style={{
                 background: 'linear-gradient(135deg, #c0390e 0%, #f26400 100%)',
-                boxShadow: '0 8px 16px rgba(192, 57, 14, 0.34)',
+                boxShadow: '0 10px 24px rgba(192, 57, 14, 0.32)',
               }}
             >
-              <HiOutlineUserGroup className="tw-h-4.5 tw-w-4.5" />
+              <HiOutlineUserGroup className="tw-h-5 tw-w-5" />
             </div>
-            <p className="tw-m-0 tw-text-[11px] tw-font-semibold tw-uppercase tw-tracking-[0.08em]" style={{ color: '#8c5a3b' }}>
+
+            <p className="tw-m-0 tw-text-[11px] tw-font-bold tw-uppercase tw-tracking-[0.1em]" style={{ color: '#b67855' }}>
               Total Staff
             </p>
-            <p className="tw-m-0 tw-mt-2 tw-text-4xl tw-font-semibold tw-leading-none" style={{ color: '#2b1d16' }}>
+            <p className="tw-m-0 tw-mt-2 tw-text-4xl tw-font-extrabold tw-leading-none tw-tabular-nums" style={{ color: '#bf3f12' }}>
               {summary.total || 0}
             </p>
           </motion.article>
@@ -269,28 +273,32 @@ const CanteenStaffContent = () => {
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.05 }}
-            whileHover={{ y: -3, boxShadow: '0 18px 32px rgba(15, 155, 111, 0.20)' }}
-            className="tw-relative tw-overflow-hidden tw-rounded-2xl tw-border tw-p-4 tw-shadow-lg tw-transition-all"
+            whileHover={{ y: -4, scale: 1.01 }}
+            className="tw-relative tw-overflow-hidden tw-rounded-3xl tw-border tw-p-4 tw-shadow-sm tw-transition-all"
             style={{
-              minHeight: 110,
-              background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',
-              borderColor: '#a7f3d0',
-              boxShadow: '0 12px 24px rgba(15, 155, 111, 0.12)',
+              minHeight: 112,
+              background: 'linear-gradient(135deg, #f0fdf9 0%, #e2faf3 100%)',
+              borderColor: '#c0eedd',
+              boxShadow: '0 8px 28px rgba(5,150,105,0.09)',
             }}
           >
+            <div className="tw-absolute tw--right-8 tw--top-8 tw-h-32 tw-w-32 tw-rounded-full tw-opacity-[0.08]" style={{ background: '#065f46' }} />
+            <div className="tw-absolute tw-right-5 tw-bottom-0 tw-h-16 tw-w-16 tw-rounded-full tw-opacity-[0.05]" style={{ background: '#065f46' }} />
+
             <div
-              className="tw-absolute tw-right-4 tw-top-4 tw-flex tw-h-10 tw-w-10 tw-items-center tw-justify-center tw-rounded-xl tw-text-white"
+              className="tw-absolute tw-right-4 tw-top-4 tw-flex tw-h-12 tw-w-12 tw-items-center tw-justify-center tw-rounded-2xl tw-text-white"
               style={{
-                background: 'linear-gradient(135deg, #0f9b6f 0%, #16c47f 100%)',
-                boxShadow: '0 8px 16px rgba(15, 155, 111, 0.34)',
+                background: 'linear-gradient(135deg, #059669, #34d399)',
+                boxShadow: '0 10px 24px rgba(5,150,105,0.30)',
               }}
             >
-              <HiOutlineBadgeCheck className="tw-h-4.5 tw-w-4.5" />
+              <HiOutlineBadgeCheck className="tw-h-5 tw-w-5" />
             </div>
-            <p className="tw-m-0 tw-text-[11px] tw-font-semibold tw-uppercase tw-tracking-[0.08em]" style={{ color: '#0f766e' }}>
+
+            <p className="tw-m-0 tw-text-[11px] tw-font-bold tw-uppercase tw-tracking-[0.1em]" style={{ color: '#0f8c63' }}>
               Active
             </p>
-            <p className="tw-m-0 tw-mt-2 tw-text-4xl tw-font-semibold tw-leading-none" style={{ color: '#065f46' }}>
+            <p className="tw-m-0 tw-mt-2 tw-text-4xl tw-font-extrabold tw-leading-none tw-tabular-nums" style={{ color: '#065f46' }}>
               {summary.active || 0}
             </p>
           </motion.article>
@@ -299,28 +307,32 @@ const CanteenStaffContent = () => {
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.1 }}
-            whileHover={{ y: -3, boxShadow: '0 18px 32px rgba(225, 29, 72, 0.20)' }}
-            className="tw-relative tw-overflow-hidden tw-rounded-2xl tw-border tw-p-4 tw-shadow-lg tw-transition-all"
+            whileHover={{ y: -4, scale: 1.01 }}
+            className="tw-relative tw-overflow-hidden tw-rounded-3xl tw-border tw-p-4 tw-shadow-sm tw-transition-all"
             style={{
-              minHeight: 110,
-              background: 'linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%)',
-              borderColor: '#fecdd3',
-              boxShadow: '0 12px 24px rgba(225, 29, 72, 0.12)',
+              minHeight: 112,
+              background: 'linear-gradient(135deg, #fff8f8 0%, #ffeff2 100%)',
+              borderColor: '#f9cdd6',
+              boxShadow: '0 8px 28px rgba(190,24,93,0.09)',
             }}
           >
+            <div className="tw-absolute tw--right-8 tw--top-8 tw-h-32 tw-w-32 tw-rounded-full tw-opacity-[0.08]" style={{ background: '#9f1239' }} />
+            <div className="tw-absolute tw-right-5 tw-bottom-0 tw-h-16 tw-w-16 tw-rounded-full tw-opacity-[0.05]" style={{ background: '#9f1239' }} />
+
             <div
-              className="tw-absolute tw-right-4 tw-top-4 tw-flex tw-h-10 tw-w-10 tw-items-center tw-justify-center tw-rounded-xl tw-text-white"
+              className="tw-absolute tw-right-4 tw-top-4 tw-flex tw-h-12 tw-w-12 tw-items-center tw-justify-center tw-rounded-2xl tw-text-white"
               style={{
                 background: 'linear-gradient(135deg, #e11d48 0%, #f43f5e 100%)',
-                boxShadow: '0 8px 16px rgba(225, 29, 72, 0.32)',
+                boxShadow: '0 10px 24px rgba(225,29,72,0.28)',
               }}
             >
-              <HiOutlineXCircle className="tw-h-4.5 tw-w-4.5" />
+              <HiOutlineXCircle className="tw-h-5 tw-w-5" />
             </div>
-            <p className="tw-m-0 tw-text-[11px] tw-font-semibold tw-uppercase tw-tracking-[0.08em]" style={{ color: '#be123c' }}>
+
+            <p className="tw-m-0 tw-text-[11px] tw-font-bold tw-uppercase tw-tracking-[0.1em]" style={{ color: '#be123c' }}>
               Inactive
             </p>
-            <p className="tw-m-0 tw-mt-2 tw-text-4xl tw-font-semibold tw-leading-none" style={{ color: '#9f1239' }}>
+            <p className="tw-m-0 tw-mt-2 tw-text-4xl tw-font-extrabold tw-leading-none tw-tabular-nums" style={{ color: '#9f1239' }}>
               {summary.inactive || 0}
             </p>
           </motion.article>

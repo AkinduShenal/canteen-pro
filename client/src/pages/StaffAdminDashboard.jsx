@@ -187,11 +187,23 @@ const StaffAdminDashboard = () => {
 
   useEffect(() => {
     if (!hasAccess) return;
-    fetchOrders({ priorityOnly: activeTab === 'priority-queue' });
+
+    if (isStaff) {
+      fetchOrders({ priorityOnly: activeTab === 'priority-queue' });
+    }
+
     fetchFeedback();
     fetchAdminData();
     fetchDashboardMetrics();
-  }, [activeTab, fetchAdminData, fetchDashboardMetrics, fetchFeedback, fetchOrders, hasAccess]);
+  }, [
+    activeTab,
+    fetchAdminData,
+    fetchDashboardMetrics,
+    fetchFeedback,
+    fetchOrders,
+    hasAccess,
+    isStaff,
+  ]);
 
   useEffect(() => {
     if (!hasAccess) return undefined;
@@ -583,19 +595,7 @@ const StaffAdminDashboard = () => {
               path="orders"
               element={
                 isAdmin ? (
-                  <AdminOrdersContent
-                    statusFilter={statusFilter}
-                    setStatusFilter={setStatusFilter}
-                    priorityOnly={priorityOnly}
-                    setPriorityOnly={setPriorityOnly}
-                    fetchOrders={fetchOrders}
-                    loading={loading}
-                    handleBulkReady={handleBulkReady}
-                    selectedOrderIds={selectedOrderIds}
-                    sortedOrders={sortedOrders}
-                    handleSelectOrder={handleSelectOrder}
-                    handleStatusUpdate={handleStatusUpdate}
-                  />
+                  <AdminOrdersContent />
                 ) : (
                   <CanteenOrdersContent
                     statusFilter={statusFilter}

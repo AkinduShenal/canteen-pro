@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   HiOutlineCheckCircle,
   HiOutlineClock,
@@ -8,6 +8,7 @@ import {
 } from 'react-icons/hi';
 import AdminOrderCard from '../../components/admin/AdminOrderCard.jsx';
 import DashboardUtilityBar from '../../components/common/DashboardUtilityBar.jsx';
+import api from '../../services/api.js';
 
 const statusOptions = [
   { value: '', label: 'All statuses' },
@@ -45,24 +46,82 @@ const getUrgencyLevel = (pickupTime) => {
   return 'scheduled';
 };
 
-const AdminOrdersContent = ({
-  statusFilter,
-  setStatusFilter,
-  priorityOnly,
-  setPriorityOnly,
-  fetchOrders,
-  loading,
-  handleBulkReady,
-  selectedOrderIds,
-  sortedOrders,
-  handleSelectOrder,
-  handleStatusUpdate,
-}) => {
+const AdminOrdersContent = () => {
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  const [statusFilter, setStatusFilter] = useState('');
+  const [priorityOnly, setPriorityOnly] = useState(false);
+
   const [searchText, setSearchText] = useState('');
   const [canteenFilter, setCanteenFilter] = useState('all');
   const [urgencyFilter, setUrgencyFilter] = useState('all');
   const [sortBy, setSortBy] = useState('pickup-asc');
-  const [autoRefresh, setAutoRefresh] = useState(false);
+
+  const sortedOrders = useMemo(() => {
+    return [...orders].sort((a, b) => new Date(a.pickupTime) - new Date(b.pickupTime));
+  }, [orders]);
+
+  const clearFlash = () => {
+    setError('');
+    setSuccess('');
+  };
+
+  const fetchOrders = useCallback(async () => {
+    setLoading(true);
+    setError('');
+
+    try {
+      const params = {
+        status: statusFilter || undefined,
+        priorityOnly: priorityOnly ? 'true' : undefined,
+      };
+
+      if (priorityOnly) {
+        params.status = undefined;
+      }
+
+      const { data } = await api.get('/admin/orders', { params });
+      setOrders(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setError(err?.response?.data?.message || 'Failed to load admin orders');
+    } finally {
+      setLoading(false);
+    }
+  }, [priorityOnly, statusFilter]);
+
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
+
+  const handleStatusUpdate = async (order, nextStatus, providedReason) => {
+    const payload = { status: nextStatus };
+
+    if (nextStatus === 'cancelled') {
+      if (typeof providedReason === 'string') {
+        payload.reason = providedReason.trim();
+      } else {
+        const reason = window.prompt('Please provide cancel reason (optional):');
+        if (reason === null) return;
+        payload.reason = reason.trim();
+      }
+    }
+
+    setLoading(true);
+    clearFlash();
+
+    try {
+      await api.patch(`/admin/orders/${order._id}/status`, payload);
+      setSuccess(`Order ${order.token || String(order._id).slice(-6)} updated to ${nextStatus}.`);
+      await fetchOrders();
+    } catch (err) {
+      setError(err?.response?.data?.message || 'Failed to update order status');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const canteenOptions = useMemo(() => {
     const map = new Map();
@@ -109,28 +168,6 @@ const AdminOrdersContent = ({
     return filtered;
   }, [searchText, sortedOrders, canteenFilter, urgencyFilter, sortBy]);
 
-  const bulkReadyEligibleIds = useMemo(
-    () => filteredOrders.filter((order) => ['accepted', 'preparing'].includes(order.status)).map((order) => order._id),
-    [filteredOrders],
-  );
-
-  const allVisibleEligibleSelected =
-    bulkReadyEligibleIds.length > 0 && bulkReadyEligibleIds.every((id) => selectedOrderIds.includes(id));
-
-  const handleToggleSelectVisible = (checked) => {
-    if (checked) {
-      const merged = Array.from(new Set([...selectedOrderIds, ...bulkReadyEligibleIds]));
-      merged.forEach((id) => {
-        if (!selectedOrderIds.includes(id)) handleSelectOrder(id, true);
-      });
-      return;
-    }
-
-    bulkReadyEligibleIds.forEach((id) => {
-      if (selectedOrderIds.includes(id)) handleSelectOrder(id, false);
-    });
-  };
-
   const stats = useMemo(() => {
     const total = filteredOrders.length;
     const pending = filteredOrders.filter((order) => order.status === 'pending').length;
@@ -142,17 +179,27 @@ const AdminOrdersContent = ({
   }, [filteredOrders]);
 
   useEffect(() => {
-    if (!autoRefresh) return undefined;
-
     const timer = setInterval(() => {
       fetchOrders();
-    }, 20000);
+    }, 5000);
 
     return () => clearInterval(timer);
-  }, [autoRefresh, fetchOrders]);
+  }, [fetchOrders]);
 
   return (
     <div className="tw-space-y-5">
+      {error && (
+        <div className="tw-rounded-xl tw-border tw-border-rose-200 tw-bg-rose-50 tw-p-3 tw-text-sm tw-font-medium tw-text-rose-700">
+          {error}
+        </div>
+      )}
+
+      {success && (
+        <div className="tw-rounded-xl tw-border tw-border-emerald-200 tw-bg-emerald-50 tw-p-3 tw-text-sm tw-font-medium tw-text-emerald-700">
+          {success}
+        </div>
+      )}
+
       <DashboardUtilityBar
         value={searchText}
         onChange={(e) => setSearchText(e.target.value)}
@@ -282,47 +329,7 @@ const AdminOrdersContent = ({
             Priority queue only (accepted + preparing)
           </label>
 
-          <label className="tw-inline-flex tw-items-center tw-gap-2 tw-text-sm tw-font-medium tw-text-slate-700">
-            <input
-              type="checkbox"
-              className="tw-h-4 tw-w-4 tw-rounded tw-border-slate-300 tw-text-orange-600 focus:tw-ring-orange-500"
-              checked={autoRefresh}
-              onChange={(e) => setAutoRefresh(e.target.checked)}
-            />
-            Auto refresh (20s)
-          </label>
-
-          <div className="tw-flex tw-flex-wrap tw-gap-2">
-            <button
-              type="button"
-              onClick={() => handleToggleSelectVisible(!allVisibleEligibleSelected)}
-              disabled={bulkReadyEligibleIds.length === 0}
-              className="tw-inline-flex tw-items-center tw-gap-1 tw-rounded-lg tw-border tw-border-slate-300 tw-bg-white tw-px-3 tw-py-2 tw-text-sm tw-font-semibold tw-text-slate-700 tw-transition hover:tw-bg-slate-100 disabled:tw-cursor-not-allowed disabled:tw-opacity-50"
-            >
-              <HiOutlineCheckCircle className="tw-h-4 tw-w-4" />
-              {allVisibleEligibleSelected ? 'Unselect visible' : 'Select visible'} ({bulkReadyEligibleIds.length})
-            </button>
-
-            <button
-              type="button"
-              className="tw-inline-flex tw-items-center tw-gap-1 tw-rounded-lg tw-border tw-border-slate-300 tw-bg-white tw-px-3 tw-py-2 tw-text-sm tw-font-semibold tw-text-slate-700 tw-transition hover:tw-bg-slate-100 disabled:tw-cursor-not-allowed disabled:tw-opacity-50"
-              onClick={fetchOrders}
-              disabled={loading}
-            >
-              <HiOutlineRefresh className="tw-h-4 tw-w-4" />
-              Refresh
-            </button>
-
-            <button
-              type="button"
-              className="tw-inline-flex tw-items-center tw-gap-1 tw-rounded-lg tw-bg-orange-600 tw-px-3 tw-py-2 tw-text-sm tw-font-semibold tw-text-white tw-transition hover:tw-bg-orange-700 disabled:tw-cursor-not-allowed disabled:tw-opacity-50"
-              onClick={handleBulkReady}
-              disabled={loading || selectedOrderIds.length === 0}
-            >
-              <HiOutlineSparkles className="tw-h-4 tw-w-4" />
-              Bulk mark ready ({selectedOrderIds.length})
-            </button>
-          </div>
+          <span className="tw-text-sm tw-font-medium tw-text-slate-600">Real-time refresh enabled (5s)</span>
         </div>
       </section>
 
@@ -336,10 +343,11 @@ const AdminOrdersContent = ({
             <AdminOrderCard
               key={order._id}
               order={order}
-              selected={selectedOrderIds.includes(order._id)}
-              onSelect={handleSelectOrder}
+              selected={false}
+              onSelect={() => {}}
               onStatusChange={handleStatusUpdate}
               isUpdating={loading}
+              showBulkSelect={false}
             />
           ))
         )}

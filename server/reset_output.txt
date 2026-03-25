@@ -1,0 +1,4 @@
+Connecting to MongoDB...
+Connected.
+Password reset for student@test.com
+Password reset for staff2@test.com

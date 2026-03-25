@@ -3152,6 +3152,9 @@ a:hover {
   .quick-actions-card .btn {
     width: 100%;
     min-width: 0;
+  }
+}
+
 @keyframes heroFadeIn {
   from { opacity: 0; }
   to { opacity: 1; }

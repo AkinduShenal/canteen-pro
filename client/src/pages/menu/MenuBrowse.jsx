@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import Navbar from '../../components/Navbar.jsx';
 import api from '../../services/api.js';
 
@@ -6,6 +7,8 @@ const ALL_CATEGORIES = 'all';
 const CART_STORAGE_KEY = 'canteen_cart';
 
 const MenuBrowse = () => {
+  const navigate = useNavigate();
+  const { canteenId: routeCanteenId } = useParams();
   const [canteens, setCanteens] = useState([]);
   const [selectedCanteen, setSelectedCanteen] = useState('');
   const [categories, setCategories] = useState([]);
@@ -43,8 +46,17 @@ const MenuBrowse = () => {
         const { data } = await api.get('/canteens');
         setCanteens(data || []);
 
-        if (data?.length > 0) {
+        const matchedCanteen = routeCanteenId
+          ? data?.find((canteen) => String(canteen._id) === String(routeCanteenId))
+          : null;
+
+        if (matchedCanteen) {
+          setSelectedCanteen(matchedCanteen._id);
+        } else if (data?.length > 0) {
           setSelectedCanteen(data[0]._id);
+          if (routeCanteenId) {
+            navigate(`/menu/${data[0]._id}`, { replace: true });
+          }
         }
       } catch (apiError) {
         setError(apiError.response?.data?.message || 'Failed to load canteens');
@@ -54,7 +66,17 @@ const MenuBrowse = () => {
     };
 
     loadCanteens();
-  }, []);
+  }, [navigate, routeCanteenId]);
+
+  useEffect(() => {
+    if (!routeCanteenId) return;
+    if (!canteens.length) return;
+
+    const matchedCanteen = canteens.find((canteen) => String(canteen._id) === String(routeCanteenId));
+    if (matchedCanteen && matchedCanteen._id !== selectedCanteen) {
+      setSelectedCanteen(matchedCanteen._id);
+    }
+  }, [canteens, routeCanteenId, selectedCanteen]);
 
   useEffect(() => {
     if (!selectedCanteen) {
@@ -254,7 +276,7 @@ const MenuBrowse = () => {
               <select
                 className="menu-select"
                 value={selectedCanteen}
-                onChange={(event) => setSelectedCanteen(event.target.value)}
+                onChange={(event) => navigate(`/menu/${event.target.value}`)}
               >
                 {canteens.map((canteen) => (
                   <option key={canteen._id} value={canteen._id}>

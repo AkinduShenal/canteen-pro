@@ -148,6 +148,8 @@ const StaffAdminDashboard = () => {
       setOrders(data || []);
       setSelectedOrderIds([]);
     } catch (err) {
+      setOrders([]);
+      setSelectedOrderIds([]);
       showError(err, 'Failed to load orders');
     } finally {
       setLoading(false);
@@ -161,6 +163,7 @@ const StaffAdminDashboard = () => {
       const { data } = await staffAdminApi.getFeedback();
       setFeedbackItems(data || []);
     } catch (err) {
+      setFeedbackItems([]);
       showError(err, 'Failed to load feedback');
     } finally {
       setLoading(false);
@@ -168,7 +171,10 @@ const StaffAdminDashboard = () => {
   }, []);
 
   const fetchAdminData = useCallback(async () => {
-    if (!isAdmin) return;
+    if (!isAdmin) {
+      setCanteens([]);
+      return;
+    }
 
     setLoading(true);
     clearFlash();
@@ -176,6 +182,7 @@ const StaffAdminDashboard = () => {
       const canteenRes = await staffAdminApi.getAllCanteens();
       setCanteens(canteenRes.data || []);
     } catch (err) {
+      setCanteens([]);
       showError(err, 'Failed to load admin dashboard data');
     } finally {
       setLoading(false);
@@ -191,9 +198,21 @@ const StaffAdminDashboard = () => {
       setDashboardMetricsLoading(false);
     } catch (err) {
       // Keep dashboard usable even if metrics endpoint fails temporarily.
+      setDashboardMetrics(null);
       setDashboardMetricsLoading(false);
     }
   }, [hasAccess]);
+
+  useEffect(() => {
+    setOrders([]);
+    setFeedbackItems([]);
+    setCanteens([]);
+    setDashboardMetrics(null);
+    setSelectedOrderIds([]);
+    setDashboardMetricsLoading(true);
+    setError('');
+    setSuccess('');
+  }, [user?._id, user?.role]);
 
   useEffect(() => {
     if (!user) {

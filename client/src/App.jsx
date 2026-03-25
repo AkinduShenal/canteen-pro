@@ -28,7 +28,14 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/dashboard/*" element={<StaffAdminDashboard />} />
+          <Route
+            path="/dashboard/*"
+            element={
+              <RoleRoute allowedRoles={['admin']}>
+                <StaffAdminDashboard />
+              </RoleRoute>
+            }
+          />
           <Route path="/unauthorized" element={<Unauthorized />} />
 
           {/* Protected User Route */}
@@ -44,6 +51,7 @@ function App() {
           {/* Public Canteen Routes */}
           <Route path="/canteens" element={<CanteenDirectory />} />
           <Route path="/canteen/:id" element={<CanteenDetails />} />
+          <Route path="/menu/:canteenId" element={<MenuBrowse />} />
           <Route path="/menu" element={<MenuBrowse />} />
 
           {/* Staff/Admin Protected Routes */}

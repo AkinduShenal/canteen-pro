@@ -26,7 +26,7 @@ const Login = () => {
       login(data);
       toast.success('Login successful!');
 
-      if (data?.role === 'admin' || data?.role === 'staff') {
+      if (data?.role === 'admin') {
         navigate('/dashboard/overview', { replace: true });
       } else {
         navigate('/canteens', { replace: true });
@@ -46,7 +46,7 @@ const Login = () => {
         role: googleRole 
       });
       login(res.data);
-      if (res.data?.role === 'admin' || res.data?.role === 'staff') {
+      if (res.data?.role === 'admin') {
         navigate('/dashboard/overview', { replace: true });
       } else {
         navigate('/canteens', { replace: true });

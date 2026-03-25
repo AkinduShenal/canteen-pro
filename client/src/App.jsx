@@ -28,7 +28,14 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/dashboard/*" element={<StaffAdminDashboard />} />
+          <Route
+            path="/dashboard/*"
+            element={
+              <RoleRoute allowedRoles={['admin']}>
+                <StaffAdminDashboard />
+              </RoleRoute>
+            }
+          />
           <Route path="/unauthorized" element={<Unauthorized />} />
 
           {/* Protected User Route */}

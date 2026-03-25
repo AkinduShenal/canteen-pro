@@ -8,11 +8,10 @@ import {
   deleteCanteen,
   toggleCanteenStatus,
 } from '../controllers/canteenController.js';
-import { protect, staff } from '../middleware/authMiddleware.js';
+import { protect, staff, admin } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-router.route('/').get(getCanteens).post(protect, staff, createCanteen);
 router.route('/').get(getCanteens).post(protect, admin, createCanteen);
 router.route('/:id/queue-status').get(getCanteenQueueStatus);
 router

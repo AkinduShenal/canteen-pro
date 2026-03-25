@@ -7,6 +7,10 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
+    "seed:canteens": "node src/seed/seedCanteens.js",
+    "seed:staff-admin-users": "node src/seed/seedStaffAdminUsers.js",
+    "seed:orders": "node src/seed/seedOrders.js",
+    "seed:feedback": "node src/seed/seedFeedback.js",
     "seed:canteens": "node src/seeders/canteenSeeder.js",
     "seed:canteens": "node src/seed/seedCanteens.js",
     "seed:categories": "node src/seed/seedCategories.js",

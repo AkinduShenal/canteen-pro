@@ -6,6 +6,9 @@ import authRoutes from './routes/authRoutes.js';
 import canteenRoutes from './routes/canteenRoutes.js';
 import announcementRoutes from './routes/announcementRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
+import staffAdminRoutes from './routes/staffAdminRoutes.js';
+import adminOrdersRoutes from './routes/adminOrdersRoutes.js';
+import connectDB from './config/db.js';
 import menuItemRoutes from './routes/menuItemRoutes.js';
 
 dotenv.config(); // Resolves .env from current working directory (server/)
@@ -21,6 +24,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/canteens', canteenRoutes);
 app.use('/api/announcements', announcementRoutes);
 app.use('/api/categories', categoryRoutes);
+app.use('/api/staff-admin', staffAdminRoutes);
+app.use('/api/admin', adminOrdersRoutes);
 app.use('/api/menu-items', menuItemRoutes);
 
 app.get('/', (req, res) => {

@@ -1,10 +1,17 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext.jsx';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar.jsx';
 
 const Home = () => {
   const { user, logout } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user?.role === 'admin' || user?.role === 'staff') {
+      navigate('/dashboard');
+    }
+  }, [user, navigate]);
   const isStaffOrAdmin = user?.role === 'staff' || user?.role === 'admin';
 
   return (

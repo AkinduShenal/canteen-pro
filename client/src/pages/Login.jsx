@@ -1,4 +1,5 @@
 import React, { useState, useContext } from 'react';
+import { toast, Toaster } from 'react-hot-toast';
 import Navbar from '../components/Navbar.jsx';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext.jsx';
@@ -21,6 +22,14 @@ const Login = () => {
     setLoading(true);
 
     try {
+      const { data } = await api.post('/auth/login', { email, password });
+      login(data); // Save to context and localStorage
+      toast.success('Login successful!');
+      if (data?.role === 'admin' || data?.role === 'staff') {
+        navigate('/dashboard');
+      } else {
+        navigate('/');
+      }
       const res = await api.post('/auth/login', { email, password });
       login(res.data); // Save to context and localStorage
       
@@ -59,6 +68,7 @@ const Login = () => {
 
   return (
     <div className="app-container">
+      <Toaster position="top-right" />
       <Navbar />
       <div className="main-content auth-container">
         <div className="auth-card-split">

@@ -32,6 +32,22 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ['student', 'staff', 'admin'],
     default: 'student'
+  },
+  isActive: {
+    type: Boolean,
+    default: true
+  },
+  assignedCanteen: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Canteen',
+    default: null,
+    validate: {
+      validator: function assignedCanteenRequiredForStaff(value) {
+        if (this.role !== 'staff') return true;
+        return Boolean(value);
+      },
+      message: 'assignedCanteen is required for staff users',
+    },
   }
 }, { timestamps: true });
 

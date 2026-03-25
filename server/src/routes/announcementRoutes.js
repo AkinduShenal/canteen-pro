@@ -1,14 +1,13 @@
 import express from 'express';
 import {
   createAnnouncement,
-  getCanteenAnnouncements,
-  getAnnouncements,
+  getAnnouncementsByCanteen,
 } from '../controllers/announcementController.js';
-import { protect, admin } from '../middleware/authMiddleware.js';
+import { protect, staff } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-router.route('/').get(getAnnouncements).post(protect, admin, createAnnouncement);
-router.route('/canteen/:canteenId').get(getCanteenAnnouncements);
+router.post('/', protect, staff, createAnnouncement);
+router.get('/canteen/:canteenId', getAnnouncementsByCanteen);
 
 export default router;

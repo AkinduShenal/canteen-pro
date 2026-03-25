@@ -1,49 +1,63 @@
+import mongoose from 'mongoose';
 import Announcement from '../models/Announcement.js';
+import Canteen from '../models/Canteen.js';
 
-// @desc    Create a new announcement
+const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
+
+// @desc    Create an announcement for a canteen
 // @route   POST /api/announcements
-// @access  Private/Admin or Canteen Staff
+// @access  Private/Admin,Staff
 export const createAnnouncement = async (req, res) => {
   try {
     const { canteenId, message } = req.body;
 
+    if (!canteenId || !message) {
+      return res.status(400).json({ message: 'canteenId and message are required' });
+    }
+
+    if (!isValidObjectId(canteenId)) {
+      return res.status(400).json({ message: 'Invalid canteenId' });
+    }
+
+    const trimmedMessage = message.trim();
+    if (!trimmedMessage) {
+      return res.status(400).json({ message: 'Announcement message cannot be empty' });
+    }
+
+    const canteen = await Canteen.findById(canteenId);
+    if (!canteen) {
+      return res.status(404).json({ message: 'Canteen not found' });
+    }
+
     const announcement = await Announcement.create({
-      canteenId,
-      message,
+      canteen: canteenId,
+      message: trimmedMessage,
+      createdBy: req.user._id,
     });
 
-    res.status(201).json(announcement);
+    return res.status(201).json(announcement);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    return res.status(500).json({ message: error.message });
   }
 };
 
 // @desc    Get announcements for a canteen
 // @route   GET /api/announcements/canteen/:canteenId
-// @access  Public or Logged in user
-export const getCanteenAnnouncements = async (req, res) => {
-  try {
-    const announcements = await Announcement.find({ canteenId: req.params.canteenId })
-      .populate('canteenId', 'name')
-      .sort({ createdAt: -1 });
-    
-    res.json(announcements);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-// @desc    Get all announcements
-// @route   GET /api/announcements
 // @access  Public
-export const getAnnouncements = async (req, res) => {
+export const getAnnouncementsByCanteen = async (req, res) => {
   try {
-    const announcements = await Announcement.find({})
-      .populate('canteenId', 'name')
-      .sort({ createdAt: -1 });
-      
-    res.json(announcements);
+    const { canteenId } = req.params;
+
+    if (!isValidObjectId(canteenId)) {
+      return res.status(400).json({ message: 'Invalid canteenId' });
+    }
+
+    const announcements = await Announcement.find({ canteen: canteenId })
+      .sort({ createdAt: -1 })
+      .limit(20);
+
+    return res.json(announcements);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    return res.status(500).json({ message: error.message });
   }
 };

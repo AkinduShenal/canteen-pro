@@ -51,6 +51,7 @@ function App() {
           {/* Public Canteen Routes */}
           <Route path="/canteens" element={<CanteenDirectory />} />
           <Route path="/canteen/:id" element={<CanteenDetails />} />
+          <Route path="/menu/:canteenId" element={<MenuBrowse />} />
           <Route path="/menu" element={<MenuBrowse />} />
 
           {/* Staff/Admin Protected Routes */}

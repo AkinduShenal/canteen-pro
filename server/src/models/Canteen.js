@@ -20,6 +20,10 @@ const canteenSchema = new mongoose.Schema({
   contactNumber: {
     type: String,
     required: true
+  },
+  isOpen: {
+    type: Boolean,
+    default: null
   }
 }, { timestamps: true });
 

@@ -22,7 +22,7 @@ const Register = () => {
     try {
       const { data } = await api.post('/auth/register', { name, email, password });
       login(data); // Save to context and localStorage
-      navigate('/'); // Redirect to Home dashboard
+      navigate('/canteens'); // Redirect to Canteen Directory
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to register. Please try again.');
     } finally {

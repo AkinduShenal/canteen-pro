@@ -2,7 +2,7 @@ import React, { useState, useContext, useEffect } from 'react';
 import Navbar from '../components/Navbar.jsx';
 import { AuthContext } from '../context/AuthContext.jsx';
 import api from '../services/api.js';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 const Profile = () => {
   const { user, updateUser, deleteUser } = useContext(AuthContext);
@@ -61,6 +61,11 @@ const Profile = () => {
       <Navbar />
       <div className="main-content" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
         <div className="glass-card" style={{ maxWidth: '500px', width: '100%' }}>
+          <div style={{ marginBottom: '2rem', textAlign: 'left' }}>
+            <Link to="/canteens" style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--primary-color)', textDecoration: 'none', fontWeight: '600', fontSize: '0.95rem', transition: 'color 0.2s' }}>
+              <span style={{ marginRight: '0.5rem', fontSize: '1.2rem' }}>←</span> Back to Canteens
+            </Link>
+          </div>
           <div className="form-header" style={{ marginBottom: '2rem' }}>
             <div style={{
               width: '80px',

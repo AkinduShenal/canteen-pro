@@ -1,0 +1,17 @@
+Connecting to MongoDB...
+Connected.
+Found 14 users:
+- Name: Chamika2, Email: chamika@gmail.com, Role: student, Has Password: true, GoogleID: None
+- Name: Test User, Email: testuser1@gmail.com, Role: student, Has Password: true, GoogleID: None
+- Name: Canteen Staff 01, Email: staff1@canteenpro.lk, Role: staff, Has Password: true, GoogleID: None
+- Name: Staff User, Email: staff2@test.com, Role: staff, Has Password: true, GoogleID: None
+- Name: Aravindi, Email: chirathyaaravindi2002@gmail.com, Role: student, Has Password: true, GoogleID: 116377816950901181129
+- Name: aravindi, Email: chirathyaravindi@gmail.com, Role: student, Has Password: true, GoogleID: None
+- Name: Student User, Email: student@test.com, Role: student, Has Password: true, GoogleID: None
+- Name: Student User, Email: student2@test.com, Role: student, Has Password: true, GoogleID: None
+- Name: Staff User, Email: staff@test.com, Role: student, Has Password: true, GoogleID: None
+- Name: Student Test, Email: student_test@canteenpro.com, Role: student, Has Password: true, GoogleID: None
+- Name: Staff User, Email: staff@canteenpro.com, Role: student, Has Password: true, GoogleID: None
+- Name: Staff Admin, Email: admin@gmail.com, Role: student, Has Password: true, GoogleID: None
+- Name: Staff User 2, Email: admin.staff@canteenpro.com, Role: student, Has Password: true, GoogleID: None
+- Name: Google Staff, Email: staff@google.com, Role: student, Has Password: true, GoogleID: None

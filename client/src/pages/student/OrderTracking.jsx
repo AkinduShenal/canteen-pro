@@ -43,6 +43,7 @@ const OrderTracking = () => {
 
   const statusSteps = [
     { key: 'pending', label: 'Order Placed', icon: '📝' },
+    { key: 'accepted', label: 'Accepted', icon: '✔️' },
     { key: 'preparing', label: 'Preparing', icon: '👨‍🍳' },
     { key: 'ready', label: 'Ready for Pickup', icon: '🥡' },
     { key: 'completed', label: 'Completed', icon: '✅' }
@@ -50,7 +51,7 @@ const OrderTracking = () => {
 
   const getStepStatus = (stepKey) => {
     if (!order) return '';
-    const statuses = ['pending', 'preparing', 'ready', 'completed'];
+    const statuses = ['pending', 'accepted', 'preparing', 'ready', 'completed'];
     const currentIdx = statuses.indexOf(order.status);
     const stepIdx = statuses.indexOf(stepKey);
 
@@ -123,12 +124,22 @@ const OrderTracking = () => {
           <div className="tracking-body">
             {order.status !== 'cancelled' && (
               <div className="tracking-steps">
-                {statusSteps.map((step) => (
-                  <div key={step.key} className={`step-item ${getStepStatus(step.key)}`}>
-                    <div className="step-icon">{step.icon}</div>
-                    <div style={{ fontWeight: '600', fontSize: '0.9rem' }}>{step.label}</div>
-                  </div>
-                ))}
+                {statusSteps.map((step, idx) => {
+                  const stepStatus = getStepStatus(step.key);
+                  const prevStatus = idx > 0 ? getStepStatus(statusSteps[idx - 1].key) : null;
+                  const connectorFilled = prevStatus === 'completed';
+                  return (
+                    <React.Fragment key={step.key}>
+                      {idx > 0 && (
+                        <div className={`step-connector ${connectorFilled ? 'filled' : ''}`} />
+                      )}
+                      <div className={`step-item ${stepStatus}`}>
+                        <div className="step-icon">{step.icon}</div>
+                        <span className="step-label">{step.label}</span>
+                      </div>
+                    </React.Fragment>
+                  );
+                })}
               </div>
             )}
 

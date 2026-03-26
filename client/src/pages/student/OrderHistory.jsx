@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Navbar from '../../components/Navbar';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
+import './Orders.css';
 
 const OrderHistory = () => {
   const [orders, setOrders] = useState([]);
@@ -22,56 +23,81 @@ const OrderHistory = () => {
     fetchOrders();
   }, []);
 
+  const getStatusClass = (status) => {
+    switch (status) {
+      case 'pending': return 'status-pending';
+      case 'preparing': return 'status-preparing';
+      case 'ready': return 'status-ready';
+      case 'completed': return 'status-completed';
+      case 'cancelled': return 'status-cancelled';
+      default: return '';
+    }
+  };
+
   return (
     <div className="app-container">
       <Navbar />
-      <div className="main-content" style={{ padding: '2rem', maxWidth: '900px', margin: '0 auto' }}>
-        <h2 style={{ fontSize: '2.5rem', marginBottom: '2rem', fontWeight: '800', color: 'var(--text-dark)' }}>My Orders</h2>
+      <main className="orders-container">
+        <header className="orders-header">
+          <p className="home-kicker">Order Hub</p>
+          <h1 style={{ fontSize: '3.5rem', marginTop: '1rem' }}>My Order History</h1>
+          <p>Review all your past and current cravings in one place.</p>
+        </header>
         
-        {error && <div style={{ color: '#ef4444', padding: '1rem', background: '#fee2e2', borderRadius: '8px', marginBottom: '2rem' }}>{error}</div>}
-        {loading && <div style={{ fontSize: '1.2rem', color: 'var(--text-light)' }}>Loading your orders...</div>}
+        {error && (
+          <div style={{ backgroundColor: '#fee2e2', color: '#dc2626', padding: '1.2rem', borderRadius: '12px', marginBottom: '2rem', border: '1px solid #f87171', textAlign: 'center' }}>
+            {error}
+          </div>
+        )}
 
-        {!loading && orders.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '4rem', background: 'white', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}>
-            <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🍽️</div>
-            <h3 style={{ color: 'var(--text-dark)', marginBottom: '0.5rem' }}>No orders yet</h3>
-            <p style={{ color: 'var(--text-light)', marginBottom: '2rem' }}>You haven't placed any orders. Ready to grab a bite?</p>
-            <Link to="/menu" className="btn btn-primary" style={{ padding: '1rem 2rem', fontSize: '1.1rem' }}>Browse Menu</Link>
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '3rem' }}>
+            <div className="menu-loading-note">Gathering your order history...</div>
+          </div>
+        ) : orders.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '5rem 2rem', background: 'white', borderRadius: '28px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)' }}>
+            <div style={{ fontSize: '5rem', marginBottom: '1.5rem' }}>🍽️</div>
+            <h3 style={{ fontSize: '2rem', marginBottom: '1rem' }}>No orders found</h3>
+            <p style={{ maxWidth: '500px', margin: '0 auto 2.5rem' }}>You haven't placed any orders yet. Why not explore our delicious canteen menu?</p>
+            <Link to="/menu" className="btn btn-primary" style={{ padding: '1rem 2.5rem', fontSize: '1.1rem' }}>Start Browsing</Link>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <div className="orders-list">
             {orders.map(order => (
-              <div key={order._id} style={{ background: 'white', padding: '2rem', borderRadius: '16px', boxShadow: '0 4px 15px rgba(0,0,0,0.04)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'transform 0.2s', border: '1px solid #f8f9fa' }}>
+              <Link 
+                key={order._id} 
+                to={`/orders/${order._id}`} 
+                style={{ textDecoration: 'none', color: 'inherit' }}
+                className="order-history-card"
+              >
                 <div>
-                  <h3 style={{ margin: '0 0 0.8rem 0', fontSize: '1.4rem' }}>Order <span style={{ color: 'var(--primary)', fontWeight: 'bold' }}>{order.orderToken}</span></h3>
-                  <p style={{ margin: 0, color: 'var(--text-light)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ background: '#f1f5f9', padding: '0.3rem 0.8rem', borderRadius: '20px', fontSize: '0.9rem' }}>{new Date(order.createdAt).toLocaleDateString()}</span>
-                    <span style={{ background: '#f1f5f9', padding: '0.3rem 0.8rem', borderRadius: '20px', fontSize: '0.9rem' }}>{new Date(order.createdAt).toLocaleTimeString()}</span>
-                  </p>
-                  <div style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <span style={{ 
-                      padding: '0.4rem 1rem', 
-                      borderRadius: '8px', 
-                      fontSize: '0.9rem', 
-                      fontWeight: '600',
-                      textTransform: 'capitalize', 
-                      background: order.status === 'cancelled' ? '#fee2e2' : order.status === 'completed' ? '#d1fae5' : '#ffedd5',
-                      color: order.status === 'cancelled' ? '#ef4444' : order.status === 'completed' ? '#10b981' : '#f97316'
-                    }}>
-                      {order.status}
-                    </span>
-                    <span style={{ color: 'var(--text-light)', fontSize: '0.95rem' }}>Pickup: <b>{order.pickupTime}</b></span>
+                  <div style={{ fontSize: '0.85rem', fontWeight: '800', color: 'var(--text-light)', marginBottom: '0.3rem' }}>ORDER TOKEN</div>
+                  <div style={{ fontSize: '1.4rem', fontWeight: '800', color: 'var(--primary-color)', letterSpacing: '1px' }}>{order.orderToken}</div>
+                </div>
+                
+                <div>
+                  <div style={{ fontSize: '1rem', fontWeight: '600' }}>{order.canteenId?.name || 'Canteen'}</div>
+                  <div style={{ fontSize: '0.9rem', color: 'var(--text-light)' }}>
+                    {new Date(order.createdAt).toLocaleDateString()} • {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </div>
                 </div>
-                <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'center' }}>
-                  <h3 style={{ margin: '0 0 1rem 0', fontSize: '1.6rem', color: 'var(--text-dark)' }}>Rs {order.totalAmount.toFixed(2)}</h3>
-                  <Link to={`/orders/${order._id}`} className="btn btn-outline" style={{ borderWidth: '2px', fontWeight: '600' }}>View Details</Link>
+
+                <div style={{ textAlign: 'center' }}>
+                  <div className={`order-status-pill ${getStatusClass(order.status)}`}>
+                    {order.status}
+                  </div>
+                  <div style={{ fontSize: '0.85rem', marginTop: '0.5rem', fontWeight: '500' }}>Pickup: {order.pickupTime}</div>
                 </div>
-              </div>
+
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-light)' }}>TOTAL</div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: '800', color: 'var(--text-main)' }}>Rs {order.totalAmount.toFixed(2)}</div>
+                </div>
+              </Link>
             ))}
           </div>
         )}
-      </div>
+      </main>
     </div>
   );
 };

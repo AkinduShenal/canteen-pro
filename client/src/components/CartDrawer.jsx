@@ -34,11 +34,22 @@ const CartDrawer = ({ isOpen, onClose }) => {
               <div className="cart-items-list">
                 {cart.items.map((item) => (
                   <div key={item.menuItem._id} className="cart-item">
-                    <div className="cart-item-info">
-                      <h4 style={{ margin: 0, fontSize: '1rem' }}>{item.menuItem.name}</h4>
-                      <p className="price" style={{ margin: '0.2rem 0', color: 'var(--primary)' }}>
-                        Rs {item.menuItem.price.toFixed(2)}
-                      </p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.2rem' }}>
+                      {item.menuItem.image ? (
+                        <img 
+                          src={item.menuItem.image} 
+                          alt={item.menuItem.name} 
+                          className="cart-item-image"
+                        />
+                      ) : (
+                        <div className="cart-item-placeholder">🍽️</div>
+                      )}
+                      <div className="cart-item-info">
+                        <h4>{item.menuItem.name}</h4>
+                        <p className="price">
+                          Rs {item.menuItem.price.toFixed(2)}
+                        </p>
+                      </div>
                     </div>
                     <div className="cart-item-actions">
                       <div className="qty-controls">
@@ -46,7 +57,7 @@ const CartDrawer = ({ isOpen, onClose }) => {
                         <span>{item.quantity}</span>
                         <button onClick={() => updateQuantity(item.menuItem._id, item.quantity + 1)}>+</button>
                       </div>
-                      <button className="remove-btn" onClick={() => removeFromCart(item.menuItem._id)}>
+                      <button className="remove-btn" onClick={() => removeFromCart(item.menuItem._id)} title="Remove item">
                         🗑️
                       </button>
                     </div>
@@ -56,14 +67,14 @@ const CartDrawer = ({ isOpen, onClose }) => {
               
               <div className="cart-summary">
                 <div className="cart-total">
-                  <span>Total</span>
-                  <span style={{ fontWeight: 'bold', fontSize: '1.2rem' }}>Rs {cartTotal.toFixed(2)}</span>
+                  <span>Subtotal</span>
+                  <span className="amount">Rs {cartTotal.toFixed(2)}</span>
                 </div>
-                <button className="btn btn-primary" style={{ width: '100%', padding: '1rem', marginTop: '1rem' }} onClick={handleCheckout}>
+                <button className="btn btn-primary" style={{ width: '100%', padding: '1.2rem' }} onClick={handleCheckout}>
                   Proceed to Checkout
                 </button>
-                <div style={{ textAlign: 'center', marginTop: '0.5rem' }}>
-                  <button className="btn-link" style={{ background: 'none', border: 'none', color: 'var(--text-light)', cursor: 'pointer' }} onClick={clearCart}>
+                <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+                  <button className="btn-link" onClick={clearCart}>
                     Clear Cart
                   </button>
                 </div>

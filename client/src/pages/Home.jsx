@@ -1,24 +1,13 @@
-import React, { useContext, useEffect } from 'react';
-import { AuthContext } from '../context/AuthContext.jsx';
-import { Link, useNavigate } from 'react-router-dom';
+import React from 'react';
+import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar.jsx';
 
 const Home = () => {
-  const { user, logout } = useContext(AuthContext);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (user?.role === 'admin' || user?.role === 'staff') {
-      navigate('/dashboard');
-    }
-  }, [user, navigate]);
-  const isStaffOrAdmin = user?.role === 'staff' || user?.role === 'admin';
-
   return (
     <div className="app-container">
       <Navbar />
       <div className="main-content">
-        {!user ? (
+        {
           <div className="home-page">
             <section className="home-hero">
               <div className="home-hero-overlay" />
@@ -195,37 +184,7 @@ const Home = () => {
               </div>
             </footer>
           </div>
-        ) : (
-          <div className="home-dashboard-wrap">
-            <div className="home-dashboard-head">
-              <h2 className="text-gradient">Welcome Back, {user.name}</h2>
-              <p>Your canteen dashboard is ready. Pick an action to continue.</p>
-            </div>
-
-            <div className="welcome-card">
-              <div className="avatar-circle">
-                {user.name.charAt(0).toUpperCase()}
-              </div>
-              <h3 style={{ marginBottom: '1rem', fontSize: '2rem' }}>Great to see you again</h3>
-              <p style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.8rem', marginBottom: '2.5rem', fontSize: '1.2rem' }}>
-                Logged in as <span className="user-badge">{user.role}</span>
-              </p>
-              <div className="home-dashboard-actions">
-                <Link to="/menu" className="btn btn-primary">Open Menu</Link>
-                <Link to="/profile" className="btn btn-outline">View Profile</Link>
-                {isStaffOrAdmin ? (
-                  <>
-                    <Link to="/staff/category-management" className="btn btn-outline">Manage Categories</Link>
-                    <Link to="/staff/menu-management" className="btn btn-outline">Manage Items</Link>
-                  </>
-                ) : null}
-              </div>
-              <button className="btn btn-primary home-signout-btn" onClick={logout}>
-                Sign Out
-              </button>
-            </div>
-          </div>
-        )}
+        }
       </div>
     </div>
   );

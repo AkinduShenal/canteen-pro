@@ -77,7 +77,7 @@ export const CartProvider = ({ children }) => {
 
   const clearCart = async () => {
     try {
-      const { data } = await api.delete('/cart/clear');
+      const { data } = await api.delete('/cart');
       setCart(data);
       setCartTotal(0);
       return { success: true };

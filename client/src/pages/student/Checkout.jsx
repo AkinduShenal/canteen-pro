@@ -13,6 +13,7 @@ const Checkout = () => {
   const [specialNotes, setSpecialNotes] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [suggestedSlot, setSuggestedSlot] = useState(null);
 
   // Guard: if cart is empty, go back
   useEffect(() => {
@@ -45,6 +46,7 @@ const Checkout = () => {
   const handlePlaceOrder = async (e) => {
     e.preventDefault();
     setError('');
+    setSuggestedSlot(null);
     
     if (!pickupTime) {
       setError('Please select a pickup time slot');
@@ -63,10 +65,20 @@ const Checkout = () => {
       // Navigate to order success/tracking page
       navigate(`/orders/${data._id}`);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to place order');
+      const errData = err.response?.data;
+      setError(errData?.message || 'Failed to place order');
+      if (errData?.slotFull && errData?.nextAvailableSlot) {
+        setSuggestedSlot(errData.nextAvailableSlot);
+      }
     } finally {
       setLoading(false);
     }
+  };
+
+  const applySlotSuggestion = () => {
+    setPickupTime(suggestedSlot);
+    setSuggestedSlot(null);
+    setError('');
   };
 
   if (!cart) return null;
@@ -81,9 +93,56 @@ const Checkout = () => {
           <p style={{ maxWidth: '600px', margin: '1rem auto' }}>Review your items and select a convenient pickup time slot below.</p>
         </header>
         
-        {error && (
+        {error && !suggestedSlot && (
           <div style={{ backgroundColor: '#fee2e2', color: '#dc2626', padding: '1.2rem', borderRadius: '12px', marginBottom: '2rem', border: '1px solid #f87171', textAlign: 'center', fontWeight: '500' }}>
             ⚠️ {error}
+          </div>
+        )}
+
+        {suggestedSlot && (
+          <div style={{
+            background: 'linear-gradient(135deg, #fffbeb, #fef3c7)',
+            border: '1.5px solid #f59e0b',
+            borderRadius: '14px',
+            padding: '1.4rem 1.8rem',
+            marginBottom: '2rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '1rem',
+            flexWrap: 'wrap',
+            boxShadow: '0 4px 16px rgba(245,158,11,0.15)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+              <span style={{ fontSize: '1.6rem' }}>⏰</span>
+              <div>
+                <div style={{ fontWeight: '700', color: '#92400e', fontSize: '0.95rem' }}>That slot is full!</div>
+                <div style={{ color: '#78350f', fontSize: '0.9rem', marginTop: '0.2rem' }}>
+                  Next available: <strong>{suggestedSlot}</strong>
+                </div>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={applySlotSuggestion}
+              style={{
+                background: '#f59e0b',
+                color: 'white',
+                border: 'none',
+                borderRadius: '50px',
+                padding: '0.65rem 1.5rem',
+                fontWeight: '700',
+                cursor: 'pointer',
+                fontSize: '0.95rem',
+                whiteSpace: 'nowrap',
+                boxShadow: '0 4px 12px rgba(245,158,11,0.3)',
+                transition: 'transform 0.2s'
+              }}
+              onMouseEnter={e => e.target.style.transform = 'translateY(-2px)'}
+              onMouseLeave={e => e.target.style.transform = 'translateY(0)'}
+            >
+              Use This Slot →
+            </button>
           </div>
         )}
 

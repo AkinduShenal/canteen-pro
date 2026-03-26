@@ -26,9 +26,34 @@ export const addOrderItems = async (req, res) => {
     });
 
     if (slotOrdersCount >= 20) {
+      // Find next available slot after the requested one
+      const allSlots = [];
+      for (let h = 10; h <= 17; h++) {
+        for (let m = 0; m < 60; m += 15) {
+          let nextM = m + 15, nextH = h;
+          if (nextM === 60) { nextM = 0; nextH = h + 1; }
+          const start = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+          const end   = `${String(nextH).padStart(2, '0')}:${String(nextM).padStart(2, '0')}`;
+          allSlots.push(`${start} - ${end}`);
+        }
+      }
+      const currentIdx = allSlots.indexOf(pickupTime);
+      const futureSlots = currentIdx >= 0 ? allSlots.slice(currentIdx + 1) : allSlots;
+
+      let nextAvailableSlot = null;
+      for (const slot of futureSlots) {
+        const count = await Order.countDocuments({
+          canteenId: cart.canteen,
+          pickupTime: slot,
+          status: { $nin: ['cancelled'] }
+        });
+        if (count < 20) { nextAvailableSlot = slot; break; }
+      }
+
       return res.status(400).json({ 
         message: 'This time slot is full (capacity reached). Please select a different time.',
-        slotFull: true
+        slotFull: true,
+        nextAvailableSlot
       });
     }
 

@@ -1,14 +1,23 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext.jsx';
+import { CartContext } from '../context/CartContext.jsx';
+import CartDrawer from './CartDrawer.jsx';
 
 const Navbar = () => {
   const { user, logout } = useContext(AuthContext);
+  const { cart } = useContext(CartContext);
+  const [isCartOpen, setIsCartOpen] = useState(false);
   const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  const getCartCount = () => {
+    if (!cart || !cart.items) return 0;
+    return cart.items.reduce((acc, item) => acc + item.quantity, 0);
   };
 
   return (
@@ -38,6 +47,19 @@ const Navbar = () => {
                 <Link to="/staff/menu-management" className="nav-link">Manage Items</Link>
               </>
             ) : null}
+            <Link to="/myorders" className="nav-link">My Orders</Link>
+            <button 
+              className="nav-link" 
+              style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '1rem', fontWeight: '500' }} 
+              onClick={() => setIsCartOpen(true)}
+            >
+              🛒 Cart
+              {getCartCount() > 0 && (
+                <span style={{ background: 'var(--primary)', color: 'white', padding: '0.1rem 0.5rem', borderRadius: '12px', fontSize: '0.8rem' }}>
+                  {getCartCount()}
+                </span>
+              )}
+            </button>
             <Link to="/profile" className="nav-link">Profile</Link>
             <button onClick={handleLogout} className="btn btn-outline" style={{ padding: '0.6rem 1.5rem', borderWidth: '2px', cursor: 'pointer' }}>
               Logout
@@ -50,6 +72,7 @@ const Navbar = () => {
           </>
         )}
       </div>
+      <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
     </nav>
   );
 };

@@ -11,6 +11,9 @@ import StaffCanteenManagement from './pages/StaffCanteenManagement.jsx';
 import MenuBrowse from './pages/menu/MenuBrowse.jsx';
 import StaffMenuManagement from './pages/staff/StaffMenuManagement.jsx';
 import StaffCategoryManagement from './pages/staff/StaffCategoryManagement.jsx';
+import Checkout from './pages/student/Checkout.jsx';
+import OrderHistory from './pages/student/OrderHistory.jsx';
+import OrderTracking from './pages/student/OrderTracking.jsx';
 
 import Unauthorized from './pages/auth/Unauthorized.jsx';
 import ProtectedRoute from './routes/ProtectedRoute.jsx';
@@ -34,6 +37,30 @@ function App() {
             element={
               <ProtectedRoute>
                 <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/checkout"
+            element={
+              <ProtectedRoute>
+                <Checkout />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/myorders"
+            element={
+              <ProtectedRoute>
+                <OrderHistory />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/orders/:id"
+            element={
+              <ProtectedRoute>
+                <OrderTracking />
               </ProtectedRoute>
             }
           />

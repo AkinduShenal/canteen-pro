@@ -1,9 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useContext } from 'react';
 import Navbar from '../../components/Navbar.jsx';
+import { CartContext } from '../../context/CartContext.jsx';
 import api from '../../services/api.js';
 
 const ALL_CATEGORIES = 'all';
-const CART_STORAGE_KEY = 'canteen_cart';
 
 const MenuBrowse = () => {
   const [canteens, setCanteens] = useState([]);
@@ -25,6 +25,7 @@ const MenuBrowse = () => {
   const [loadingQueue, setLoadingQueue] = useState(false);
   const [announcements, setAnnouncements] = useState([]);
   const [loadingAnnouncements, setLoadingAnnouncements] = useState(false);
+  const { addToCart } = useContext(CartContext);
 
   const selectedCategoryName = useMemo(() => {
     if (selectedCategory === ALL_CATEGORIES) {
@@ -65,21 +66,27 @@ const MenuBrowse = () => {
     }
 
     const loadBaseData = async () => {
+      let categoryData = [];
+      let specialData = [];
+      
       try {
-        setError('');
-
-        const [categoryResponse, specialResponse, announcementResponse] = await Promise.all([
-          api.get('/categories', { params: { canteenId: selectedCanteen } }),
-          api.get('/menu-items/specials', { params: { canteenId: selectedCanteen } }),
-          api.get(`/announcements/canteen/${selectedCanteen}`),
-        ]);
-
-        setCategories(categoryResponse.data || []);
-        setSpecials(specialResponse.data || []);
-        setAnnouncements(announcementResponse.data || []);
-      } catch (apiError) {
-        setError(apiError.response?.data?.message || 'Failed to load menu information');
+        const categoryResponse = await api.get('/categories', { params: { canteenId: selectedCanteen } });
+        categoryData = categoryResponse.data || [];
+      } catch (e) {
+        console.error('Failed to load categories', e);
       }
+
+      try {
+        const specialResponse = await api.get('/menu-items/specials', { params: { canteenId: selectedCanteen } });
+        specialData = specialResponse.data || [];
+      } catch (e) {
+        console.error('Failed to load specials', e);
+      }
+
+      setCategories(categoryData);
+      setSpecials(specialData);
+      setAnnouncements([]);
+      setError(categoryData.length === 0 ? 'Warning: Some menu information could not be loaded.' : '');
     };
 
     setSelectedCategory(ALL_CATEGORIES);
@@ -191,45 +198,32 @@ const MenuBrowse = () => {
     };
   }, [selectedItem]);
 
-  const saveItemToCart = (item) => {
+  const handleAddToCart = async (item) => {
     if (!item.available) {
       setActionMessage('This item is currently out of stock.');
-      return false;
+      return;
     }
 
-    const existingCart = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || '[]');
-    const existingIndex = existingCart.findIndex((entry) => entry.itemId === item._id);
-
-    if (existingIndex >= 0) {
-      existingCart[existingIndex].quantity += 1;
-    } else {
-      existingCart.push({
-        itemId: item._id,
-        name: item.name,
-        price: Number(item.price),
-        image: item.image || '',
-        category: item.category?.name || 'General',
-        canteenId: selectedCanteen,
-        quantity: 1,
-      });
-    }
-
-    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(existingCart));
-    return true;
-  };
-
-  const handleAddToCart = (item) => {
-    const added = saveItemToCart(item);
-    if (added) {
+    const result = await addToCart(item._id, 1);
+    if (result.success) {
       setActionMessage(`${item.name} added to cart.`);
+    } else {
+      setActionMessage(result.message + (result.requiresClear ? ' (Please clear your cart first)' : ''));
     }
   };
 
-  const handleOrderNow = (item) => {
-    const added = saveItemToCart(item);
-    if (added) {
+  const handleOrderNow = async (item) => {
+    if (!item.available) {
+      setActionMessage('This item is currently out of stock.');
+      return;
+    }
+
+    const result = await addToCart(item._id, 1);
+    if (result.success) {
       setSelectedItem(null);
-      setActionMessage(`${item.name} added. Proceed to checkout from your cart once cart page is enabled.`);
+      setActionMessage(`${item.name} added. Please open the Cart (🛒) to proceed to checkout.`);
+    } else {
+      setActionMessage(result.message + (result.requiresClear ? ' (Please clear your cart first)' : ''));
     }
   };
 

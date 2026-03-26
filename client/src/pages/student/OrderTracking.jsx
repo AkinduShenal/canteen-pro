@@ -10,6 +10,7 @@ const OrderTracking = () => {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const fetchOrder = async () => {
     try {
@@ -31,10 +32,10 @@ const OrderTracking = () => {
   }, [id]);
 
   const handleCancel = async () => {
-    if (!window.confirm('Are you sure you want to cancel this order?')) return;
     try {
       const { data } = await api.put(`/orders/${id}/cancel`);
       setOrder(data);
+      setShowConfirm(false);
     } catch (err) {
       alert(err.response?.data?.message || 'Failed to cancel order');
     }
@@ -81,6 +82,22 @@ const OrderTracking = () => {
   return (
     <div className="app-container">
       <Navbar />
+      
+      {/* Custom Confirmation Modal */}
+      {showConfirm && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <span className="modal-icon">⚠️</span>
+            <h3>Cancel Order?</h3>
+            <p>Are you sure you want to cancel this order? This action cannot be undone once confirmed.</p>
+            <div className="modal-actions">
+              <button className="btn-cancel" onClick={() => setShowConfirm(false)}>No, Keep It</button>
+              <button className="btn-confirm" onClick={handleCancel}>Yes, Cancel Order</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <main className="orders-container">
         <header style={{ marginBottom: '2.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <button className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }} onClick={() => navigate('/myorders')}>
@@ -162,7 +179,7 @@ const OrderTracking = () => {
                 </div>
 
                 {order.status === 'pending' && (
-                  <button className="btn-cancel-large" onClick={handleCancel}>
+                  <button className="btn-cancel-large" onClick={() => setShowConfirm(true)}>
                     Cancel Order
                   </button>
                 )}

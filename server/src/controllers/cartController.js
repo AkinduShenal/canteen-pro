@@ -39,11 +39,16 @@ export const addToCart = async (req, res) => {
 
     let cart = await Cart.findOne({ user: req.user._id });
     if (!cart) {
-      cart = await Cart.create({ user: req.user._id, items: [], canteen: menuItem.canteenId });
+      cart = await Cart.create({ user: req.user._id, items: [], canteen: menuItem.canteen });
+    }
+
+    // Fix corrupted cart state where canteen is null but items exist
+    if (cart.items.length > 0 && !cart.canteen) {
+      cart.canteen = menuItem.canteen;
     }
 
     // Enforce Canteen-Locked Rule (F2)
-    if (cart.items.length > 0 && cart.canteen.toString() !== menuItem.canteenId.toString()) {
+    if (cart.items.length > 0 && cart.canteen.toString() !== menuItem.canteen.toString()) {
       return res.status(400).json({ 
         message: 'Cannot mix items from different canteens. Please clear your cart first.',
         requiresClear: true
@@ -52,7 +57,7 @@ export const addToCart = async (req, res) => {
 
     // Set canteen if cart was empty
     if (cart.items.length === 0) {
-      cart.canteen = menuItem.canteenId;
+      cart.canteen = menuItem.canteen;
     }
 
     // Check if item already in cart

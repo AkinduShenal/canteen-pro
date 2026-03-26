@@ -59,6 +59,30 @@ export const addOrderItems = async (req, res) => {
 
     // Token Generation (e.g. C-00045)
     const canteen = await Canteen.findById(cart.canteen);
+
+    // Validate canteen is open
+    const isCanteenOpen = (() => {
+      if (!canteen) return false;
+      if (canteen.isOpen === true) return true;
+      if (canteen.isOpen === false) return false;
+      // Auto: check current time against openTime/closeTime
+      if (!canteen.openTime || !canteen.closeTime) return false;
+      const parseTime = (t) => {
+        const [time, mod] = t.split(' ');
+        let [h, m] = time.split(':').map(Number);
+        if (mod === 'PM' && h < 12) h += 12;
+        if (mod === 'AM' && h === 12) h = 0;
+        return h * 60 + (m || 0);
+      };
+      const now = new Date();
+      const cur = now.getHours() * 60 + now.getMinutes();
+      return cur >= parseTime(canteen.openTime) && cur < parseTime(canteen.closeTime);
+    })();
+
+    if (!isCanteenOpen) {
+      return res.status(400).json({ message: 'This canteen is currently closed. Please try again during opening hours.' });
+    }
+
     const canteenPrefix = canteen ? canteen.name.substring(0, 2).toUpperCase() : 'CX';
     const totalCanteenOrders = await Order.countDocuments({ canteenId: cart.canteen });
     const orderSequence = String(totalCanteenOrders + 1).padStart(5, '0');

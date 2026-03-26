@@ -55,7 +55,18 @@ const Navbar = () => {
             >
               🛒 Cart
               {getCartCount() > 0 && (
-                <span style={{ background: 'var(--primary)', color: 'white', padding: '0.1rem 0.5rem', borderRadius: '12px', fontSize: '0.8rem' }}>
+                <span style={{
+                  background: 'var(--primary-color)',
+                  color: 'white',
+                  padding: '0.15rem 0.6rem',
+                  borderRadius: '50px',
+                  fontSize: '0.78rem',
+                  fontWeight: '700',
+                  minWidth: '22px',
+                  textAlign: 'center',
+                  boxShadow: '0 2px 8px var(--primary-glow)',
+                  animation: 'fadeIn 0.3s ease-out'
+                }}>
                   {getCartCount()}
                 </span>
               )}

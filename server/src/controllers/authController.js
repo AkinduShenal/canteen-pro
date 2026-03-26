@@ -42,6 +42,7 @@ export const registerUser = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        assignedCanteen: user.assignedCanteen,
         token: generateToken(user._id),
       });
     } else {
@@ -69,6 +70,7 @@ export const loginUser = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        assignedCanteen: user.assignedCanteen,
         token: generateToken(user._id),
       });
     } else {
@@ -89,6 +91,7 @@ export const getUserProfile = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        assignedCanteen: user.assignedCanteen,
       });
     } else {
       res.status(404).json({ message: 'User not found' });
@@ -120,6 +123,7 @@ export const updateUserProfile = async (req, res) => {
         name: updatedUser.name,
         email: updatedUser.email,
         role: updatedUser.role,
+        assignedCanteen: updatedUser.assignedCanteen,
         token: generateToken(updatedUser._id),
       });
     } else {

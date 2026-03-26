@@ -5,6 +5,7 @@ import { AuthProvider } from './context/AuthContext.jsx'
 import { CartProvider } from './context/CartContext.jsx'
 import { GoogleOAuthProvider } from '@react-oauth/google'
 import './index.css'
+import './tailwind-dashboard.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

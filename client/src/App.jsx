@@ -5,6 +5,7 @@ import Home from './pages/Home.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import Profile from './pages/Profile.jsx';
+import StaffAdminDashboard from './pages/StaffAdminDashboard.jsx';
 import CanteenDirectory from './pages/CanteenDirectory.jsx';
 import CanteenDetails from './pages/CanteenDetails.jsx';
 import StaffCanteenManagement from './pages/StaffCanteenManagement.jsx';
@@ -29,6 +30,15 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route
+            path="/dashboard/*"
+            element={
+              <RoleRoute allowedRoles={['admin']}>
+                <StaffAdminDashboard />
+              </RoleRoute>
+            }
+          />
           <Route path="/unauthorized" element={<Unauthorized />} />
 
           {/* Protected User Route */}
@@ -68,6 +78,7 @@ function App() {
           {/* Public Canteen Routes */}
           <Route path="/canteens" element={<CanteenDirectory />} />
           <Route path="/canteen/:id" element={<CanteenDetails />} />
+          <Route path="/menu/:canteenId" element={<MenuBrowse />} />
           <Route path="/menu" element={<MenuBrowse />} />
 
           {/* Staff/Admin Protected Routes */}

@@ -1,5 +1,38 @@
 import Canteen from '../models/Canteen.js';
+import User from '../models/User.js';
 import Order from '../models/Order.js';
+
+const buildCanteenLoginLocalPart = (name) => {
+  const normalized = String(name || '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/[\s-]+/g, '')
+    .slice(0, 30);
+
+  return normalized || 'canteen';
+};
+
+const resolveAvailableCanteenEmail = async (canteenName) => {
+  const baseLocalPart = buildCanteenLoginLocalPart(canteenName);
+  let suffix = 0;
+
+  while (suffix < 200) {
+    const localPart = suffix === 0 ? baseLocalPart : `${baseLocalPart}${suffix}`;
+    const email = `${localPart}@gmail.com`;
+    const exists = await User.exists({ email });
+
+    if (!exists) {
+      return email;
+    }
+
+    suffix += 1;
+  }
+
+  throw new Error('Unable to generate a unique login email for this canteen');
+};
 
 // Helper: Queue
 const getQueueStatus = async (canteenId) => {
@@ -14,11 +47,11 @@ const getQueueStatus = async (canteenId) => {
 };
 
 const getStatus = (openTime, closeTime, isOpen) => {
-  // Manual override: If isOpen is explicitly true or false, use it.
+  // Manual override
   if (isOpen === true) return 'Open';
   if (isOpen === false) return 'Closed';
 
-  // Automatic: If isOpen is null or undefined, calculate based on time.
+  // Automatic
   if (!openTime || !closeTime) return 'Closed';
 
   const parseTime = (timeStr) => {
@@ -31,15 +64,14 @@ const getStatus = (openTime, closeTime, isOpen) => {
   };
 
   const now = new Date();
-  // Use current IST time as per system prompt metadata if needed, 
-  // but standard Date() is usually fine for local execution.
-  // The system metadata says it's 2026-03-25T03:04:08+05:30.
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
   try {
     const openMinutes = parseTime(openTime);
     const closeMinutes = parseTime(closeTime);
-    return (currentMinutes >= openMinutes && currentMinutes < closeMinutes) ? 'Open' : 'Closed';
+    return currentMinutes >= openMinutes && currentMinutes < closeMinutes
+      ? 'Open'
+      : 'Closed';
   } catch (e) {
     return 'Closed';
   }
@@ -50,7 +82,22 @@ const getStatus = (openTime, closeTime, isOpen) => {
 // @access  Private/Admin
 export const createCanteen = async (req, res) => {
   try {
-    const { name, location, openTime, closeTime, contactNumber } = req.body;
+    const {
+      name,
+      location,
+      openTime,
+      closeTime,
+      contactNumber,
+      password,
+    } = req.body;
+
+    if (!name || !location || !openTime || !closeTime || !contactNumber) {
+      return res.status(400).json({ message: 'Please provide all required canteen fields' });
+    }
+
+    if (!password || String(password).length < 6) {
+      return res.status(400).json({ message: 'Password must be at least 6 characters' });
+    }
 
     const canteenExists = await Canteen.findOne({ name });
     if (canteenExists) {
@@ -67,7 +114,26 @@ export const createCanteen = async (req, res) => {
     });
 
     if (canteen) {
-      res.status(201).json(canteen);
+      try {
+        const loginEmail = await resolveAvailableCanteenEmail(canteen.name);
+
+        await User.create({
+          name: canteen.name,
+          email: loginEmail,
+          password,
+          role: 'staff',
+          assignedCanteen: canteen._id,
+          isActive: true,
+        });
+
+        res.status(201).json({
+          ...canteen.toObject(),
+          staffLoginEmail: loginEmail,
+        });
+      } catch (userCreationError) {
+        await Canteen.deleteOne({ _id: canteen._id });
+        throw userCreationError;
+      }
     } else {
       res.status(400).json({ message: 'Invalid canteen data' });
     }
@@ -214,26 +280,21 @@ export const toggleCanteenStatus = async (req, res) => {
     const canteen = await Canteen.findById(req.params.id);
 
     if (canteen) {
-      // If currently null (Automatic), get the current status to decide what to toggle to.
       if (canteen.isOpen === null || canteen.isOpen === undefined) {
         const currentStatus = getStatus(canteen.openTime, canteen.closeTime, canteen.isOpen);
-        // If it's currently Open (auto), toggle to Manually Closed (false).
-        // If it's currently Closed (auto), toggle to Manually Open (true).
-        canteen.isOpen = (currentStatus === 'Open') ? false : true;
+        canteen.isOpen = currentStatus === 'Open' ? false : true;
       } else {
-        // Normal toggle for Boolean values
         canteen.isOpen = !canteen.isOpen;
       }
 
       const updatedCanteen = await canteen.save();
-      
-      // Calculate display status for the response
+
       const response = {
         ...updatedCanteen._doc,
         status: getStatus(updatedCanteen.openTime, updatedCanteen.closeTime, updatedCanteen.isOpen),
         queue: await getQueueStatus(updatedCanteen._id)
       };
-      
+
       res.json(response);
     } else {
       res.status(404).json({ message: 'Canteen not found' });

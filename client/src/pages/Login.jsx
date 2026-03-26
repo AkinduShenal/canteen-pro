@@ -1,4 +1,5 @@
 import React, { useState, useContext } from 'react';
+import { toast, Toaster } from 'react-hot-toast';
 import Navbar from '../components/Navbar.jsx';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext.jsx';
@@ -21,14 +22,15 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const res = await api.post('/auth/login', { email, password });
-      login(res.data); // Save to context and localStorage
-      
-      // after successful login
-      localStorage.setItem("token", res.data.token);
+      const { data } = await api.post('/auth/login', { email, password });
+      login(data);
+      toast.success('Login successful!');
 
-      // redirect
-      window.location.href = "/canteens";
+      if (data?.role === 'admin') {
+        navigate('/dashboard/overview', { replace: true });
+      } else {
+        navigate('/canteens', { replace: true });
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid email or password. Please try again.');
     } finally {
@@ -44,8 +46,11 @@ const Login = () => {
         role: googleRole 
       });
       login(res.data);
-      localStorage.setItem("token", res.data.token);
-      window.location.href = "/canteens";
+      if (res.data?.role === 'admin') {
+        navigate('/dashboard/overview', { replace: true });
+      } else {
+        navigate('/canteens', { replace: true });
+      }
     } catch (err) {
       setError('Google Sign-In failed. Please try again.');
     } finally {
@@ -59,6 +64,7 @@ const Login = () => {
 
   return (
     <div className="app-container">
+      <Toaster position="top-right" />
       <Navbar />
       <div className="main-content auth-container">
         <div className="auth-card-split">

@@ -37,6 +37,67 @@ const StaffMenuManagement = () => {
     [user]
   );
 
+  const selectedCanteenName = useMemo(
+    () => canteens.find((canteen) => canteen._id === selectedCanteen)?.name || 'Selected canteen',
+    [canteens, selectedCanteen]
+  );
+
+  const menuStats = useMemo(() => {
+    const specialCount = items.filter((item) => item.isSpecial).length;
+    const availableCount = items.filter((item) => item.available).length;
+
+    return [
+      {
+        label: 'Items',
+        value: items.length,
+        hint: 'Currently in this canteen',
+      },
+      {
+        label: 'Available',
+        value: availableCount,
+        hint: 'Ready to serve',
+      },
+      {
+        label: 'Specials',
+        value: specialCount,
+        hint: 'Marked by staff',
+      },
+    ];
+  }, [items]);
+
+  const heroArtwork = useMemo(() => {
+    const key = selectedCanteenName.toLowerCase();
+    if (key.includes('basement')) {
+      return 'https://images.unsplash.com/photo-1559847844-5315695dadae?q=80&w=1600&auto=format&fit=crop';
+    }
+    if (key.includes('new')) {
+      return 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=1600&auto=format&fit=crop';
+    }
+    if (key.includes('anohana')) {
+      return 'https://images.unsplash.com/photo-1547592180-85f173990554?q=80&w=1600&auto=format&fit=crop';
+    }
+    return 'https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?q=80&w=1600&auto=format&fit=crop';
+  }, [selectedCanteenName]);
+
+  const heroGallery = useMemo(() => {
+    return [
+      {
+        src: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=900&auto=format&fit=crop',
+        label: 'Fresh batch',
+      },
+      {
+        src: 'https://images.unsplash.com/photo-1547592180-85f173990554?q=80&w=900&auto=format&fit=crop',
+        label: 'Chef picks',
+      },
+      {
+        src: 'https://images.unsplash.com/photo-1559847844-5315695dadae?q=80&w=900&auto=format&fit=crop',
+        label: 'Daily specials',
+      },
+    ];
+  }, []);
+
+  const latestAnnouncement = announcementList[0];
+
   useEffect(() => {
     if (!canManage) {
       return;
@@ -329,9 +390,53 @@ const StaffMenuManagement = () => {
       <Navbar />
       <main className="staff-menu-wrap">
         <section className="staff-menu-hero">
-          <p className="menu-kicker">Staff Console</p>
-          <h1>Menu Item Management</h1>
-          <p>Create items, adjust availability, and mark daily specials for each canteen.</p>
+          <div className="staff-menu-hero-copy">
+            <p className="menu-kicker">Staff Console</p>
+            <h1>Menu Item Management</h1>
+            <p>Create items, adjust availability, and mark daily specials for each canteen.</p>
+
+            <div className="staff-menu-live-pill">
+              <span className="staff-menu-live-dot" />
+              Live menu workspace
+            </div>
+
+            <div className="staff-menu-stats">
+              {menuStats.map((stat) => (
+                <article key={stat.label} className="staff-menu-stat-card">
+                  <span>{stat.label}</span>
+                  <strong>{stat.value}</strong>
+                  <small>{stat.hint}</small>
+                </article>
+              ))}
+            </div>
+
+            <div className="staff-menu-hero-actions">
+              <Link to="/staff/categories" className="btn btn-outline">Go to category management</Link>
+              <Link to="/staff/canteens" className="btn btn-outline">Manage canteens</Link>
+            </div>
+          </div>
+
+          <div className="staff-menu-hero-visual">
+            <img src={heroArtwork} alt={selectedCanteenName} />
+            <div className="staff-menu-hero-overlay">
+              <p>Current workspace</p>
+              <h3>{selectedCanteenName}</h3>
+              <span>{loading ? 'Loading...' : `${items.length} items ready`}</span>
+            </div>
+
+            <div className="staff-menu-hero-gallery">
+              {heroGallery.map((tile, index) => (
+                <article
+                  key={tile.label}
+                  className="staff-menu-gallery-card"
+                  style={{ animationDelay: `${index * 0.12}s` }}
+                >
+                  <img src={tile.src} alt={tile.label} />
+                  <span>{tile.label}</span>
+                </article>
+              ))}
+            </div>
+          </div>
         </section>
 
         <section className="staff-announcement-panel">
@@ -340,22 +445,65 @@ const StaffMenuManagement = () => {
             <p>Post instant updates like kitchen delays, specials, and temporary closing notices.</p>
           </div>
 
-          <form className="staff-announcement-form" onSubmit={handlePostAnnouncement}>
-            <label className="menu-field">
-              <span>Announcement Message</span>
-              <textarea
-                className="staff-textarea"
-                value={announcementMessage}
-                onChange={(event) => setAnnouncementMessage(event.target.value)}
-                placeholder="Example: Kitchen delay - orders will take around 20 minutes"
-              />
-            </label>
-            <button className="btn btn-primary" type="submit" disabled={postingAnnouncement || !selectedCanteen}>
-              {postingAnnouncement ? 'Posting...' : 'Post Announcement'}
-            </button>
-          </form>
+          <div className="staff-announcement-summary">
+            <article>
+              <span>Workspace</span>
+              <strong>{selectedCanteenName}</strong>
+            </article>
+            <article>
+              <span>Recent posts</span>
+              <strong>{announcementList.length}</strong>
+            </article>
+            <article>
+              <span>Visible alerts</span>
+              <strong>{Math.min(announcementList.length, 3)}</strong>
+            </article>
+          </div>
 
-          {announcementStatus ? <p className="staff-status-text">{announcementStatus}</p> : null}
+          <div className="staff-announcement-layout">
+            <form className="staff-announcement-form staff-announcement-form-panel" onSubmit={handlePostAnnouncement}>
+              <div className="staff-announcement-form-head">
+                <div>
+                  <p className="staff-card-kicker">Quick notice</p>
+                  <h3>Broadcast an update</h3>
+                </div>
+                <span>Fast publish</span>
+              </div>
+
+              <label className="menu-field">
+                <span>Announcement Message</span>
+                <textarea
+                  className="staff-textarea"
+                  value={announcementMessage}
+                  onChange={(event) => setAnnouncementMessage(event.target.value)}
+                  placeholder="Example: Kitchen delay - orders will take around 20 minutes"
+                />
+              </label>
+              <button className="btn btn-primary" type="submit" disabled={postingAnnouncement || !selectedCanteen}>
+                {postingAnnouncement ? 'Posting...' : 'Post Announcement'}
+              </button>
+
+              {announcementStatus ? <p className="staff-status-text">{announcementStatus}</p> : null}
+            </form>
+
+            <aside className="staff-announcement-spotlight">
+              <p className="staff-card-kicker">Spotlight</p>
+              <h3>Keep students informed</h3>
+              <p>
+                Use this bar for delays, lunch specials, closing time changes, or last-minute menu updates.
+              </p>
+
+              <div className="staff-announcement-spotlight-box">
+                <span>Latest update</span>
+                <strong>{latestAnnouncement ? latestAnnouncement.message : 'No updates yet'}</strong>
+                <small>
+                  {latestAnnouncement
+                    ? new Date(latestAnnouncement.createdAt).toLocaleString()
+                    : 'Post your first alert to show it here'}
+                </small>
+              </div>
+            </aside>
+          </div>
 
           <div className="staff-announcement-list">
             {announcementList.slice(0, 3).map((announcement) => (
@@ -516,10 +664,36 @@ const StaffMenuManagement = () => {
               <div className="staff-item-list">
                 {items.map((item) => (
                   <article key={item._id} className="staff-item-row">
-                    <div className="staff-item-main">
-                      <h3>{item.name}</h3>
-                      <p>{item.category?.name || 'General'} • LKR {Number(item.price).toFixed(2)}</p>
+                    <div className="staff-item-visual">
+                      {item.image ? (
+                        <img src={item.image} alt={item.name} />
+                      ) : (
+                        <div className="staff-item-placeholder">
+                          <span>{item.category?.name?.slice(0, 1) || 'M'}</span>
+                        </div>
+                      )}
                     </div>
+
+                    <div className="staff-item-main">
+                      <div className="staff-item-head">
+                        <div>
+                          <h3>{item.name}</h3>
+                          <p>{item.category?.name || 'General'}</p>
+                        </div>
+                        <strong className="staff-item-price">LKR {Number(item.price).toFixed(2)}</strong>
+                      </div>
+
+                      {item.description ? <p className="staff-item-description">{item.description}</p> : null}
+
+                      <div className="staff-item-badges">
+                        <span>{item.available ? 'Available' : 'Out of stock'}</span>
+                        <span>{item.isSpecial ? 'Special' : 'Regular'}</span>
+                        {item.dailyQuantity !== null && item.dailyQuantity !== undefined && item.dailyQuantity !== '' ? (
+                          <span>Daily {item.dailyQuantity}</span>
+                        ) : null}
+                      </div>
+                    </div>
+
                     <div className="staff-item-actions">
                       <button className="btn btn-outline" type="button" onClick={() => handleEdit(item)}>
                         Edit

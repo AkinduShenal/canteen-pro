@@ -9,6 +9,9 @@ import categoryRoutes from './routes/categoryRoutes.js';
 import menuItemRoutes from './routes/menuItemRoutes.js';
 import cartRoutes from './routes/cartRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
+import staffAdminRoutes from './routes/staffAdminRoutes.js';
+import adminOrdersRoutes from './routes/adminOrdersRoutes.js';
+import announcementRoutes from './routes/announcementRoutes.js';
 import connectDB from './config/db.js';
 
 dotenv.config(); // Resolves .env from current working directory (server/)
@@ -22,10 +25,10 @@ app.use(express.json());
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/canteens', canteenRoutes);
-
-import { generateToken } from './controllers/authController.js';
-
+app.use('/api/announcements', announcementRoutes);
 app.use('/api/categories', categoryRoutes);
+app.use('/api/staff-admin', staffAdminRoutes);
+app.use('/api/admin', adminOrdersRoutes);
 app.use('/api/menu-items', menuItemRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);

@@ -31,8 +31,17 @@ export const getCart = async (req, res) => {
 export const addToCart = async (req, res) => {
   try {
     const { menuItemId, quantity } = req.body;
+
+    // Validate quantity
+    const qty = Number(quantity);
+    if (!menuItemId) {
+      return res.status(400).json({ message: 'Menu item ID is required' });
+    }
+    if (!Number.isInteger(qty) || qty < 1) {
+      return res.status(400).json({ message: 'Quantity must be a positive whole number' });
+    }
+
     const menuItem = await MenuItem.findById(menuItemId);
-    
     if (!menuItem) {
       return res.status(404).json({ message: 'Menu item not found' });
     }

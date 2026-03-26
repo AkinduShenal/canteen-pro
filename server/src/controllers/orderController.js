@@ -60,6 +60,10 @@ export const addOrderItems = async (req, res) => {
     // Token Generation (e.g. C-00045)
     const canteen = await Canteen.findById(cart.canteen);
 
+    if (!canteen) {
+      return res.status(404).json({ message: 'Canteen not found. Please clear your cart and try again.' });
+    }
+
     // Validate canteen is open
     const isCanteenOpen = (() => {
       if (!canteen) return false;

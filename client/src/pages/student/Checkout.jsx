@@ -179,7 +179,11 @@ const Checkout = () => {
                   placeholder="Example: No onions, extra spicy, or deliver to gate..."
                   value={specialNotes}
                   onChange={(e) => setSpecialNotes(e.target.value)}
+                  maxLength={300}
                 ></textarea>
+                <p style={{ fontSize: '0.82rem', marginTop: '0.4rem', color: 'var(--text-light)', textAlign: 'right' }}>
+                  {specialNotes.length}/300
+                </p>
               </div>
 
               <button type="submit" className="btn btn-primary btn-checkout" disabled={loading}>

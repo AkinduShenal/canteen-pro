@@ -5,6 +5,7 @@ import api from '../../services/api.js';
 
 const ALL_CATEGORIES = 'all';
 const CART_STORAGE_KEY = 'canteen_cart';
+const DEFAULT_MENU_IMAGE = 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=1200&auto=format&fit=crop';
 
 const MenuBrowse = () => {
   const navigate = useNavigate();
@@ -255,6 +256,17 @@ const MenuBrowse = () => {
     }
   };
 
+  const resolveImageSrc = (image) => (image && String(image).trim() ? image : DEFAULT_MENU_IMAGE);
+
+  const handleImageError = (event) => {
+    const img = event.currentTarget;
+    if (img.dataset.fallbackApplied === 'true') {
+      return;
+    }
+    img.dataset.fallbackApplied = 'true';
+    img.src = DEFAULT_MENU_IMAGE;
+  };
+
   return (
     <div className="app-container">
       <Navbar />
@@ -385,9 +397,13 @@ const MenuBrowse = () => {
                     }
                   }}
                 >
-                  {item.image ? (
-                    <img className="menu-card-image" src={item.image} alt={item.name} loading="lazy" />
-                  ) : null}
+                  <img
+                    className="menu-card-image"
+                    src={resolveImageSrc(item.image)}
+                    alt={item.name}
+                    loading="lazy"
+                    onError={handleImageError}
+                  />
                   <div className="menu-special-badge">SPECIAL</div>
                   <h3>{item.name}</h3>
                   <p>{item.description || 'Freshly prepared today.'}</p>
@@ -431,9 +447,13 @@ const MenuBrowse = () => {
                     }
                   }}
                 >
-                  {item.image ? (
-                    <img className="menu-card-image" src={item.image} alt={item.name} loading="lazy" />
-                  ) : null}
+                  <img
+                    className="menu-card-image"
+                    src={resolveImageSrc(item.image)}
+                    alt={item.name}
+                    loading="lazy"
+                    onError={handleImageError}
+                  />
                   <div className="menu-item-top">
                     <h3>{item.name}</h3>
                     <span className={`menu-stock-pill ${item.available ? 'in' : 'out'}`}>
@@ -470,14 +490,13 @@ const MenuBrowse = () => {
               >
                 x
               </button>
-              {selectedItem.image ? (
-                <img
-                  className="menu-item-modal-image"
-                  src={selectedItem.image}
-                  alt={selectedItem.name}
-                  loading="lazy"
-                />
-              ) : null}
+              <img
+                className="menu-item-modal-image"
+                src={resolveImageSrc(selectedItem.image)}
+                alt={selectedItem.name}
+                loading="lazy"
+                onError={handleImageError}
+              />
               <div className="menu-item-modal-content">
                 <div className="menu-item-modal-head">
                   <h3>{selectedItem.name}</h3>

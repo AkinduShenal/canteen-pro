@@ -411,7 +411,7 @@ const StaffMenuManagement = () => {
             </div>
 
             <div className="staff-menu-hero-actions">
-              <Link to="/staff/categories" className="btn btn-outline">Go to category management</Link>
+              <Link to="/staff/category-management" className="btn btn-outline">Go to category management</Link>
               <Link to="/staff/canteens" className="btn btn-outline">Manage canteens</Link>
             </div>
           </div>

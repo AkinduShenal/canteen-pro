@@ -60,6 +60,23 @@ const StaffCategoryManagement = () => {
     return 'https://images.unsplash.com/photo-1551218808-94e220e084d2?q=80&w=1600&auto=format&fit=crop';
   }, [selectedCanteenName]);
 
+  const heroGallery = useMemo(() => {
+    return [
+      {
+        src: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=900&auto=format&fit=crop',
+        label: 'Fresh batch',
+      },
+      {
+        src: 'https://images.unsplash.com/photo-1547592180-85f173990554?q=80&w=900&auto=format&fit=crop',
+        label: 'Chef picks',
+      },
+      {
+        src: 'https://images.unsplash.com/photo-1559847844-5315695dadae?q=80&w=900&auto=format&fit=crop',
+        label: 'Daily specials',
+      },
+    ];
+  }, []);
+
   useEffect(() => {
     if (!canManage) {
       return;
@@ -221,18 +238,23 @@ const StaffCategoryManagement = () => {
   return (
     <div className="app-container">
       <Navbar />
-      <main className="staff-menu-wrap staff-category-wrap">
-        <section className="staff-category-hero">
-          <div className="staff-category-hero-copy">
+      <main className="staff-menu-wrap">
+        <section className="staff-menu-hero">
+          <div className="staff-menu-hero-copy">
             <p className="menu-kicker">Staff Console</p>
             <h1>Category Management</h1>
             <p>
               Create, rename, and organize category buckets with a clean, premium workspace built for speed.
             </p>
 
-            <div className="staff-category-stat-row">
+            <div className="staff-menu-live-pill">
+              <span className="staff-menu-live-dot" />
+              Live category workspace
+            </div>
+
+            <div className="staff-menu-stats">
               {categoryStats.map((stat) => (
-                <article key={stat.label} className="staff-category-stat-card">
+                <article key={stat.label} className="staff-menu-stat-card">
                   <span>{stat.label}</span>
                   <strong>{stat.value}</strong>
                   <small>{stat.hint}</small>
@@ -240,18 +262,31 @@ const StaffCategoryManagement = () => {
               ))}
             </div>
 
-            <div className="staff-category-hero-actions">
+            <div className="staff-menu-hero-actions">
               <Link to="/staff/menu-management" className="btn btn-outline">Go to menu item management</Link>
               <Link to="/staff/canteens" className="btn btn-outline">Manage canteens</Link>
             </div>
           </div>
 
-          <div className="staff-category-hero-visual">
+          <div className="staff-menu-hero-visual">
             <img src={heroArtwork} alt={selectedCanteenName} />
-            <div className="staff-category-hero-overlay">
+            <div className="staff-menu-hero-overlay">
               <p>Current workspace</p>
               <h3>{selectedCanteenName}</h3>
               <span>{loading ? 'Loading...' : `${categories.length} categories ready`}</span>
+            </div>
+
+            <div className="staff-menu-hero-gallery">
+              {heroGallery.map((tile, index) => (
+                <article
+                  key={tile.label}
+                  className="staff-menu-gallery-card"
+                  style={{ animationDelay: `${index * 0.12}s` }}
+                >
+                  <img src={tile.src} alt={tile.label} />
+                  <span>{tile.label}</span>
+                </article>
+              ))}
             </div>
           </div>
         </section>

@@ -8,6 +8,15 @@ const CanteenDirectory = () => {
   const navigate = useNavigate();
   const [canteens, setCanteens] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // Fallback high-quality images since the generator is busy
+  const canteenImages = [
+    'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&q=80&w=1000',
+    'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&q=80&w=1000',
+    'https://images.unsplash.com/photo-1552566626-52f8b828add9?auto=format&fit=crop&q=80&w=1000',
+    'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&q=80&w=1000',
+  ];
 
   useEffect(() => {
     const fetchCanteens = async () => {
@@ -17,66 +26,119 @@ const CanteenDirectory = () => {
       } catch (error) {
         console.error('Error fetching canteens:', error);
       } finally {
-        setLoading(false);
+        setTimeout(() => setLoading(false), 800); // Smooth transition
       }
     };
     fetchCanteens();
   }, []);
 
+  const filteredCanteens = canteens.filter(c => 
+    c.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    c.location.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   if (loading) {
-    return <div className="canteen-directory-loader">Loading Canteens...</div>;
+    return (
+      <div className="directory-loader-wrapper">
+        <div className="premium-loader"></div>
+        <p>Polishing your dining experience...</p>
+      </div>
+    );
   }
 
   return (
-    <div className="app-container">
+    <div className="directory-page-root">
       <Navbar />
-      <div className="canteen-directory-container">
-        <div className="canteen-directory-header">
-          <h1>Campus Canteens</h1>
-          <p>Explore all dining options across the university campus</p>
+      
+      {/* Immersive Hero Section */}
+      <section className="directory-hero">
+        <div className="hero-background-waves"></div>
+        <div className="directory-hero-content">
+          <span className="hero-kicker">Premium Dining</span>
+          <h1>Explore Campus <span className="text-glow">Canteens</span></h1>
+          <p>Find the perfect spot for your next meal with live queue tracking and instant ordering.</p>
+          
+          <div className="search-container-premium">
+            <span className="search-icon">🔍</span>
+            <input 
+              type="text" 
+              placeholder="Search by name or location..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
         </div>
-        
-        <div className="canteen-grid">
-          {canteens.map((canteen) => {
-            const isOpen = canteen.status === 'Open';
-            const queue = canteen.queue || 'Low';
-            
-            return (
-              <div key={canteen._id} className="canteen-card">
-                <div className="canteen-card-image">
-                  <div className={`status-badge ${isOpen ? 'open' : 'closed'}`}>
-                    {isOpen ? 'Open' : 'Closed'}
+      </section>
+
+      <div className="directory-main-container">
+        <div className="directory-stats-row">
+          <div className="stat-pill">
+            <span className="stat-value">{canteens.length}</span>
+            <span className="stat-label">Canteens</span>
+          </div>
+          <div className="stat-pill">
+            <span className="stat-value">{canteens.filter(c => c.status === 'Open').length}</span>
+            <span className="stat-label">Open Now</span>
+          </div>
+        </div>
+
+        <div className="canteen-immersive-grid">
+          {filteredCanteens.length > 0 ? (
+            filteredCanteens.map((canteen, index) => {
+              const isOpen = canteen.status === 'Open';
+              const queue = canteen.queue || 'Low';
+              const imageUrl = canteenImages[index % canteenImages.length];
+              
+              return (
+                <div 
+                  key={canteen._id} 
+                  className={`immersive-card ${!isOpen ? 'card-dimmed' : ''}`}
+                  onClick={() => navigate(`/canteen/${canteen._id}`)}
+                >
+                  <div className="card-image-wrapper">
+                    <img src={imageUrl} alt={canteen.name} loading="lazy" />
+                    <div className="card-image-overlay"></div>
+                    <div className={`exclusive-status-badge ${isOpen ? 'status-online' : 'status-offline'}`}>
+                      <span className="pulse-dot"></span>
+                      {isOpen ? 'Live Now' : 'Closed'}
+                    </div>
+                  </div>
+                  
+                  <div className="card-glass-content">
+                    <div className="card-header-row">
+                      <h2>{canteen.name}</h2>
+                      <div className={`queue-indicator queue-${queue.toLowerCase()}`}>
+                        <span className="queue-dot"></span>
+                        {queue} Queue
+                      </div>
+                    </div>
+
+                    <div className="card-info-grid">
+                      <div className="info-pill">
+                        <span className="icon">📍</span>
+                        <span>{canteen.location}</span>
+                      </div>
+                      <div className="info-pill">
+                        <span className="icon">🕒</span>
+                        <span>{canteen.openTime} - {canteen.closeTime}</span>
+                      </div>
+                    </div>
+
+                    <div className="card-footer-action">
+                      <span className="action-text">Explore Menu</span>
+                      <span className="action-arrow">→</span>
+                    </div>
                   </div>
                 </div>
-                <div className="canteen-card-content">
-                  <h2>{canteen.name}</h2>
-                  <div className="canteen-info">
-                    <div className="info-item">
-                      <span className="icon">📍</span>
-                      <span>{canteen.location}</span>
-                    </div>
-                    <div className="info-item">
-                      <span className="icon">⏱️</span>
-                      <span>{canteen.openTime} - {canteen.closeTime}</span>
-                    </div>
-                    <div className="info-item">
-                      <span className="icon">📞</span>
-                      <span>{canteen.contactNumber}</span>
-                    </div>
-                    <div className={`queue-badge queue-${queue.toLowerCase()}`}>
-                      Queue: {queue}
-                    </div>
-                  </div>
-                  <button 
-                    className="view-details-btn"
-                    onClick={() => navigate(`/canteen/${canteen._id}`)}
-                  >
-                    View Details
-                  </button>
-                </div>
-              </div>
-            );
-          })}
+              );
+            })
+          ) : (
+            <div className="no-results-premium">
+              <div className="no-results-icon">🍽️</div>
+              <h3>No Canteens Found</h3>
+              <p>We couldn't find any canteens matching your search. Try different keywords.</p>
+            </div>
+          )}
         </div>
       </div>
     </div>

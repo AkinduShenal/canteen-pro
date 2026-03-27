@@ -14,6 +14,14 @@ const CanteenDetails = () => {
   const [error, setError] = useState(null);
   const [toggling, setToggling] = useState(false);
 
+  // Fallback high-quality images
+  const canteenImages = [
+    'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&q=80&w=1200',
+    'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&q=80&w=1200',
+    'https://images.unsplash.com/photo-1552566626-52f8b828add9?auto=format&fit=crop&q=80&w=1200',
+    'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&q=80&w=1200',
+  ];
+
   useEffect(() => {
     const fetchCanteen = async () => {
       try {
@@ -21,12 +29,11 @@ const CanteenDetails = () => {
         setCanteen(data);
       } catch (err) {
         console.error('Error fetching canteen details:', err);
-        setError('Failed to load canteen details. Please try again later.');
+        setError('Failed to load canteen details.');
       } finally {
-        setLoading(false);
+        setTimeout(() => setLoading(false), 600);
       }
     };
-
     fetchCanteen();
   }, [id]);
 
@@ -38,7 +45,6 @@ const CanteenDetails = () => {
       setCanteen(data);
     } catch (err) {
       console.error('Error toggling status:', err);
-      alert('Failed to update canteen status.');
     } finally {
       setToggling(false);
     }
@@ -46,25 +52,23 @@ const CanteenDetails = () => {
 
   if (loading) {
     return (
-      <div className="app-container">
-        <Navbar />
-        <div className="canteen-details-loader">
-          <div className="spinner"></div>
-          <p>Loading Canteen Details...</p>
-        </div>
+      <div className="details-loader-wrapper">
+        <div className="premium-spinner"></div>
+        <p>Preparing your view...</p>
       </div>
     );
   }
 
   if (error || !canteen) {
     return (
-      <div className="app-container">
+      <div className="details-error-page">
         <Navbar />
-        <div className="canteen-details-error">
-          <h2>Oops!</h2>
-          <p>{error || 'Canteen not found'}</p>
-          <button className="btn-primary" onClick={() => navigate('/canteens')}>
-            Back to Canteens
+        <div className="error-content-premium">
+          <div className="error-icon">⚠️</div>
+          <h2>Canteen Not Found</h2>
+          <p>{error || 'The canteen you are looking for does not exist.'}</p>
+          <button className="btn-premium-outline" onClick={() => navigate('/canteens')}>
+            Back to Directory
           </button>
         </div>
       </div>
@@ -73,73 +77,87 @@ const CanteenDetails = () => {
 
   const isOpen = canteen.status === 'Open';
   const queue = canteen.queue || 'Low';
+  const imageUrl = canteenImages[Math.floor(Math.random() * canteenImages.length)];
 
   return (
-    <div className="app-container">
+    <div className="premium-details-root">
       <Navbar />
-      <div className="canteen-details-container">
-        <div className="canteen-details-header">
-          <button className="back-btn" onClick={() => navigate('/canteens')}>
-            ← Back to Directory
-          </button>
+      
+      {/* Immersive Detail Header */}
+      <header className="immersive-detail-header">
+        <div className="detail-header-image">
+          <img src={imageUrl} alt={canteen.name} />
+          <div className="detail-header-overlay"></div>
         </div>
 
-        <div className="canteen-details-card">
-          <div className="details-image-section">
-            <div className={`status-overlay-badge ${isOpen ? 'open' : 'closed'}`}>
-              {isOpen ? 'Open Now' : 'Closed'}
+        <div className="detail-header-content">
+          <button className="premium-back-btn" onClick={() => navigate('/canteens')}>
+            <span className="arrow">←</span> <span>Canteen Directory</span>
+          </button>
+          
+          <div className="header-main-title">
+            <span className="detail-kicker">Dining Destination</span>
+            <h1>{canteen.name}</h1>
+            <div className="header-status-row">
+              <div className={`exclusive-status-badge ${isOpen ? 'status-online' : 'status-offline'}`}>
+                <span className="pulse-dot"></span>
+                {isOpen ? 'Live Now' : 'Closed'}
+              </div>
+              <div className={`queue-indicator-pill queue-${queue.toLowerCase()}`}>
+                <span className="queue-dot"></span>
+                {queue} Queue
+              </div>
             </div>
           </div>
+        </div>
+      </header>
 
-          <div className="details-content-section">
-            <div className="details-main-info">
-              <h1>{canteen.name}</h1>
-              <p className="location-text">
-                <span className="icon">📍</span> {canteen.location}
-              </p>
-            </div>
-
-            <div className="details-grid">
-              <div className="detail-item">
-                <span className="detail-label">Opening Hours</span>
-                <span className="detail-value">
-                  <span className="icon">⏱️</span> {canteen.openTime} - {canteen.closeTime}
-                </span>
-              </div>
-              
-              <div className="detail-item">
-                <span className="detail-label">Contact Number</span>
-                <span className="detail-value">
-                  <span className="icon">📞</span> {canteen.contactNumber}
-                </span>
-              </div>
-
-              <div className="detail-item">
-                <span className="detail-label">Queue Status</span>
-                <div className={`details-queue-badge queue-${queue.toLowerCase()}`}>
-                  {queue} Wait Time
+      <main className="detail-main-grid">
+        <section className="detail-info-section">
+          <div className="info-glass-card">
+            <h3>Canteen Information</h3>
+            <div className="info-pills-stack">
+              <div className="detail-pill-premium">
+                <span className="icon">📍</span>
+                <div className="pill-text">
+                  <label>Location</label>
+                  <span>{canteen.location}</span>
                 </div>
               </div>
-
-              <div className="detail-item">
-                <span className="detail-label">Current Status</span>
-                <span className={`status-text ${isOpen ? 'text-open' : 'text-closed'}`}>
-                  ● {isOpen ? 'Accepting Orders' : 'Currently Closed'}
-                </span>
+              <div className="detail-pill-premium">
+                <span className="icon">🕒</span>
+                <div className="pill-text">
+                  <label>Service Hours</label>
+                  <span>{canteen.openTime} - {canteen.closeTime}</span>
+                </div>
+              </div>
+              <div className="detail-pill-premium">
+                <span className="icon">📞</span>
+                <div className="pill-text">
+                  <label>Contact Support</label>
+                  <span>{canteen.contactNumber}</span>
+                </div>
               </div>
             </div>
+          </div>
+        </section>
 
-            <div className="details-actions">
+        <section className="detail-actions-section">
+          <div className="actions-glass-card">
+            <h3>Start Your Order</h3>
+            <p>Explore the full menu and place your order instantly for a faster pickup experience.</p>
+            
+            <div className="action-buttons-stack">
               <button 
-                className="view-menu-btn"
+                className="btn-premium-full"
                 onClick={() => navigate(`/menu/${canteen._id}`)}
               >
-                View Menu
+                View Full Menu
               </button>
               
               {(user?.role === 'staff' || user?.role === 'admin') && (
                 <button 
-                  className={`quick-toggle-btn ${isOpen ? 'close' : 'open'}`}
+                  className={`btn-premium-secondary ${isOpen ? 'btn-red' : 'btn-green'}`}
                   onClick={handleToggleStatus}
                   disabled={toggling}
                 >
@@ -148,8 +166,8 @@ const CanteenDetails = () => {
               )}
             </div>
           </div>
-        </div>
-      </div>
+        </section>
+      </main>
     </div>
   );
 };

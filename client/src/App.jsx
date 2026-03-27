@@ -12,6 +12,8 @@ import StaffCanteenManagement from './pages/StaffCanteenManagement.jsx';
 import MenuBrowse from './pages/menu/MenuBrowse.jsx';
 import StaffMenuManagement from './pages/staff/StaffMenuManagement.jsx';
 import StaffCategoryManagement from './pages/staff/StaffCategoryManagement.jsx';
+import CartPage from './pages/cart/CartPage.jsx';
+import OrderHistoryPage from './pages/orders/OrderHistoryPage.jsx';
 
 import Unauthorized from './pages/auth/Unauthorized.jsx';
 import ProtectedRoute from './routes/ProtectedRoute.jsx';
@@ -53,6 +55,24 @@ function App() {
           <Route path="/canteen/:id" element={<CanteenDetails />} />
           <Route path="/menu/:canteenId" element={<MenuBrowse />} />
           <Route path="/menu" element={<MenuBrowse />} />
+
+          <Route
+            path="/cart"
+            element={
+              <RoleRoute allowedRoles={['student']}>
+                <CartPage />
+              </RoleRoute>
+            }
+          />
+
+          <Route
+            path="/orders"
+            element={
+              <RoleRoute allowedRoles={['student']}>
+                <OrderHistoryPage />
+              </RoleRoute>
+            }
+          />
 
           {/* Staff/Admin Protected Routes */}
           <Route

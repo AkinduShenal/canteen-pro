@@ -27,6 +27,12 @@ const Navbar = () => {
         {user ? (
           <>
             <Link to="/canteens" className="nav-link">Canteens</Link>
+            {user.role === 'student' ? (
+              <>
+                <Link to="/cart" className="nav-link">Cart</Link>
+                <Link to="/orders" className="nav-link">My Orders</Link>
+              </>
+            ) : null}
             {user.role === 'staff' && (
               <Link to="/staff/canteens" className="nav-link staff-manage-link">
                 Manage Canteens

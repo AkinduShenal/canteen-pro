@@ -1,13 +1,14 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Navbar from '../../components/Navbar.jsx';
 import api from '../../services/api.js';
+import { AuthContext } from '../../context/AuthContext.jsx';
 
 const ALL_CATEGORIES = 'all';
-const CART_STORAGE_KEY = 'canteen_cart';
 const DEFAULT_MENU_IMAGE = 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=1200&auto=format&fit=crop';
 
 const MenuBrowse = () => {
+  const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const { canteenId: routeCanteenId } = useParams();
   const [canteens, setCanteens] = useState([]);
@@ -214,46 +215,97 @@ const MenuBrowse = () => {
     };
   }, [selectedItem]);
 
-  const saveItemToCart = (item) => {
+  const saveItemToCart = async (item) => {
+    if (!user) {
+      setActionMessage('Please sign in as a student to add items to cart.');
+      navigate('/login');
+      return false;
+    }
+
+    if (user.role !== 'student') {
+      setActionMessage('Only student accounts can place orders.');
+      return false;
+    }
+
     if (!item.available) {
       setActionMessage('This item is currently out of stock.');
       return false;
     }
 
-    const existingCart = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || '[]');
-    const existingIndex = existingCart.findIndex((entry) => entry.itemId === item._id);
-
-    if (existingIndex >= 0) {
-      existingCart[existingIndex].quantity += 1;
-    } else {
-      existingCart.push({
-        itemId: item._id,
-        name: item.name,
-        price: Number(item.price),
-        image: item.image || '',
-        category: item.category?.name || 'General',
-        canteenId: selectedCanteen,
+    try {
+      await api.post('/cart/items', {
+        menuItemId: item._id,
         quantity: 1,
       });
-    }
+      return true;
+    } catch (apiError) {
+      if (apiError.response?.status === 409) {
+        const shouldClear = window.confirm(
+          'Your cart contains items from a different canteen. Clear cart and add this item?'
+        );
 
-    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(existingCart));
-    return true;
+        if (!shouldClear) {
+          return false;
+        }
+
+        await api.delete('/cart/mine/clear');
+        await api.post('/cart/items', {
+          menuItemId: item._id,
+          quantity: 1,
+        });
+        return true;
+      }
+
+      setActionMessage(apiError.response?.data?.message || 'Failed to add item to cart');
+      return false;
+    }
   };
 
-  const handleAddToCart = (item) => {
-    const added = saveItemToCart(item);
+  const handleAddToCart = async (item) => {
+    const added = await saveItemToCart(item);
     if (added) {
       setActionMessage(`${item.name} added to cart.`);
     }
   };
 
-  const handleOrderNow = (item) => {
-    const added = saveItemToCart(item);
+  const handleOrderNow = async (item) => {
+    const added = await saveItemToCart(item);
     if (added) {
       setSelectedItem(null);
-      setActionMessage(`${item.name} added. Proceed to checkout from your cart once cart page is enabled.`);
+      setActionMessage(`${item.name} added. Continue from cart checkout.`);
+      navigate('/cart');
     }
+  };
+
+  const handleCanteenChange = async (event) => {
+    const nextCanteenId = event.target.value;
+
+    if (!user || user.role !== 'student') {
+      navigate(`/menu/${nextCanteenId}`);
+      return;
+    }
+
+    try {
+      const { data } = await api.get('/cart/mine');
+      const hasItems = (data?.items || []).length > 0;
+      const currentCartCanteen = data?.canteenId ? String(data.canteenId) : '';
+
+      if (hasItems && currentCartCanteen && currentCartCanteen !== String(nextCanteenId)) {
+        const shouldClear = window.confirm(
+          'Switching canteen requires clearing your cart. Do you want to clear it now?'
+        );
+
+        if (!shouldClear) {
+          return;
+        }
+
+        await api.delete('/cart/mine/clear');
+      }
+    } catch {
+      // If cart check fails, allow navigation without blocking menu browsing.
+    }
+
+    navigate(`/menu/${nextCanteenId}`);
   };
 
   const resolveImageSrc = (image) => (image && String(image).trim() ? image : DEFAULT_MENU_IMAGE);
@@ -288,7 +340,7 @@ const MenuBrowse = () => {
               <select
                 className="menu-select"
                 value={selectedCanteen}
-                onChange={(event) => navigate(`/menu/${event.target.value}`)}
+                onChange={handleCanteenChange}
               >
                 {canteens.map((canteen) => (
                   <option key={canteen._id} value={canteen._id}>

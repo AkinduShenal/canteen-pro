@@ -33,7 +33,7 @@ function App() {
           <Route
             path="/dashboard/*"
             element={
-              <RoleRoute allowedRoles={['admin', 'staff']}>
+              <RoleRoute allowedRoles={['admin', 'staff', 'canteen']}>
                 <StaffAdminDashboard />
               </RoleRoute>
             }

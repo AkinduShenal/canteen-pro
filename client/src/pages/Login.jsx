@@ -26,8 +26,15 @@ const Login = () => {
       login(data);
       toast.success('Login successful!');
 
-      if (data?.role === 'admin') {
+      const hasAssignedCanteen = Boolean(data?.assignedCanteen?._id || data?.assignedCanteen);
+      const isCanteenMailLogin =
+        data?.role === 'canteen' ||
+        (data?.role === 'staff' && hasAssignedCanteen && /@gmail\.com$/i.test(data?.email || ''));
+
+      if (data?.role === 'admin' || isCanteenMailLogin) {
         navigate('/dashboard/overview', { replace: true });
+      } else if (data?.role === 'staff') {
+        navigate('/', { replace: true });
       } else {
         navigate('/canteens', { replace: true });
       }
@@ -46,8 +53,15 @@ const Login = () => {
         role: googleRole 
       });
       login(res.data);
-      if (res.data?.role === 'admin') {
+      const hasAssignedCanteen = Boolean(res.data?.assignedCanteen?._id || res.data?.assignedCanteen);
+      const isCanteenMailLogin =
+        res.data?.role === 'canteen' ||
+        (res.data?.role === 'staff' && hasAssignedCanteen && /@gmail\.com$/i.test(res.data?.email || ''));
+
+      if (res.data?.role === 'admin' || isCanteenMailLogin) {
         navigate('/dashboard/overview', { replace: true });
+      } else if (res.data?.role === 'staff') {
+        navigate('/', { replace: true });
       } else {
         navigate('/canteens', { replace: true });
       }

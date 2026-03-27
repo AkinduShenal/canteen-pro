@@ -76,7 +76,7 @@ const StaffAdminDashboard = () => {
   });
 
   const isAdmin = user?.role === 'admin';
-  const isStaff = user?.role === 'staff';
+  const isStaff = ['staff', 'canteen'].includes(user?.role);
   const hasAccess = isAdmin || isStaff;
   const roleTabs = isAdmin ? dashboardTabsByRole.admin : dashboardTabsByRole.staff;
   const currentPath = location.pathname.split('/')[2] || 'overview';

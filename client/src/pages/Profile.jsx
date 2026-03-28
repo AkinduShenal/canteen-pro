@@ -117,15 +117,20 @@ const Profile = () => {
               <label className="form-label">New Password</label>
               <input 
                 type="password" 
-                className="form-control" 
-                placeholder="Leave blank to keep current password"
+                className={`form-control ${password.length > 10 ? 'error' : ''}`}
+                placeholder="Leave blank to keep current (6-10 chars)"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 minLength="6"
               />
+              {password.length > 10 && (
+                <small style={{ color: '#dc2626', marginTop: '0.25rem', display: 'block' }}>
+                  Password cannot exceed 10 characters
+                </small>
+              )}
             </div>
 
-            <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }} disabled={loading}>
+            <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }} disabled={loading || (password.length > 0 && (password.length < 6 || password.length > 10))}>
               {loading ? 'Updating...' : 'Update Profile'}
             </button>
           </form>

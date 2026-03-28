@@ -77,16 +77,21 @@ const Register = () => {
                 <label className="form-label">Password</label>
                 <input 
                   type="password" 
-                  className="form-control" 
-                  placeholder="Create a password (min 6 chars)" 
+                  className={`form-control ${password.length > 10 ? 'error' : ''}`}
+                  placeholder="Create a password (6-10 chars)" 
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required 
                   minLength="6"
                 />
+                {password.length > 10 && (
+                  <small style={{ color: '#dc2626', marginTop: '0.25rem', display: 'block' }}>
+                    Password cannot exceed 10 characters
+                  </small>
+                )}
               </div>
               
-              <button type="submit" className="btn btn-primary" style={{ marginTop: '0.5rem', width: '100%' }} disabled={loading}>
+              <button type="submit" className="btn btn-primary" style={{ marginTop: '0.5rem', width: '100%' }} disabled={loading || password.length < 6 || password.length > 10}>
                 {loading ? 'Creating Account...' : 'Create Account'}
               </button>
               <div style={{ textAlign: 'center', marginTop: '2rem' }}>

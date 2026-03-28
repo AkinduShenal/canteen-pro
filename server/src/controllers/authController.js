@@ -19,8 +19,8 @@ export const registerUser = async (req, res) => {
       return res.status(400).json({ message: 'Please provide all required fields' });
     }
 
-    if (password.length < 6) {
-      return res.status(400).json({ message: 'Password must be at least 6 characters' });
+    if (password.length < 6 || password.length > 10) {
+      return res.status(400).json({ message: 'Password must be between 6 and 10 characters' });
     }
 
     const userExists = await User.findOne({ email });
@@ -58,6 +58,10 @@ export const loginUser = async (req, res) => {
 
     if (!email || !password) {
       return res.status(400).json({ message: 'Please provide email and password' });
+    }
+
+    if (password.length > 10) {
+      return res.status(400).json({ message: 'Password cannot exceed 10 characters' });
     }
 
     const user = await User.findOne({ email });
@@ -109,6 +113,9 @@ export const updateUserProfile = async (req, res) => {
       user.email = req.body.email || user.email;
 
       if (req.body.password) {
+        if (req.body.password.length < 6 || req.body.password.length > 10) {
+          return res.status(400).json({ message: 'Password must be between 6 and 10 characters' });
+        }
         user.password = req.body.password;
       }
 

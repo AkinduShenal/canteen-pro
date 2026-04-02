@@ -1,5 +1,7 @@
 import Canteen from '../models/Canteen.js';
 import Order from '../models/Order.js';
+import Rating from '../models/Rating.js';
+import mongoose from 'mongoose';
 
 // Helper: Queue
 const getQueueStatus = async (canteen) => {
@@ -35,9 +37,6 @@ const getStatus = (openTime, closeTime, isOpen) => {
   };
 
   const now = new Date();
-  // Use current IST time as per system prompt metadata if needed, 
-  // but standard Date() is usually fine for local execution.
-  // The system metadata says it's 2026-03-25T03:04:08+05:30.
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
   try {
@@ -47,6 +46,36 @@ const getStatus = (openTime, closeTime, isOpen) => {
   } catch (e) {
     return 'Closed';
   }
+};
+
+// Helper: Rating
+const getRatingInfo = async (canteenId, userId = null) => {
+  const stats = await Rating.aggregate([
+    { $match: { canteenId: new mongoose.Types.ObjectId(canteenId) } },
+    {
+      $group: {
+        _id: '$canteenId',
+        averageRating: { $avg: '$rating' },
+        totalRatings: { $sum: 1 }
+      }
+    }
+  ]);
+
+  let userRating = 0;
+  if (userId) {
+    const userRatingDoc = await Rating.findOne({ userId, canteenId });
+    if (userRatingDoc) userRating = userRatingDoc.rating;
+  }
+
+  if (stats.length === 0) {
+    return { averageRating: 0, totalRatings: 0, userRating };
+  }
+
+  return {
+    averageRating: parseFloat(stats[0].averageRating.toFixed(1)),
+    totalRatings: stats[0].totalRatings,
+    userRating
+  };
 };
 
 // @desc    Create a new canteen
@@ -101,7 +130,8 @@ export const getCanteens = async (req, res) => {
       canteens.map(async (c) => ({
         ...c._doc,
         status: getStatus(c.openTime, c.closeTime, c.isOpen),
-        queue: await getQueueStatus(c)
+        queue: await getQueueStatus(c),
+        ...(await getRatingInfo(c._id, req.user ? req.user._id : null))
       }))
     );
 
@@ -130,7 +160,8 @@ export const getCanteenById = async (req, res) => {
       res.json({
         ...canteen._doc,
         status: getStatus(canteen.openTime, canteen.closeTime, canteen.isOpen),
-        queue: await getQueueStatus(canteen)
+        queue: await getQueueStatus(canteen),
+        ...(await getRatingInfo(canteen._id, req.user ? req.user._id : null))
       });
     } else {
       res.status(404).json({ message: 'Canteen not found' });
@@ -265,6 +296,7 @@ export const toggleCanteenStatus = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 // @desc    Update canteen queue level
 // @route   PUT /api/canteens/:id/queue
 // @access  Private/Staff

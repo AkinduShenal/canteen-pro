@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import ratingService from '../services/ratingService';
 import Navbar from '../components/Navbar.jsx';
+import { AuthContext } from '../context/AuthContext.jsx';
 import './CanteenDirectory.css';
 
 const CanteenDirectory = () => {
+  const { user } = React.useContext(AuthContext);
   const navigate = useNavigate();
   const [canteens, setCanteens] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -33,6 +36,70 @@ const CanteenDirectory = () => {
     };
     fetchCanteens();
   }, []);
+
+  const toggleReviews = async (e, canteenId) => {
+    e.stopPropagation();
+    if (expandedReviews[canteenId]) {
+      setExpandedReviews(prev => {
+        const copy = { ...prev };
+        delete copy[canteenId];
+        return copy;
+      });
+      return;
+    }
+
+    try {
+      setLoadingReviews(prev => ({ ...prev, [canteenId]: true }));
+      const details = await ratingService.getCanteenRatings(canteenId);
+      setExpandedReviews(prev => ({ ...prev, [canteenId]: details.reviews }));
+    } catch (err) {
+      console.error('Error fetching reviews:', err);
+    } finally {
+      setLoadingReviews(prev => ({ ...prev, [canteenId]: false }));
+    }
+  };
+
+  const handleRate = async (e, canteenId, rating) => {
+    e.stopPropagation(); // Don't navigate to details when rating
+    if (!user) {
+      alert('Please login to rate canteens!');
+      return;
+    }
+
+    try {
+      await ratingService.submitRating(canteenId, rating);
+      // Update local state for instant feedback
+      setCanteens(prev => prev.map(c => {
+        if (c._id === canteenId) {
+          const oldTotal = c.totalRatings || 0;
+          const oldAvg = c.averageRating || 0;
+          const oldUserRating = c.userRating || 0;
+          
+          let newTotal = oldTotal;
+          let newAvg;
+          
+          if (oldUserRating === 0) {
+            // New rating from this user
+            newTotal = oldTotal + 1;
+            newAvg = (oldAvg * oldTotal + rating) / newTotal;
+          } else {
+            // Updated rating
+            newAvg = (oldAvg * oldTotal - oldUserRating + rating) / oldTotal;
+          }
+          
+          return {
+            ...c,
+            averageRating: parseFloat(newAvg.toFixed(1)),
+            totalRatings: newTotal,
+            userRating: rating
+          };
+        }
+        return c;
+      }));
+    } catch (err) {
+      console.error('Error submitting rating:', err);
+    }
+  };
 
   const filteredCanteens = canteens.filter(c => {
     const matchesSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -157,6 +224,52 @@ const CanteenDirectory = () => {
                         <span className="queue-dot"></span>
                         {queue} Queue
                       </div>
+                    </div>
+
+                    <div className="card-rating-container">
+                      <div className="card-rating-summary">
+                        <span className="star-avg">⭐ {canteen.averageRating || '0.0'}</span>
+                        <span className="review-count">({canteen.totalRatings || 0} reviews)</span>
+                        <button 
+                          className="btn-view-reviews" 
+                          onClick={(e) => toggleReviews(e, canteen._id)}
+                        >
+                          {expandedReviews[canteen._id] ? 'Hide Reviews' : 'View Reviews'}
+                        </button>
+                      </div>
+
+                      <div className="interactive-stars" onClick={(e) => e.stopPropagation()}>
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <span 
+                            key={star}
+                            className={`star-icon ${star <= (canteen.userRating || 0) ? 'active' : ''}`}
+                            onClick={(e) => handleRate(e, canteen._id, star)}
+                          >
+                            ★
+                          </span>
+                        ))}
+                        {!user && <span className="rate-tooltip">Login to rate</span>}
+                      </div>
+
+                      {expandedReviews[canteen._id] && (
+                        <div className="card-reviews-list" onClick={(e) => e.stopPropagation()}>
+                          <div className="reviews-scroll">
+                            {expandedReviews[canteen._id].length > 0 ? (
+                              expandedReviews[canteen._id].map(review => (
+                                <div key={review._id} className="review-item">
+                                  <div className="review-user-row">
+                                    <span className="review-user">{review.userName}</span>
+                                    <span className="review-stars">{'★'.repeat(review.rating)}</span>
+                                  </div>
+                                  <span className="review-date">{new Date(review.createdAt).toLocaleDateString()}</span>
+                                </div>
+                              ))
+                            ) : (
+                              <p className="no-reviews">No reviews yet.</p>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     <div className="card-info-grid">

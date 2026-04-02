@@ -8,6 +8,7 @@ import announcementRoutes from './routes/announcementRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
 import menuItemRoutes from './routes/menuItemRoutes.js';
 import userRoutes from './routes/userRoutes.js';
+import ratingRoutes from './routes/ratingRoutes.js';
 import connectDB from './config/db.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -27,6 +28,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/canteens', canteenRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/ratings', ratingRoutes);
 
 // Static files (uploads)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

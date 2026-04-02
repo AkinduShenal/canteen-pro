@@ -117,6 +117,7 @@ const StaffCanteenManagement = () => {
                   <th>Operating Hours</th>
                   <th>Availability</th>
                   <th>Queue Status</th>
+                  <th>Ratings</th>
                   <th>Contact</th>
                   <th>Actions</th>
                 </tr>
@@ -124,7 +125,7 @@ const StaffCanteenManagement = () => {
               <tbody>
                 {canteens.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="empty-state">No canteens found. Add one to get started!</td>
+                    <td colSpan="8" className="empty-state">No canteens found. Add one to get started!</td>
                   </tr>
                 ) : (
                   canteens.map((canteen) => (
@@ -157,6 +158,12 @@ const StaffCanteenManagement = () => {
                           {canteen.queueLevel !== null && (
                             <div className="manual-indicator">Manual</div>
                           )}
+                        </div>
+                      </td>
+                      <td>
+                        <div className="ratings-status-cell">
+                          <span className="mgmt-stars">⭐ {canteen.averageRating || '0.0'}</span>
+                          <span className="mgmt-count">({canteen.totalRatings || 0})</span>
                         </div>
                       </td>
                       <td>{canteen.contactNumber}</td>

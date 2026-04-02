@@ -4987,6 +4987,39 @@ a:hover {
   margin-bottom: 0;
 }
 
+.student-order-hero-stats {
+  margin-top: 0.95rem;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.student-order-hero-stats article {
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.8rem;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.student-order-hero-stats span {
+  display: block;
+  font-size: 0.74rem;
+  color: rgba(255, 255, 255, 0.72);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 0.28rem;
+  font-weight: 700;
+}
+
+.student-order-hero-stats strong {
+  display: block;
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
 .student-order-grid {
   display: grid;
   grid-template-columns: minmax(360px, 1.2fr) minmax(300px, 0.8fr);
@@ -5000,6 +5033,11 @@ a:hover {
   background: linear-gradient(160deg, rgba(255, 255, 255, 0.98), rgba(255, 249, 241, 0.96));
   box-shadow: 0 16px 36px rgba(15, 23, 42, 0.06);
   padding: 1.1rem;
+}
+
+.student-order-grid .student-order-card:last-child {
+  position: sticky;
+  top: 88px;
 }
 
 .student-live-order {
@@ -5028,6 +5066,26 @@ a:hover {
   gap: 0.65rem;
 }
 
+.student-order-empty-state {
+  border-radius: var(--radius-md);
+  border: 1px dashed rgba(232, 93, 4, 0.28);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(255, 244, 232, 0.95));
+  padding: 1.2rem;
+  text-align: center;
+}
+
+.student-order-empty-state h3 {
+  margin-bottom: 0.3rem;
+}
+
+.student-order-empty-state p {
+  margin-bottom: 0.85rem;
+}
+
+.student-order-empty-state .btn {
+  width: auto;
+}
+
 .student-order-item-row {
   border-radius: var(--radius-md);
   border: 1px solid rgba(232, 93, 4, 0.12);
@@ -5039,6 +5097,30 @@ a:hover {
   align-items: center;
 }
 
+.student-order-item-main {
+  display: grid;
+  grid-template-columns: 74px minmax(0, 1fr);
+  gap: 0.65rem;
+  align-items: center;
+  min-width: 0;
+}
+
+.student-order-item-thumb {
+  width: 74px;
+  height: 74px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(232, 93, 4, 0.15);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.student-order-item-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
 .student-order-item-row h3 {
   margin-bottom: 0.2rem;
   font-size: 1.18rem;
@@ -5047,6 +5129,13 @@ a:hover {
 .student-order-item-row p {
   margin-bottom: 0;
   font-size: 0.95rem;
+}
+
+.student-order-line-total {
+  display: inline-block;
+  margin-top: 0.2rem;
+  color: var(--primary-color);
+  font-size: 0.84rem;
 }
 
 .student-order-history-row {
@@ -5074,6 +5163,83 @@ a:hover {
   gap: 0.7rem;
 }
 
+.student-order-total-wrap small {
+  display: block;
+  color: var(--text-light);
+  font-size: 0.84rem;
+}
+
+.student-checkout-canteen-lock {
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(232, 93, 4, 0.14);
+  background: rgba(255, 255, 255, 0.92);
+  padding: 0.85rem;
+  margin-bottom: 0.75rem;
+}
+
+.student-checkout-canteen-lock span {
+  display: block;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.9px;
+  color: #7c8aa5;
+  margin-bottom: 0.2rem;
+  font-weight: 700;
+}
+
+.student-checkout-canteen-lock strong {
+  display: block;
+  margin-bottom: 0.2rem;
+}
+
+.student-checkout-canteen-lock small {
+  color: var(--text-light);
+}
+
+.student-pickup-quick-slots {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.45rem;
+  margin-bottom: 0.75rem;
+}
+
+.student-pickup-quick-slots .btn {
+  width: 100%;
+  min-width: 0;
+  padding: 0.5rem 0.3rem;
+  font-size: 0.8rem;
+}
+
+.student-checkout-summary {
+  border-radius: 14px;
+  border: 1px solid rgba(232, 93, 4, 0.12);
+  background: rgba(255, 255, 255, 0.92);
+  padding: 0.75rem;
+}
+
+.student-checkout-summary p {
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.92rem;
+  color: var(--text-main);
+}
+
+.student-checkout-summary p + p {
+  margin-top: 0.35rem;
+}
+
+.student-checkout-summary span {
+  color: var(--text-light);
+}
+
+.student-order-history-link {
+  width: 100%;
+  text-align: center;
+  justify-content: center;
+}
+
 .student-order-form {
   display: grid;
   gap: 0.75rem;
@@ -5087,6 +5253,24 @@ a:hover {
   max-width: 220px;
 }
 
+.student-slot-suggestion {
+  margin: 0 0 0.85rem;
+  border: 1px solid rgba(56, 176, 0, 0.2);
+  border-radius: var(--radius-md);
+  background: rgba(236, 253, 245, 0.8);
+  padding: 0.8rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.student-slot-suggestion p {
+  margin: 0;
+  font-size: 0.92rem;
+  color: #14532d;
+}
+
 @media (max-width: 980px) {
   .student-order-wrap {
     padding: 1rem;
@@ -5094,6 +5278,27 @@ a:hover {
 
   .student-order-grid {
     grid-template-columns: 1fr;
+  }
+
+  .student-order-grid .student-order-card:last-child {
+    position: static;
+  }
+
+  .student-order-hero-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .student-pickup-quick-slots {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .student-order-item-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .student-order-item-actions {
+    justify-content: flex-start;
   }
 }
 

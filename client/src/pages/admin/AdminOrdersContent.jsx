@@ -543,7 +543,6 @@ const AdminOrdersContent = () => {
                     order={order}
                     onStatusChange={handleStatusUpdate}
                     isUpdating={updatingOrderId === order._id}
-                    readOnly
                   />
                 </motion.div>
               ))}

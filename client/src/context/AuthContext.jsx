@@ -23,20 +23,32 @@ const clearStoredUser = () => {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
+
     const syncUser = async () => {
-      const storedUser = getStoredUser();
-      if (!storedUser) return;
-
-      // Keep tab-local auth isolated even if another tab logs in as a different canteen.
-      if (!sessionStorage.getItem(AUTH_USER_KEY)) {
-        sessionStorage.setItem(AUTH_USER_KEY, storedUser);
-      }
-
       try {
+        const storedUser = getStoredUser();
+
+        if (!storedUser) {
+          if (isMounted) {
+            setUser(null);
+          }
+          return;
+        }
+
+        // Keep tab-local auth isolated even if another tab logs in as a different canteen.
+        if (!sessionStorage.getItem(AUTH_USER_KEY)) {
+          sessionStorage.setItem(AUTH_USER_KEY, storedUser);
+        }
+
         const parsedUser = JSON.parse(storedUser);
-        setUser(parsedUser);
+
+        if (isMounted) {
+          setUser(parsedUser);
+        }
 
         if (parsedUser?.token) {
           const { data } = await api.get('/auth/profile');
@@ -45,24 +57,40 @@ export const AuthProvider = ({ children }) => {
             ...data,
             token: parsedUser.token,
           };
-          setUser(refreshedUser);
+
+          if (isMounted) {
+            setUser(refreshedUser);
+          }
+
           setStoredUser(JSON.stringify(refreshedUser));
         }
       } catch {
-        setUser(null);
+        if (isMounted) {
+          setUser(null);
+        }
         clearStoredUser();
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
     syncUser();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const login = (userData) => {
+    setLoading(false);
     setUser(userData);
     setStoredUser(JSON.stringify(userData));
   };
 
   const logout = () => {
+    setLoading(false);
     setUser(null);
     clearStoredUser();
   };
@@ -76,7 +104,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, updateUser, deleteUser }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, updateUser, deleteUser }}>
       {children}
     </AuthContext.Provider>
   );

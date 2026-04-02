@@ -2,9 +2,13 @@ import Canteen from '../models/Canteen.js';
 import Order from '../models/Order.js';
 
 // Helper: Queue
-const getQueueStatus = async (canteenId) => {
+const getQueueStatus = async (canteen) => {
+  // Manual override: If queueLevel is explicitly set, use it.
+  if (canteen.queueLevel) return canteen.queueLevel;
+
+  // Automatic: If queueLevel is null, calculate based on orders.
   const count = await Order.countDocuments({
-    canteenId,
+    canteenId: canteen._id,
     status: { $in: ['pending', 'accepted'] }
   });
 
@@ -97,7 +101,7 @@ export const getCanteens = async (req, res) => {
       canteens.map(async (c) => ({
         ...c._doc,
         status: getStatus(c.openTime, c.closeTime, c.isOpen),
-        queue: await getQueueStatus(c._id)
+        queue: await getQueueStatus(c)
       }))
     );
 
@@ -126,7 +130,7 @@ export const getCanteenById = async (req, res) => {
       res.json({
         ...canteen._doc,
         status: getStatus(canteen.openTime, canteen.closeTime, canteen.isOpen),
-        queue: await getQueueStatus(canteen._id)
+        queue: await getQueueStatus(canteen)
       });
     } else {
       res.status(404).json({ message: 'Canteen not found' });
@@ -250,10 +254,35 @@ export const toggleCanteenStatus = async (req, res) => {
       const response = {
         ...updatedCanteen._doc,
         status: getStatus(updatedCanteen.openTime, updatedCanteen.closeTime, updatedCanteen.isOpen),
-        queue: await getQueueStatus(updatedCanteen._id)
+        queue: await getQueueStatus(updatedCanteen)
       };
       
       res.json(response);
+    } else {
+      res.status(404).json({ message: 'Canteen not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+// @desc    Update canteen queue level
+// @route   PUT /api/canteens/:id/queue
+// @access  Private/Staff
+export const updateCanteenQueue = async (req, res) => {
+  try {
+    const { queueLevel } = req.body;
+    const canteen = await Canteen.findById(req.params.id);
+
+    if (canteen) {
+      // In the frontend, 'Auto' will be passed as null
+      canteen.queueLevel = queueLevel === 'Auto' ? null : queueLevel;
+      const updatedCanteen = await canteen.save();
+
+      res.json({
+        ...updatedCanteen._doc,
+        status: getStatus(updatedCanteen.openTime, updatedCanteen.closeTime, updatedCanteen.isOpen),
+        queue: await getQueueStatus(updatedCanteen)
+      });
     } else {
       res.status(404).json({ message: 'Canteen not found' });
     }

@@ -58,6 +58,16 @@ const StaffCanteenManagement = () => {
       alert('Failed to toggle canteen status.');
     }
   };
+  
+  const handleQueueChange = async (canteenId, newQueueLevel) => {
+    try {
+      const { data } = await api.put(`/canteens/${canteenId}/queue`, { queueLevel: newQueueLevel });
+      setCanteens(prev => prev.map(c => c._id === canteenId ? data : c));
+    } catch (err) {
+      console.error('Error changing queue:', err);
+      alert('Failed to change queue status.');
+    }
+  };
 
   const openDeleteModal = (canteen) => {
     setCanteenToDelete(canteen);
@@ -106,6 +116,7 @@ const StaffCanteenManagement = () => {
                   <th>Location</th>
                   <th>Operating Hours</th>
                   <th>Availability</th>
+                  <th>Queue Status</th>
                   <th>Contact</th>
                   <th>Actions</th>
                 </tr>
@@ -113,7 +124,7 @@ const StaffCanteenManagement = () => {
               <tbody>
                 {canteens.length === 0 ? (
                   <tr>
-                    <td colSpan="5" className="empty-state">No canteens found. Add one to get started!</td>
+                    <td colSpan="6" className="empty-state">No canteens found. Add one to get started!</td>
                   </tr>
                 ) : (
                   canteens.map((canteen) => (
@@ -130,6 +141,23 @@ const StaffCanteenManagement = () => {
                         {canteen.isOpen !== null && (
                           <div className="manual-indicator">Manual</div>
                         )}
+                      </td>
+                      <td>
+                        <div className="queue-management-cell">
+                          <select 
+                            className={`queue-select queue-${(canteen.queue || 'low').toLowerCase()}`}
+                            value={canteen.queueLevel === null ? 'Auto' : canteen.queueLevel}
+                            onChange={(e) => handleQueueChange(canteen._id, e.target.value)}
+                          >
+                            <option value="Auto">Auto ({canteen.queue})</option>
+                            <option value="Low">Low</option>
+                            <option value="Medium">Medium</option>
+                            <option value="High">High</option>
+                          </select>
+                          {canteen.queueLevel !== null && (
+                            <div className="manual-indicator">Manual</div>
+                          )}
+                        </div>
                       </td>
                       <td>{canteen.contactNumber}</td>
                       <td>

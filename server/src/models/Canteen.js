@@ -24,6 +24,11 @@ const canteenSchema = new mongoose.Schema({
   isOpen: {
     type: Boolean,
     default: null
+  },
+  queueLevel: {
+    type: String,
+    enum: ['Low', 'Medium', 'High'],
+    default: 'Low'
   }
 }, { timestamps: true });
 

@@ -81,7 +81,17 @@ export const createCanteen = async (req, res) => {
 // @access  Public
 export const getCanteens = async (req, res) => {
   try {
-    const canteens = await Canteen.find({});
+    const { search, status, queue } = req.query;
+    
+    let query = {};
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { location: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    const canteens = await Canteen.find(query);
 
     const updated = await Promise.all(
       canteens.map(async (c) => ({
@@ -91,7 +101,16 @@ export const getCanteens = async (req, res) => {
       }))
     );
 
-    res.json(updated);
+    // Filter by dynamic status and queue if provided
+    let filtered = updated;
+    if (status) {
+      filtered = filtered.filter(c => c.status === status);
+    }
+    if (queue) {
+      filtered = filtered.filter(c => c.queue === queue);
+    }
+
+    res.json(filtered);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

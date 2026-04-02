@@ -9,6 +9,8 @@ const CanteenDirectory = () => {
   const [canteens, setCanteens] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [queueFilter, setQueueFilter] = useState('All');
 
   // Fallback high-quality images since the generator is busy
   const canteenImages = [
@@ -32,10 +34,13 @@ const CanteenDirectory = () => {
     fetchCanteens();
   }, []);
 
-  const filteredCanteens = canteens.filter(c => 
-    c.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    c.location.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredCanteens = canteens.filter(c => {
+    const matchesSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                         c.location.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'All' || c.status === statusFilter;
+    const matchesQueue = queueFilter === 'All' || c.queue === queueFilter;
+    return matchesSearch && matchesStatus && matchesQueue;
+  });
 
   if (loading) {
     return (
@@ -58,14 +63,43 @@ const CanteenDirectory = () => {
           <h1>Explore Campus <span className="text-glow">Canteens</span></h1>
           <p>Find the perfect spot for your next meal with live queue tracking and instant ordering.</p>
           
-          <div className="search-container-premium">
-            <span className="search-icon">🔍</span>
-            <input 
-              type="text" 
-              placeholder="Search by name or location..." 
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+          <div className="filter-controls-row">
+            <div className="search-container-premium">
+              <span className="search-icon">🔍</span>
+              <input 
+                type="text" 
+                placeholder="Search canteens..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            
+            <div className="filters-group-premium">
+              <div className="filter-select-wrapper">
+                <select 
+                  value={statusFilter} 
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="premium-select"
+                >
+                  <option value="All">All Status</option>
+                  <option value="Open">Open Now</option>
+                  <option value="Closed">Closed</option>
+                </select>
+              </div>
+
+              <div className="filter-select-wrapper">
+                <select 
+                  value={queueFilter} 
+                  onChange={(e) => setQueueFilter(e.target.value)}
+                  className="premium-select"
+                >
+                  <option value="All">All Queues</option>
+                  <option value="Low">Low Queue</option>
+                  <option value="Medium">Medium Queue</option>
+                  <option value="High">High Queue</option>
+                </select>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -73,13 +107,25 @@ const CanteenDirectory = () => {
       <div className="directory-main-container">
         <div className="directory-stats-row">
           <div className="stat-pill">
-            <span className="stat-value">{canteens.length}</span>
-            <span className="stat-label">Canteens</span>
+            <span className="stat-value">{filteredCanteens.length}</span>
+            <span className="stat-label">Results</span>
           </div>
           <div className="stat-pill">
             <span className="stat-value">{canteens.filter(c => c.status === 'Open').length}</span>
             <span className="stat-label">Open Now</span>
           </div>
+          {(statusFilter !== 'All' || queueFilter !== 'All' || searchTerm) && (
+            <button 
+              className="clear-filters-btn"
+              onClick={() => {
+                setSearchTerm('');
+                setStatusFilter('All');
+                setQueueFilter('All');
+              }}
+            >
+              Clear All
+            </button>
+          )}
         </div>
 
         <div className="canteen-immersive-grid">
@@ -136,7 +182,18 @@ const CanteenDirectory = () => {
             <div className="no-results-premium">
               <div className="no-results-icon">🍽️</div>
               <h3>No Canteens Found</h3>
-              <p>We couldn't find any canteens matching your search. Try different keywords.</p>
+              <p>We couldn't find any canteens matching your filters. Try adjusting your search.</p>
+              <button 
+                className="btn btn-primary" 
+                style={{ marginTop: '2rem' }}
+                onClick={() => {
+                  setSearchTerm('');
+                  setStatusFilter('All');
+                  setQueueFilter('All');
+                }}
+              >
+                Reset Filters
+              </button>
             </div>
           )}
         </div>

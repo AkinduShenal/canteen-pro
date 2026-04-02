@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import ratingService from '../services/ratingService';
 import Navbar from '../components/Navbar.jsx';
 import { AuthContext } from '../context/AuthContext.jsx';
 import './CanteenDetails.css';
@@ -13,6 +14,9 @@ const CanteenDetails = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [toggling, setToggling] = useState(false);
+  const [pendingRating, setPendingRating] = useState(0);
+  const [reviews, setReviews] = useState([]);
+  const [loadingReviews, setLoadingReviews] = useState(true);
 
   // Fallback high-quality images
   const canteenImages = [
@@ -34,7 +38,21 @@ const CanteenDetails = () => {
         setTimeout(() => setLoading(false), 600);
       }
     };
+
+    const fetchReviews = async () => {
+      try {
+        setLoadingReviews(true);
+        const data = await ratingService.getCanteenRatings(id);
+        setReviews(data.reviews || []);
+      } catch (err) {
+        console.error('Error fetching reviews:', err);
+      } finally {
+        setLoadingReviews(false);
+      }
+    };
+
     fetchCanteen();
+    fetchReviews();
   }, [id]);
 
   const handleToggleStatus = async () => {
@@ -47,6 +65,27 @@ const CanteenDetails = () => {
       console.error('Error toggling status:', err);
     } finally {
       setToggling(false);
+    }
+  };
+
+  const handleRate = async () => {
+    if (!pendingRating) return;
+    if (!user) {
+      alert('Please login to rate canteens!');
+      return;
+    }
+
+    try {
+      await ratingService.submitRating(id, pendingRating);
+      setPendingRating(0); // Clear after submisson
+      
+      // Refresh canteen stats and reviews
+      const { data } = await api.get(`/canteens/${id}`);
+      setCanteen(data);
+      const reviewsData = await ratingService.getCanteenRatings(id);
+      setReviews(reviewsData.reviews || []);
+    } catch (err) {
+      console.error('Error submitting rating:', err);
     }
   };
 
@@ -164,6 +203,52 @@ const CanteenDetails = () => {
                   {toggling ? 'Updating...' : (isOpen ? 'Close Canteen' : 'Open Canteen')}
                 </button>
               )}
+            </div>
+          </div>
+
+          <div className="rating-glass-card">
+            <h3>Canteen Feedback</h3>
+            <div className="rating-summary-row">
+              <span className="rating-avg">⭐ {canteen.averageRating || '0.0'}</span>
+              <span className="rating-count">({canteen.totalRatings || 0} reviews)</span>
+            </div>
+
+            <div className="stars-interaction">
+              <div className="stars-row">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <span 
+                    key={star}
+                    className={`star-icon ${star <= (pendingRating || canteen.userRating || 0) ? 'active' : ''} ${pendingRating ? 'is-pending' : ''}`}
+                    onClick={() => setPendingRating(star)}
+                  >
+                    ★
+                  </span>
+                ))}
+              </div>
+              {pendingRating > 0 && (
+                <button className="btn-submit-rating-mini" onClick={handleRate}>
+                  Submit Rating
+                </button>
+              )}
+            </div>
+
+            <div className="detailed-reviews-list">
+              <h4 className="reviews-subtitle">What students say</h4>
+              <div className="reviews-scroll-container">
+                {reviews.length > 0 ? (
+                  reviews.map((r) => (
+                    <div key={r._id} className="review-card-mini">
+                      <div className="review-card-head">
+                        <span className="review-user">{r.userName}</span>
+                        <span className="review-stars">{'★'.repeat(r.rating)}</span>
+                      </div>
+                      <span className="review-date">{new Date(r.createdAt).toLocaleDateString()}</span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="no-reviews-text">No feedback yet. Be the first!</p>
+                )}
+              </div>
             </div>
           </div>
         </section>

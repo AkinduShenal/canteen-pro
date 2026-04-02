@@ -5,6 +5,7 @@ import {
   createOrder,
   getMyOrderById,
   getMyOrders,
+  reorderMyOrder,
 } from '../controllers/orderController.js';
 
 const router = express.Router();
@@ -13,6 +14,7 @@ router.use(protect);
 router.use(permitRoles('student'));
 
 router.route('/').post(createOrder).get(getMyOrders);
+router.post('/:orderId/reorder', reorderMyOrder);
 router.get('/:orderId', getMyOrderById);
 router.patch('/:orderId/cancel', cancelMyOrder);
 

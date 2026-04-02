@@ -177,21 +177,6 @@ const Home = () => {
                       Manage items, keep categories tidy, and move fast with a visual layout designed for staff.
                     </p>
 
-                    <div className="home-dashboard-stats-grid home-dashboard-stats-grid-dark">
-                      <article className="home-dashboard-stat-tile home-dashboard-stat-tile-dark">
-                        <span>Workspace</span>
-                        <strong>Staff Tools</strong>
-                      </article>
-                      <article className="home-dashboard-stat-tile home-dashboard-stat-tile-dark">
-                        <span>Access</span>
-                        <strong>Menu + Categories</strong>
-                      </article>
-                      <article className="home-dashboard-stat-tile home-dashboard-stat-tile-dark">
-                        <span>Status</span>
-                        <strong>Ready</strong>
-                      </article>
-                    </div>
-
                     <div className="home-dashboard-actions home-dashboard-actions--hero">
                       <Link to="/menu" className="btn btn-primary">Open Menu</Link>
                       <Link to="/profile" className="btn btn-outline">View Profile</Link>

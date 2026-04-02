@@ -1,10 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar.jsx';
 import api from '../../services/api.js';
 
 const STATUS_ORDER = ['pending', 'accepted', 'preparing', 'ready', 'completed', 'cancelled'];
 
 const OrderHistoryPage = () => {
+  const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -43,6 +45,36 @@ const OrderHistoryPage = () => {
       await loadOrders();
     } catch (apiError) {
       setError(apiError.response?.data?.message || 'Failed to cancel order');
+    }
+  };
+
+  const reorder = async (orderId) => {
+    try {
+      setError('');
+      setStatus('');
+      await api.post(`/orders/${orderId}/reorder`, { forceClear: false });
+      setStatus('Items added to cart for re-order');
+      setTimeout(() => {
+        navigate('/cart');
+      }, 400);
+    } catch (apiError) {
+      if (apiError.response?.status === 409) {
+        const shouldClear = window.confirm(
+          'Your cart has items from another canteen. Clear cart and re-order this one?'
+        );
+        if (!shouldClear) {
+          return;
+        }
+
+        await api.post(`/orders/${orderId}/reorder`, { forceClear: true });
+        setStatus('Cart cleared and re-order items added');
+        setTimeout(() => {
+          navigate('/cart');
+        }, 400);
+        return;
+      }
+
+      setError(apiError.response?.data?.message || 'Failed to re-order items');
     }
   };
 
@@ -115,6 +147,9 @@ const OrderHistoryPage = () => {
                         Cancel
                       </button>
                     ) : null}
+                    <button type="button" className="btn btn-outline" onClick={() => reorder(order._id)}>
+                      Re-order
+                    </button>
                   </div>
                 </article>
               ))}

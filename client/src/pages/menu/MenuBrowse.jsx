@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { Toaster, toast } from 'react-hot-toast';
 import Navbar from '../../components/Navbar.jsx';
 import api from '../../services/api.js';
 import { AuthContext } from '../../context/AuthContext.jsx';
@@ -25,7 +26,6 @@ const MenuBrowse = () => {
   const [loadingItems, setLoadingItems] = useState(false);
   const [error, setError] = useState('');
   const [selectedItem, setSelectedItem] = useState(null);
-  const [actionMessage, setActionMessage] = useState('');
   const [queueStatus, setQueueStatus] = useState(null);
   const [loadingQueue, setLoadingQueue] = useState(false);
   const [announcements, setAnnouncements] = useState([]);
@@ -217,18 +217,18 @@ const MenuBrowse = () => {
 
   const saveItemToCart = async (item) => {
     if (!user) {
-      setActionMessage('Please sign in as a student to add items to cart.');
+      toast.error('Please sign in as a student to add items to cart.');
       navigate('/login');
       return false;
     }
 
     if (user.role !== 'student') {
-      setActionMessage('Only student accounts can place orders.');
+      toast.error('Only student accounts can place orders.');
       return false;
     }
 
     if (!item.available) {
-      setActionMessage('This item is currently out of stock.');
+      toast.error('This item is currently out of stock.');
       return false;
     }
 
@@ -245,6 +245,7 @@ const MenuBrowse = () => {
         );
 
         if (!shouldClear) {
+          toast('Kept current cart items.', { icon: '🛒' });
           return false;
         }
 
@@ -253,10 +254,11 @@ const MenuBrowse = () => {
           menuItemId: item._id,
           quantity: 1,
         });
+        toast.success('Previous cart cleared and item added.');
         return true;
       }
 
-      setActionMessage(apiError.response?.data?.message || 'Failed to add item to cart');
+      toast.error(apiError.response?.data?.message || 'Failed to add item to cart');
       return false;
     }
   };
@@ -264,7 +266,7 @@ const MenuBrowse = () => {
   const handleAddToCart = async (item) => {
     const added = await saveItemToCart(item);
     if (added) {
-      setActionMessage(`${item.name} added to cart.`);
+      toast.success(`${item.name} added to cart.`);
     }
   };
 
@@ -272,8 +274,8 @@ const MenuBrowse = () => {
     const added = await saveItemToCart(item);
     if (added) {
       setSelectedItem(null);
-      setActionMessage(`${item.name} added. Continue from cart checkout.`);
-      navigate('/cart');
+      toast.success(`${item.name} added. Redirecting to cart...`);
+      setTimeout(() => navigate('/cart'), 700);
     }
   };
 
@@ -321,6 +323,16 @@ const MenuBrowse = () => {
 
   return (
     <div className="app-container">
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 2600,
+          style: {
+            borderRadius: '12px',
+            fontWeight: 600,
+          },
+        }}
+      />
       <Navbar />
       <main className="menu-page-wrap">
         <section className="menu-page-hero">
@@ -424,7 +436,6 @@ const MenuBrowse = () => {
         ) : null}
 
         {error ? <p className="menu-error">{error}</p> : null}
-        {actionMessage ? <p className="menu-action-note">{actionMessage}</p> : null}
 
         <section className="menu-specials-section">
           <div className="menu-section-head">

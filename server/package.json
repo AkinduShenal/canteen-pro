@@ -7,7 +7,6 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "seed:canteens": "node src/seeders/canteenSeeder.js",
     "seed:canteens": "node src/seed/seedCanteens.js",
     "seed:categories": "node src/seed/seedCategories.js",
     "seed:menu-items": "node src/seed/seedMenuItems.js"
@@ -23,6 +22,7 @@
     "google-auth-library": "^10.6.2",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^7.0.0",
+    "multer": "^2.1.1",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0"
   },

@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Toaster, toast } from 'react-hot-toast';
 import Navbar from '../../components/Navbar.jsx';
+import MenuAssistantWidget from '../../components/menu/MenuAssistantWidget.jsx';
 import api from '../../services/api.js';
 import { AuthContext } from '../../context/AuthContext.jsx';
 
@@ -38,6 +39,10 @@ const MenuBrowse = () => {
     const category = categories.find((entry) => entry._id === selectedCategory);
     return category?.name || 'Selected';
   }, [categories, selectedCategory]);
+
+  const selectedCanteenName = useMemo(() => {
+    return canteens.find((entry) => entry._id === selectedCanteen)?.name || 'this canteen';
+  }, [canteens, selectedCanteen]);
 
   useEffect(() => {
     const loadCanteens = async () => {
@@ -440,7 +445,7 @@ const MenuBrowse = () => {
         <section className="menu-specials-section">
           <div className="menu-section-head">
             <h2>Today&apos;s Specials</h2>
-            <p>Chef picks from {canteens.find((entry) => entry._id === selectedCanteen)?.name || 'selected canteen'}</p>
+            <p>Chef picks from {selectedCanteenName}</p>
           </div>
           <div className="menu-special-grid">
             {specials.length === 0 ? (
@@ -594,6 +599,11 @@ const MenuBrowse = () => {
             </div>
           </div>
         ) : null}
+
+        <MenuAssistantWidget
+          canteenId={selectedCanteen}
+          canteenName={selectedCanteenName}
+        />
       </main>
     </div>
   );

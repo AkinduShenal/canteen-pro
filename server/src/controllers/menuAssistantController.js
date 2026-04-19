@@ -3,6 +3,9 @@ import Category from '../models/Category.js';
 import MenuItem from '../models/MenuItem.js';
 
 const MAX_ITEMS = 6;
+const MIN_CATEGORY_SCORE = 2;
+const WORD_PATTERN = /[a-z0-9\u0d80-\u0dff]+/gi;
+
 const STOP_WORDS = new Set([
   'show',
   'me',
@@ -29,17 +32,201 @@ const STOP_WORDS = new Set([
   'tiyenawada',
   'mokakda',
   'mokadda',
+  'comment',
+  'check',
+  'help',
+  'please',
+  'plz',
+  'api',
+  'assistant',
+  'තියෙනවද',
+  'තියෙනවාද',
+  'තියෙනව',
+  'තියෙනවා',
+  'මොනවද',
+  'මොකද්ද',
+  'මොකක්ද',
+  'අද',
+  'ද',
 ]);
 
-const QUICK_REPLIES = [
+const QUICK_REPLIES_BASE = [
   'Show today specials',
+  'අද special මොනවද?',
   'Suggest under Rs 500',
-  'Available drinks',
+  'Drinks තියෙනවද?',
+  'Add 1 special to cart',
+  'Place order from cart',
   'What is out of stock?',
 ];
 
+const INTENT_ALIASES = {
+  special: [
+    'today special',
+    'todays special',
+    'special',
+    'chef pick',
+    'chef special',
+    'ada special',
+    'අද special',
+    'අද ස්පෙෂල්',
+    'අද විශේෂ',
+  ],
+  outofstock: [
+    'out of stock',
+    'unavailable',
+    'not available',
+    'food over',
+    'sold out',
+    'stock na',
+    'stock naeda',
+    'stock nathi',
+    'stock නෑ',
+    'stock නැ',
+    'ඉවරයි',
+  ],
+  available: [
+    'available',
+    'in stock',
+    'thiyenawada',
+    'tiyenawada',
+    'thiyenawa',
+    'tiyenawa',
+    'available da',
+    'තියෙනවද',
+    'තියෙනවාද',
+    'තියෙනව',
+    'තියෙනවා',
+    'තිබෙනවද',
+    'තිබෙනවාද',
+  ],
+  recommend: [
+    'recommend',
+    'suggest',
+    'best',
+    'popular',
+    'mokak',
+    'mokakda',
+    'mokadda',
+    'මොනවද',
+    'මොකද්ද',
+    'හොදම',
+    'සජෙස්ට්',
+  ],
+  veg: ['vegetarian', 'veg', 'meatless', 'නිර්මාංශ'],
+};
+
+const QUERY_STOP_WORDS = new Set([
+  ...STOP_WORDS,
+  'special',
+  'outofstock',
+  'available',
+  'recommend',
+  'veg',
+  'under',
+  'below',
+  'within',
+  'budget',
+  'price',
+  'foods',
+  'food',
+  'stock',
+  'අද',
+  'රු',
+]);
+
 const toText = (value) => String(value || '').trim();
 const normalize = (value) => toText(value).toLowerCase();
+
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+// Removes common comment prefixes so users can type "// show specials" naturally.
+const stripCommentDecorators = (value) => {
+  const withoutBlockTokens = toText(value).replace(/\/\*|\*\//g, ' ');
+  const merged = withoutBlockTokens
+    .split('\n')
+    .map((line) => line.replace(/^\s*(?:\/\/+|#+|\*+|-+)\s*/, '').trim())
+    .filter(Boolean)
+    .join(' ');
+
+  return merged.replace(/\s+/g, ' ').trim();
+};
+
+const tokenize = (value) => normalize(value).match(WORD_PATTERN) || [];
+
+const normalizeIntentText = (value) => {
+  let text = normalize(value)
+    .replace(/[^a-z0-9\u0d80-\u0dff]+/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  Object.entries(INTENT_ALIASES).forEach(([canonical, aliases]) => {
+    aliases
+      .sort((a, b) => b.length - a.length)
+      .forEach((alias) => {
+        const aliasText = normalize(alias)
+          .replace(/[^a-z0-9\u0d80-\u0dff]+/gi, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+
+        if (!aliasText) {
+          return;
+        }
+
+        const pattern = new RegExp(`(^|\\s)${escapeRegex(aliasText)}(?=\\s|$)`, 'g');
+        text = text.replace(pattern, `$1${canonical}`);
+      });
+  });
+
+  return text.replace(/\s+/g, ' ').trim();
+};
+
+const containsAny = (text, terms) => terms.some((term) => text.includes(term));
+
+const getSearchTerms = (message, excludedTerms = []) => {
+  const excluded = new Set(excludedTerms.map((term) => normalize(term)));
+
+  return tokenize(message)
+    .filter((part) => part.length >= 3)
+    .filter((part) => !QUERY_STOP_WORDS.has(part))
+    .filter((part) => !excluded.has(part))
+    .filter((part) => !/^\d+$/.test(part));
+};
+
+// Scores category against message using direct phrase and token overlap.
+const findBestCategoryMatch = (categories, normalizedMessage) => {
+  const messageTokens = tokenize(normalizedMessage);
+  let bestMatch = null;
+  let bestScore = 0;
+
+  categories.forEach((category) => {
+    const normalizedCategory = normalize(category.name);
+    const categoryTokens = tokenize(normalizedCategory);
+
+    let score = 0;
+    if (normalizedMessage.includes(normalizedCategory)) {
+      score += 6;
+    }
+
+    const overlap = categoryTokens.filter((token) => messageTokens.includes(token)).length;
+    score += overlap * 2;
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestMatch = category;
+    }
+  });
+
+  return bestScore >= MIN_CATEGORY_SCORE ? bestMatch : null;
+};
+
+const buildQuickReplies = (categories) => {
+  const categoryHint = categories
+    .slice(0, 2)
+    .map((category) => `${category.name} තියෙනවද?`);
+
+  return [...new Set([...QUICK_REPLIES_BASE, ...categoryHint])].slice(0, 6);
+};
 
 const formatItems = (items) => items.slice(0, MAX_ITEMS).map((item) => ({
   id: item._id,
@@ -51,7 +238,7 @@ const formatItems = (items) => items.slice(0, MAX_ITEMS).map((item) => ({
 }));
 
 const findBudget = (message) => {
-  const match = message.match(/(?:rs\.?|lkr|under|below|within)?\s*(\d{2,5})/i);
+  const match = message.match(/(?:rs\.?|lkr|under|below|within|රු\.?|රුපියල්)?\s*(\d{2,5})/i);
   if (!match) return null;
 
   const parsed = Number(match[1]);
@@ -61,12 +248,6 @@ const findBudget = (message) => {
 
   return parsed;
 };
-
-const getSearchTerms = (message) => normalize(message)
-  .split(/[^a-z0-9]+/)
-  .filter((part) => part.length >= 3 && !STOP_WORDS.has(part));
-
-const containsAny = (text, terms) => terms.some((term) => text.includes(term));
 
 // @desc    Chat with menu assistant for a selected canteen
 // @route   POST /api/menu-assistant/chat
@@ -79,42 +260,47 @@ export const chatWithMenuAssistant = async (req, res) => {
       return res.status(400).json({ message: 'Valid canteenId is required' });
     }
 
-    const cleanMessage = toText(message);
+    const cleanMessage = stripCommentDecorators(message);
     if (!cleanMessage) {
       return res.status(400).json({ message: 'message is required' });
     }
 
     const [categories, menuItems] = await Promise.all([
-      Category.find({ canteen: canteenId }).sort({ name: 1 }),
+      Category.find({ canteen: canteenId }).select('name').sort({ name: 1 }).lean(),
       MenuItem.find({ canteen: canteenId })
+        .select('name price description available isSpecial category')
         .populate('category', 'name')
-        .sort({ isSpecial: -1, available: -1, name: 1 }),
+        .sort({ isSpecial: -1, available: -1, name: 1 })
+        .lean(),
     ]);
+
+    const quickReplies = buildQuickReplies(categories);
 
     if (menuItems.length === 0) {
       return res.json({
         reply: 'No menu items are available for this canteen yet.',
         items: [],
-        quickReplies: QUICK_REPLIES,
+        quickReplies,
         intent: 'empty-menu',
       });
     }
 
-    const messageLc = normalize(cleanMessage);
+    const normalizedMessage = normalizeIntentText(cleanMessage);
     const budget = findBudget(cleanMessage);
-    const searchTerms = getSearchTerms(cleanMessage);
 
     const availableItems = menuItems.filter((item) => item.available);
     const outOfStockItems = menuItems.filter((item) => !item.available);
     const specialItems = availableItems.filter((item) => item.isSpecial);
 
-    const matchedCategory = categories.find((category) => messageLc.includes(normalize(category.name)));
+    const matchedCategory = findBestCategoryMatch(categories, normalizedMessage);
+    const categoryTerms = matchedCategory ? tokenize(matchedCategory.name) : [];
+    const searchTerms = getSearchTerms(normalizedMessage, categoryTerms);
 
-    const wantsSpecials = containsAny(messageLc, ['special', 'today special', 'chef']);
-    const wantsOutOfStock = containsAny(messageLc, ['out of stock', 'unavailable', 'food over', 'not available']);
-    const wantsAvailability = containsAny(messageLc, ['available', 'in stock', 'thiyenawada', 'tiyenawada']);
-    const wantsRecommendation = containsAny(messageLc, ['recommend', 'suggest', 'best', 'popular', 'mokak']);
-    const wantsVeg = containsAny(messageLc, ['veg', 'vegetarian']);
+    const wantsSpecials = containsAny(normalizedMessage, ['special']);
+    const wantsOutOfStock = containsAny(normalizedMessage, ['outofstock']);
+    const wantsAvailability = containsAny(normalizedMessage, ['available']);
+    const wantsRecommendation = containsAny(normalizedMessage, ['recommend']);
+    const wantsVeg = containsAny(normalizedMessage, ['veg']);
 
     let filtered = availableItems;
     let intent = 'general';
@@ -143,7 +329,7 @@ export const chatWithMenuAssistant = async (req, res) => {
         return res.json({
           reply: `Foods are over for ${matchedCategory.name} category right now.`,
           items: [],
-          quickReplies: QUICK_REPLIES,
+          quickReplies,
           intent: 'food-over-category',
         });
       }
@@ -209,7 +395,7 @@ export const chatWithMenuAssistant = async (req, res) => {
     return res.json({
       reply,
       items: responseItems,
-      quickReplies: QUICK_REPLIES,
+      quickReplies,
       intent,
     });
   } catch (error) {

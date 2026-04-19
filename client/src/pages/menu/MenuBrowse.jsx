@@ -603,6 +603,7 @@ const MenuBrowse = () => {
         <MenuAssistantWidget
           canteenId={selectedCanteen}
           canteenName={selectedCanteenName}
+          user={user}
         />
       </main>
     </div>

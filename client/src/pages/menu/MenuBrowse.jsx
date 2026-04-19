@@ -1,11 +1,18 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { Toaster, toast } from 'react-hot-toast';
 import Navbar from '../../components/Navbar.jsx';
+import MenuAssistantWidget from '../../components/menu/MenuAssistantWidget.jsx';
 import api from '../../services/api.js';
+import { AuthContext } from '../../context/AuthContext.jsx';
 
 const ALL_CATEGORIES = 'all';
-const CART_STORAGE_KEY = 'canteen_cart';
+const DEFAULT_MENU_IMAGE = 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=1200&auto=format&fit=crop';
 
 const MenuBrowse = () => {
+  const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const { canteenId: routeCanteenId } = useParams();
   const [canteens, setCanteens] = useState([]);
   const [selectedCanteen, setSelectedCanteen] = useState('');
   const [categories, setCategories] = useState([]);
@@ -20,7 +27,6 @@ const MenuBrowse = () => {
   const [loadingItems, setLoadingItems] = useState(false);
   const [error, setError] = useState('');
   const [selectedItem, setSelectedItem] = useState(null);
-  const [actionMessage, setActionMessage] = useState('');
   const [queueStatus, setQueueStatus] = useState(null);
   const [loadingQueue, setLoadingQueue] = useState(false);
   const [announcements, setAnnouncements] = useState([]);
@@ -34,6 +40,10 @@ const MenuBrowse = () => {
     return category?.name || 'Selected';
   }, [categories, selectedCategory]);
 
+  const selectedCanteenName = useMemo(() => {
+    return canteens.find((entry) => entry._id === selectedCanteen)?.name || 'this canteen';
+  }, [canteens, selectedCanteen]);
+
   useEffect(() => {
     const loadCanteens = async () => {
       try {
@@ -43,8 +53,17 @@ const MenuBrowse = () => {
         const { data } = await api.get('/canteens');
         setCanteens(data || []);
 
-        if (data?.length > 0) {
+        const matchedCanteen = routeCanteenId
+          ? data?.find((canteen) => String(canteen._id) === String(routeCanteenId))
+          : null;
+
+        if (matchedCanteen) {
+          setSelectedCanteen(matchedCanteen._id);
+        } else if (data?.length > 0) {
           setSelectedCanteen(data[0]._id);
+          if (routeCanteenId) {
+            navigate(`/menu/${data[0]._id}`, { replace: true });
+          }
         }
       } catch (apiError) {
         setError(apiError.response?.data?.message || 'Failed to load canteens');
@@ -54,7 +73,17 @@ const MenuBrowse = () => {
     };
 
     loadCanteens();
-  }, []);
+  }, [navigate, routeCanteenId]);
+
+  useEffect(() => {
+    if (!routeCanteenId) return;
+    if (!canteens.length) return;
+
+    const matchedCanteen = canteens.find((canteen) => String(canteen._id) === String(routeCanteenId));
+    if (matchedCanteen && matchedCanteen._id !== selectedCanteen) {
+      setSelectedCanteen(matchedCanteen._id);
+    }
+  }, [canteens, routeCanteenId, selectedCanteen]);
 
   useEffect(() => {
     if (!selectedCanteen) {
@@ -191,50 +220,124 @@ const MenuBrowse = () => {
     };
   }, [selectedItem]);
 
-  const saveItemToCart = (item) => {
-    if (!item.available) {
-      setActionMessage('This item is currently out of stock.');
+  const saveItemToCart = async (item) => {
+    if (!user) {
+      toast.error('Please sign in as a student to add items to cart.');
+      navigate('/login');
       return false;
     }
 
-    const existingCart = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || '[]');
-    const existingIndex = existingCart.findIndex((entry) => entry.itemId === item._id);
+    if (user.role !== 'student') {
+      toast.error('Only student accounts can place orders.');
+      return false;
+    }
 
-    if (existingIndex >= 0) {
-      existingCart[existingIndex].quantity += 1;
-    } else {
-      existingCart.push({
-        itemId: item._id,
-        name: item.name,
-        price: Number(item.price),
-        image: item.image || '',
-        category: item.category?.name || 'General',
-        canteenId: selectedCanteen,
+    if (!item.available) {
+      toast.error('This item is currently out of stock.');
+      return false;
+    }
+
+    try {
+      await api.post('/cart/items', {
+        menuItemId: item._id,
         quantity: 1,
       });
-    }
+      return true;
+    } catch (apiError) {
+      if (apiError.response?.status === 409) {
+        const shouldClear = window.confirm(
+          'Your cart contains items from a different canteen. Clear cart and add this item?'
+        );
 
-    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(existingCart));
-    return true;
+        if (!shouldClear) {
+          toast('Kept current cart items.', { icon: '🛒' });
+          return false;
+        }
+
+        await api.delete('/cart/mine/clear');
+        await api.post('/cart/items', {
+          menuItemId: item._id,
+          quantity: 1,
+        });
+        toast.success('Previous cart cleared and item added.');
+        return true;
+      }
+
+      toast.error(apiError.response?.data?.message || 'Failed to add item to cart');
+      return false;
+    }
   };
 
-  const handleAddToCart = (item) => {
-    const added = saveItemToCart(item);
+  const handleAddToCart = async (item) => {
+    const added = await saveItemToCart(item);
     if (added) {
-      setActionMessage(`${item.name} added to cart.`);
+      toast.success(`${item.name} added to cart.`);
     }
   };
 
-  const handleOrderNow = (item) => {
-    const added = saveItemToCart(item);
+  const handleOrderNow = async (item) => {
+    const added = await saveItemToCart(item);
     if (added) {
       setSelectedItem(null);
-      setActionMessage(`${item.name} added. Proceed to checkout from your cart once cart page is enabled.`);
+      toast.success(`${item.name} added. Redirecting to cart...`);
+      setTimeout(() => navigate('/cart'), 700);
     }
+  };
+
+  const handleCanteenChange = async (event) => {
+    const nextCanteenId = event.target.value;
+
+    if (!user || user.role !== 'student') {
+      navigate(`/menu/${nextCanteenId}`);
+      return;
+    }
+
+    try {
+      const { data } = await api.get('/cart/mine');
+      const hasItems = (data?.items || []).length > 0;
+      const currentCartCanteen = data?.canteenId ? String(data.canteenId) : '';
+
+      if (hasItems && currentCartCanteen && currentCartCanteen !== String(nextCanteenId)) {
+        const shouldClear = window.confirm(
+          'Switching canteen requires clearing your cart. Do you want to clear it now?'
+        );
+
+        if (!shouldClear) {
+          return;
+        }
+
+        await api.delete('/cart/mine/clear');
+      }
+    } catch {
+      // If cart check fails, allow navigation without blocking menu browsing.
+    }
+
+    navigate(`/menu/${nextCanteenId}`);
+  };
+
+  const resolveImageSrc = (image) => (image && String(image).trim() ? image : DEFAULT_MENU_IMAGE);
+
+  const handleImageError = (event) => {
+    const img = event.currentTarget;
+    if (img.dataset.fallbackApplied === 'true') {
+      return;
+    }
+    img.dataset.fallbackApplied = 'true';
+    img.src = DEFAULT_MENU_IMAGE;
   };
 
   return (
     <div className="app-container">
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 2600,
+          style: {
+            borderRadius: '12px',
+            fontWeight: 600,
+          },
+        }}
+      />
       <Navbar />
       <main className="menu-page-wrap">
         <section className="menu-page-hero">
@@ -254,7 +357,7 @@ const MenuBrowse = () => {
               <select
                 className="menu-select"
                 value={selectedCanteen}
-                onChange={(event) => setSelectedCanteen(event.target.value)}
+                onChange={handleCanteenChange}
               >
                 {canteens.map((canteen) => (
                   <option key={canteen._id} value={canteen._id}>
@@ -338,12 +441,11 @@ const MenuBrowse = () => {
         ) : null}
 
         {error ? <p className="menu-error">{error}</p> : null}
-        {actionMessage ? <p className="menu-action-note">{actionMessage}</p> : null}
 
         <section className="menu-specials-section">
           <div className="menu-section-head">
             <h2>Today&apos;s Specials</h2>
-            <p>Chef picks from {canteens.find((entry) => entry._id === selectedCanteen)?.name || 'selected canteen'}</p>
+            <p>Chef picks from {selectedCanteenName}</p>
           </div>
           <div className="menu-special-grid">
             {specials.length === 0 ? (
@@ -363,9 +465,13 @@ const MenuBrowse = () => {
                     }
                   }}
                 >
-                  {item.image ? (
-                    <img className="menu-card-image" src={item.image} alt={item.name} loading="lazy" />
-                  ) : null}
+                  <img
+                    className="menu-card-image"
+                    src={resolveImageSrc(item.image)}
+                    alt={item.name}
+                    loading="lazy"
+                    onError={handleImageError}
+                  />
                   <div className="menu-special-badge">SPECIAL</div>
                   <h3>{item.name}</h3>
                   <p>{item.description || 'Freshly prepared today.'}</p>
@@ -409,9 +515,13 @@ const MenuBrowse = () => {
                     }
                   }}
                 >
-                  {item.image ? (
-                    <img className="menu-card-image" src={item.image} alt={item.name} loading="lazy" />
-                  ) : null}
+                  <img
+                    className="menu-card-image"
+                    src={resolveImageSrc(item.image)}
+                    alt={item.name}
+                    loading="lazy"
+                    onError={handleImageError}
+                  />
                   <div className="menu-item-top">
                     <h3>{item.name}</h3>
                     <span className={`menu-stock-pill ${item.available ? 'in' : 'out'}`}>
@@ -448,14 +558,13 @@ const MenuBrowse = () => {
               >
                 x
               </button>
-              {selectedItem.image ? (
-                <img
-                  className="menu-item-modal-image"
-                  src={selectedItem.image}
-                  alt={selectedItem.name}
-                  loading="lazy"
-                />
-              ) : null}
+              <img
+                className="menu-item-modal-image"
+                src={resolveImageSrc(selectedItem.image)}
+                alt={selectedItem.name}
+                loading="lazy"
+                onError={handleImageError}
+              />
               <div className="menu-item-modal-content">
                 <div className="menu-item-modal-head">
                   <h3>{selectedItem.name}</h3>
@@ -490,6 +599,12 @@ const MenuBrowse = () => {
             </div>
           </div>
         ) : null}
+
+        <MenuAssistantWidget
+          canteenId={selectedCanteen}
+          canteenName={selectedCanteenName}
+          user={user}
+        />
       </main>
     </div>
   );

@@ -1,4 +1,5 @@
 import React, { useState, useContext } from 'react';
+import { toast, Toaster } from 'react-hot-toast';
 import Navbar from '../components/Navbar.jsx';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext.jsx';
@@ -21,14 +22,22 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const res = await api.post('/auth/login', { email, password });
-      login(res.data); // Save to context and localStorage
-      
-      // after successful login
-      localStorage.setItem("token", res.data.token);
+      const { data } = await api.post('/auth/login', { email, password });
+      login(data);
+      toast.success('Login successful!');
 
-      // redirect
-      window.location.href = "/canteens";
+      const hasAssignedCanteen = Boolean(data?.assignedCanteen?._id || data?.assignedCanteen);
+      const isCanteenMailLogin =
+        data?.role === 'canteen' ||
+        (data?.role === 'staff' && hasAssignedCanteen && /@gmail\.com$/i.test(data?.email || ''));
+
+      if (data?.role === 'admin' || isCanteenMailLogin) {
+        navigate('/dashboard/overview', { replace: true });
+      } else if (data?.role === 'staff') {
+        navigate('/', { replace: true });
+      } else {
+        navigate('/canteens', { replace: true });
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid email or password. Please try again.');
     } finally {
@@ -44,8 +53,18 @@ const Login = () => {
         role: googleRole 
       });
       login(res.data);
-      localStorage.setItem("token", res.data.token);
-      window.location.href = "/canteens";
+      const hasAssignedCanteen = Boolean(res.data?.assignedCanteen?._id || res.data?.assignedCanteen);
+      const isCanteenMailLogin =
+        res.data?.role === 'canteen' ||
+        (res.data?.role === 'staff' && hasAssignedCanteen && /@gmail\.com$/i.test(res.data?.email || ''));
+
+      if (res.data?.role === 'admin' || isCanteenMailLogin) {
+        navigate('/dashboard/overview', { replace: true });
+      } else if (res.data?.role === 'staff') {
+        navigate('/', { replace: true });
+      } else {
+        navigate('/canteens', { replace: true });
+      }
     } catch (err) {
       setError('Google Sign-In failed. Please try again.');
     } finally {
@@ -59,6 +78,7 @@ const Login = () => {
 
   return (
     <div className="app-container">
+      <Toaster position="top-right" />
       <Navbar />
       <div className="main-content auth-container">
         <div className="auth-card-split">

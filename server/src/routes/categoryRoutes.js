@@ -7,16 +7,16 @@ import {
   updateCategory,
   deleteCategory,
 } from '../controllers/categoryController.js';
-import { protect, admin } from '../middleware/authMiddleware.js';
+import { protect, permitRoles } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-router.route('/').get(getCategories).post(protect, admin, createCategory);
+router.route('/').get(getCategories).post(protect, permitRoles('staff', 'admin'), createCategory);
 router.get('/:id/availability-status', getCategoryAvailabilityStatus);
 router
   .route('/:id')
   .get(getCategoryById)
-  .put(protect, admin, updateCategory)
-  .delete(protect, admin, deleteCategory);
+  .put(protect, permitRoles('staff', 'admin'), updateCategory)
+  .delete(protect, permitRoles('staff', 'admin'), deleteCategory);
 
 export default router;

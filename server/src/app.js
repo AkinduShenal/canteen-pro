@@ -10,6 +10,7 @@ import staffAdminRoutes from './routes/staffAdminRoutes.js';
 import adminOrdersRoutes from './routes/adminOrdersRoutes.js';
 import connectDB from './config/db.js';
 import menuItemRoutes from './routes/menuItemRoutes.js';
+import menuAssistantRoutes from './routes/menuAssistantRoutes.js';
 import cartRoutes from './routes/cartRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 
@@ -29,6 +30,7 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/staff-admin', staffAdminRoutes);
 app.use('/api/admin', adminOrdersRoutes);
 app.use('/api/menu-items', menuItemRoutes);
+app.use('/api/menu-assistant', menuAssistantRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 

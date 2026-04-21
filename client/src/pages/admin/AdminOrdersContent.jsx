@@ -201,9 +201,7 @@ const FlashBanner = ({ type, message, onClose }) => (
 
 const AdminOrdersContent = () => {
   const [orders, setOrders]       = useState([]);
-  const [updatingOrderId, setUpdatingOrderId] = useState(null);
   const [error, setError]         = useState('');
-  const [success, setSuccess]     = useState('');
 
   const [statusFilter, setStatusFilter]   = useState('');
   const [priorityOnly, setPriorityOnly]   = useState(false);
@@ -211,8 +209,6 @@ const AdminOrdersContent = () => {
   const [canteenFilter, setCanteenFilter] = useState('all');
   const [urgencyFilter, setUrgencyFilter] = useState('all');
   const [sortBy, setSortBy]               = useState('pickup-asc');
-
-  const clearFlash = () => { setError(''); setSuccess(''); };
 
   const fetchOrders = useCallback(async () => {
     setError('');
@@ -233,22 +229,6 @@ const AdminOrdersContent = () => {
     const t = setInterval(() => fetchOrders(), 5000);
     return () => clearInterval(t);
   }, [fetchOrders]);
-
-  const handleStatusUpdate = async (order, nextStatus, providedReason) => {
-    const payload = { status: nextStatus };
-    if (nextStatus === 'cancelled') payload.reason = typeof providedReason === 'string' ? providedReason.trim() : '';
-    setUpdatingOrderId(order._id);
-    clearFlash();
-    try {
-      await api.patch(`/admin/orders/${order._id}/status`, payload);
-      setSuccess(`Order #${order.token || String(order._id).slice(-6).toUpperCase()} → ${nextStatus}`);
-      await fetchOrders();
-    } catch (err) {
-      setError(err?.response?.data?.message || 'Failed to update order status');
-    } finally {
-      setUpdatingOrderId(null);
-    }
-  };
 
   const canteenOptions = useMemo(() => {
     const map = new Map();
@@ -314,10 +294,13 @@ const AdminOrdersContent = () => {
         placeholder="Search quick actions..."
       />
 
+      <div className="tw-rounded-xl tw-border tw-border-amber-200 tw-bg-amber-50 tw-px-4 tw-py-2.5 tw-text-xs tw-font-semibold tw-text-amber-800">
+        Admin view is read-only. Order status updates are handled by canteen staff accounts.
+      </div>
+
       {/* ── Flash banners ── */}
       <AnimatePresence>
         {error   && <FlashBanner key="err"  type="error"   message={error}   onClose={() => setError('')}   />}
-        {success && <FlashBanner key="succ" type="success" message={success} onClose={() => setSuccess('')} />}
       </AnimatePresence>
 
       {/* ══════════════════════════════════════════
@@ -541,8 +524,7 @@ const AdminOrdersContent = () => {
                 >
                   <AdminOrderCard
                     order={order}
-                    onStatusChange={handleStatusUpdate}
-                    isUpdating={updatingOrderId === order._id}
+                    readOnly
                   />
                 </motion.div>
               ))}

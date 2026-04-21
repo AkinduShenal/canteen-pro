@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Area,
   AreaChart,
@@ -24,6 +24,7 @@ import {
 } from 'recharts';
 import { motion, AnimatePresence } from 'framer-motion';
 import DashboardUtilityBar from '../../components/common/DashboardUtilityBar.jsx';
+import { AuthContext } from '../../context/AuthContext.jsx';
 import { staffAdminApi } from '../../services/staffAdminApi.js';
 import api from '../../services/api.js';
 import {
@@ -90,9 +91,20 @@ const startOfToday = () => {
 const getStartByRange = (range) => {
   const today = startOfToday();
   if (range === 'today') return today;
+  if (range === 'month') {
+    const monthStart = new Date(today);
+    monthStart.setDate(monthStart.getDate() - 29);
+    return monthStart;
+  }
   const weekStart = new Date(today);
   weekStart.setDate(weekStart.getDate() - 6);
   return weekStart;
+};
+
+const getRangeLabel = (range) => {
+  if (range === 'today') return 'Today';
+  if (range === 'month') return 'Last 30 days';
+  return 'This Week';
 };
 
 // ── Custom Tooltip ────────────────────────────────────────────────────
@@ -320,8 +332,11 @@ const FilterDropdown = ({
 );
 
 const AdminReportsContent = () => {
+  const { user } = useContext(AuthContext);
+  const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5001/api').replace(/\/$/, '');
+
   const [searchText, setSearchText] = useState('');
-  const [timeRange, setTimeRange] = useState('week');
+  const [timeRange, setTimeRange] = useState('month');
   const [canteenFilter, setCanteenFilter] = useState('all');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -337,6 +352,7 @@ const AdminReportsContent = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isTimeMenuOpen, setIsTimeMenuOpen] = useState(false);
   const [isCanteenMenuOpen, setIsCanteenMenuOpen] = useState(false);
+  const [isReportsStreamConnected, setIsReportsStreamConnected] = useState(false);
 
   const timeMenuRef = useRef(null);
   const canteenMenuRef = useRef(null);
@@ -346,12 +362,10 @@ const AdminReportsContent = () => {
     if (!silent) setError('');
     if (silent) setIsRefreshing(true);
     try {
-      const [reportsRes, ordersRes, canteensRes] = await Promise.all([
-        staffAdminApi.getBasicReports(),
+      const [ordersRes, canteensRes] = await Promise.all([
         api.get('/admin/orders'),
         staffAdminApi.getAllCanteens(),
       ]);
-      setReports(reportsRes?.data || { ordersTodayByCanteen: [], ordersThisWeekByCanteen: [], topSellingItems: [] });
       setOrders(Array.isArray(ordersRes?.data) ? ordersRes.data : []);
       setCanteens(Array.isArray(canteensRes?.data) ? canteensRes.data : []);
       setLastUpdatedAt(new Date());
@@ -364,10 +378,35 @@ const AdminReportsContent = () => {
   }, []);
 
   useEffect(() => { fetchReportsData(); }, [fetchReportsData]);
+
   useEffect(() => {
-    const id = setInterval(() => fetchReportsData({ silent: true }), LIVE_REFRESH_MS);
-    return () => clearInterval(id);
-  }, [fetchReportsData]);
+    if (!user?.token) return undefined;
+
+    const streamUrl = `${API_BASE_URL}/staff-admin/reports/stream?token=${encodeURIComponent(user.token)}`;
+    const eventSource = new EventSource(streamUrl);
+
+    eventSource.addEventListener('reports', (event) => {
+      try {
+        const payload = JSON.parse(event.data || '{}');
+        setReports(payload || { ordersTodayByCanteen: [], ordersThisWeekByCanteen: [], topSellingItems: [] });
+        setLastUpdatedAt(payload?.lastUpdatedAt ? new Date(payload.lastUpdatedAt) : new Date());
+        setLoading(false);
+        setIsReportsStreamConnected(true);
+      } catch (error) {
+        // ignore malformed message
+      }
+    });
+
+    eventSource.addEventListener('error', () => {
+      setIsReportsStreamConnected(false);
+      fetchReportsData({ silent: true });
+    });
+
+    return () => {
+      setIsReportsStreamConnected(false);
+      eventSource.close();
+    };
+  }, [API_BASE_URL, fetchReportsData, user?.token]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -395,7 +434,29 @@ const AdminReportsContent = () => {
     };
   }, []);
 
+  const periodOrders = useMemo(() => {
+    const startDate = getStartByRange(timeRange);
+    return orders.filter((order) => {
+      const created = new Date(order.createdAt || order.pickupTime || Date.now());
+      const matchesRange = created >= startDate;
+      const matchesCanteen = canteenFilter === 'all' || String(order?.canteenId?._id || order?.canteenId || '') === canteenFilter;
+      return matchesRange && matchesCanteen;
+    });
+  }, [canteenFilter, orders, timeRange]);
+
   const ordersByCanteenRows = useMemo(() => {
+    if (timeRange === 'month') {
+      const counters = new Map();
+      periodOrders.forEach((order) => {
+        const id = String(order?.canteenId?._id || order?.canteenId || '');
+        const name = order?.canteenId?.name || canteens.find((item) => String(item?._id || '') === id)?.name || 'Unknown';
+        const current = counters.get(id) || { canteenId: id, name, shortName: shortenCanteenLabel(name), orders: 0 };
+        current.orders += 1;
+        counters.set(id, current);
+      });
+      return Array.from(counters.values()).sort((a, b) => b.orders - a.orders);
+    }
+
     const baseRows = timeRange === 'today' ? reports?.ordersTodayByCanteen || [] : reports?.ordersThisWeekByCanteen || [];
     return baseRows
       .filter((row) => canteenFilter === 'all' || String(row?.canteenId) === canteenFilter)
@@ -408,17 +469,7 @@ const AdminReportsContent = () => {
           orders: Number(row?.totalOrders || 0),
         };
       });
-  }, [canteenFilter, reports, timeRange]);
-
-  const periodOrders = useMemo(() => {
-    const startDate = getStartByRange(timeRange);
-    return orders.filter((order) => {
-      const created = new Date(order.createdAt || order.pickupTime || Date.now());
-      const matchesRange = created >= startDate;
-      const matchesCanteen = canteenFilter === 'all' || String(order?.canteenId?._id || order?.canteenId || '') === canteenFilter;
-      return matchesRange && matchesCanteen;
-    });
-  }, [canteenFilter, orders, timeRange]);
+  }, [canteenFilter, canteens, periodOrders, reports, timeRange]);
 
   const revenueTrendData = useMemo(() => {
     if (timeRange === 'today') {
@@ -439,13 +490,20 @@ const AdminReportsContent = () => {
       return Array.from(hourMap.values()).map((row) => ({ ...row, revenue: Math.round(row.revenue) }));
     }
 
-    const start = getStartByRange('week');
+    const start = getStartByRange(timeRange);
+    const numberOfDays = timeRange === 'month' ? 30 : 7;
     const dayMap = new Map();
-    for (let i = 0; i < 7; i += 1) {
+    for (let i = 0; i < numberOfDays; i += 1) {
       const d = new Date(start);
       d.setDate(start.getDate() + i);
       const key = getLocalDateKey(d);
-      dayMap.set(key, { day: d.toLocaleDateString('en-US', { weekday: 'short' }), revenue: 0, orders: 0 });
+      dayMap.set(key, {
+        day: timeRange === 'month'
+          ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+          : d.toLocaleDateString('en-US', { weekday: 'short' }),
+        revenue: 0,
+        orders: 0,
+      });
     }
 
     periodOrders.forEach((order) => {
@@ -536,7 +594,7 @@ const AdminReportsContent = () => {
           <FilterDropdown
             title="Time range"
             icon={HiOutlineClock}
-            valueLabel={timeRange === 'today' ? 'Today' : 'This Week'}
+            valueLabel={getRangeLabel(timeRange)}
             isOpen={isTimeMenuOpen}
             onToggle={() => {
               setIsCanteenMenuOpen(false);
@@ -545,6 +603,7 @@ const AdminReportsContent = () => {
             selectedValue={timeRange}
             options={[
               { value: 'today', label: 'Today' },
+              { value: 'month', label: 'Last 30 days' },
               { value: 'week', label: 'This Week' },
             ]}
             onSelect={(value) => {
@@ -584,7 +643,7 @@ const AdminReportsContent = () => {
         <StatCard
           label="Total Revenue"
           value={formatCurrency(Math.round(totalRevenue))}
-          sub={timeRange === 'today' ? 'Today' : 'This week'}
+          sub={getRangeLabel(timeRange)}
           icon={HiOutlineCurrencyDollar}
           gradient="linear-gradient(135deg, #dc2626 0%, #f97316 100%)"
           delay={0}
@@ -779,7 +838,7 @@ const AdminReportsContent = () => {
             <div>
               <h3 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: BRAND.text, letterSpacing: '-0.01em' }}>Canteen Performance</h3>
               <p style={{ margin: 0, fontSize: 11, color: BRAND.muted }}>
-                {timeRange === 'today' ? 'Today' : 'This week'} · {canteenPerformance.length} canteen{canteenPerformance.length !== 1 ? 's' : ''}
+                {getRangeLabel(timeRange)} · {canteenPerformance.length} canteen{canteenPerformance.length !== 1 ? 's' : ''}
               </p>
             </div>
           </div>

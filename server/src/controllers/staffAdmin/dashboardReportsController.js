@@ -2,6 +2,103 @@ import Order from '../../models/Order.js';
 import User from '../../models/User.js';
 
 const DASHBOARD_STREAM_REFRESH_MS = 7000;
+const REPORTS_STREAM_REFRESH_MS = 5000;
+
+let reportsCache = { data: null, timestamp: 0 };
+const REPORTS_CACHE_TTL = 3000;
+
+const buildBasicReportsPayload = async () => {
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOfWeek = new Date(startOfToday);
+  startOfWeek.setDate(startOfToday.getDate() - 7);
+
+  const [ordersTodayByCanteen, ordersThisWeekByCanteen, topSellingItems] = await Promise.all([
+    Order.aggregate([
+      { $match: { createdAt: { $gte: startOfToday } } },
+      { $group: { _id: '$canteenId', totalOrders: { $sum: 1 } } },
+      {
+        $lookup: {
+          from: 'canteens',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'canteen',
+        },
+      },
+      { $unwind: { path: '$canteen', preserveNullAndEmptyArrays: true } },
+      {
+        $project: {
+          _id: 0,
+          canteenId: '$_id',
+          canteenName: { $ifNull: ['$canteen.name', 'Unknown Canteen'] },
+          totalOrders: 1,
+        },
+      },
+      { $sort: { totalOrders: -1 } },
+    ]),
+    Order.aggregate([
+      { $match: { createdAt: { $gte: startOfWeek } } },
+      { $group: { _id: '$canteenId', totalOrders: { $sum: 1 } } },
+      {
+        $lookup: {
+          from: 'canteens',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'canteen',
+        },
+      },
+      { $unwind: { path: '$canteen', preserveNullAndEmptyArrays: true } },
+      {
+        $project: {
+          _id: 0,
+          canteenId: '$_id',
+          canteenName: { $ifNull: ['$canteen.name', 'Unknown Canteen'] },
+          totalOrders: 1,
+        },
+      },
+      { $sort: { totalOrders: -1 } },
+    ]),
+    Order.aggregate([
+      { $unwind: { path: '$items', preserveNullAndEmptyArrays: false } },
+      {
+        $group: {
+          _id: {
+            canteenId: '$canteenId',
+            itemName: '$items.name',
+          },
+          totalQuantity: { $sum: '$items.quantity' },
+        },
+      },
+      {
+        $lookup: {
+          from: 'canteens',
+          localField: '_id.canteenId',
+          foreignField: '_id',
+          as: 'canteen',
+        },
+      },
+      { $unwind: { path: '$canteen', preserveNullAndEmptyArrays: true } },
+      {
+        $project: {
+          _id: 0,
+          canteenId: '$_id.canteenId',
+          canteenName: { $ifNull: ['$canteen.name', 'Unknown Canteen'] },
+          itemName: '$_id.itemName',
+          totalQuantity: 1,
+        },
+      },
+      { $sort: { totalQuantity: -1 } },
+      { $limit: 20 },
+    ]),
+  ]);
+
+  return {
+    ordersTodayByCanteen,
+    ordersThisWeekByCanteen,
+    topSellingItems,
+    lastUpdatedAt: new Date().toISOString(),
+  };
+};
 
 const buildDashboardMetricsPayload = async (currentUser) => {
   const baseMatch = {};
@@ -193,6 +290,64 @@ export const streamDashboardMetrics = async (req, res) => {
 
     req.on('close', () => {
       clearInterval(metricsInterval);
+      clearInterval(heartbeatInterval);
+      res.end();
+    });
+  } catch (error) {
+    if (!res.headersSent) {
+      res.status(error.statusCode || 500).json({ message: error.message });
+    }
+  }
+};
+
+export const streamBasicReports = async (req, res) => {
+  const sendEvent = (event, data) => {
+    res.write(`event: ${event}\n`);
+    res.write(`data: ${JSON.stringify(data)}\n\n`);
+  };
+
+  try {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no');
+
+    res.flushHeaders?.();
+
+    const getCachedOrBuild = async () => {
+      const now = Date.now();
+      if (reportsCache.data && (now - reportsCache.timestamp) < REPORTS_CACHE_TTL) {
+        return reportsCache.data;
+      }
+      const payload = await buildBasicReportsPayload();
+      reportsCache = { data: payload, timestamp: now };
+      return payload;
+    };
+
+    const initialPayload = await getCachedOrBuild();
+    sendEvent('reports', initialPayload);
+
+    let isStreamingInProgress = false;
+
+    const reportsInterval = setInterval(async () => {
+      if (isStreamingInProgress) return;
+      isStreamingInProgress = true;
+      try {
+        const payload = await getCachedOrBuild();
+        sendEvent('reports', payload);
+      } catch (error) {
+        sendEvent('error', { message: error.message || 'Failed to stream reports' });
+      } finally {
+        isStreamingInProgress = false;
+      }
+    }, REPORTS_STREAM_REFRESH_MS);
+
+    const heartbeatInterval = setInterval(() => {
+      res.write(': ping\n\n');
+    }, 20000);
+
+    req.on('close', () => {
+      clearInterval(reportsInterval);
       clearInterval(heartbeatInterval);
       res.end();
     });

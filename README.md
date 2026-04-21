@@ -46,6 +46,34 @@ npm run dev
 
 ---
 
+## Playwright E2E Testing
+
+### 1. Install Playwright Browser
+Run once after installing dependencies:
+
+```bash
+npm run test:e2e:install
+```
+
+### 2. Run E2E Tests
+
+```bash
+npm run test:e2e
+```
+
+### 3. Useful Variants
+
+```bash
+npm run test:e2e:headed
+npm run test:e2e:ui
+```
+
+Notes:
+- Tests are in `client/tests`.
+- Playwright starts the Vite client automatically on port `3000`.
+
+---
+
 ## Contributing
 - Fork the repo, create a feature branch, and submit a pull request.
 - Follow the folder structure and code style for consistency.

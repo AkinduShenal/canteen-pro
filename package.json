@@ -8,7 +8,16 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently \"cd server && npm run dev\" \"cd client && npm run dev\"",
-    "start": "concurrently \"cd server && npm start\" \"cd client && npm run dev\""
+    "start": "concurrently \"cd server && npm start\" \"cd client && npm run dev\"",
+    "test:e2e": "npm --prefix client run test:e2e",
+    "test:e2e:member1": "npm --prefix client run test:e2e:member1",
+    "test:e2e:member2": "npm --prefix client run test:e2e:member2",
+    "test:e2e:member3": "npm --prefix client run test:e2e:member3",
+    "test:e2e:member4": "npm --prefix client run test:e2e:member4",
+    "test:e2e:members": "npm --prefix client run test:e2e:members",
+    "test:e2e:ui": "npm --prefix client run test:e2e:ui",
+    "test:e2e:headed": "npm --prefix client run test:e2e:headed",
+    "test:e2e:install": "npm --prefix client run test:e2e:install"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.27",

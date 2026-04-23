@@ -365,7 +365,10 @@ const StaffAdminDashboard = () => {
       const { data } = await staffAdminApi.createCanteen(payload);
       setSuccess('Canteen registered');
       const loginEmail = data?.staffLoginEmail || payload?.email;
-      if (loginEmail) {
+      const loginPassword = data?.staffLoginPassword;
+      if (loginEmail && loginPassword) {
+        toast.success(`Canteen registered. Login email: ${loginEmail} | Temporary password: ${loginPassword}`);
+      } else if (loginEmail) {
         toast.success(`Canteen registered. Login email: ${loginEmail}`);
       } else {
         toast.success('Canteen registered successfully!');

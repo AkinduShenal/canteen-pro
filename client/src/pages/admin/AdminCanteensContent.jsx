@@ -21,7 +21,6 @@ const emptyForm = {
   openTime: '',
   closeTime: '',
   contactNumber: '',
-  password: '',
 };
 
 const buildCanteenLoginEmail = (name) => {
@@ -65,15 +64,13 @@ const getCanteenDescription = (canteen) => {
 
 const sanitizeContactNumber = (value) => String(value || '').replace(/\D/g, '').slice(0, 10);
 
-const validateCanteenForm = (form, options = {}) => {
-  const { requirePassword = false } = options;
+const validateCanteenForm = (form) => {
   const errors = {};
   const name = String(form?.name || '').trim();
   const location = String(form?.location || '').trim();
   const openTime = normalizeTimeValue(form?.openTime);
   const closeTime = normalizeTimeValue(form?.closeTime);
   const contactNumber = sanitizeContactNumber(form?.contactNumber);
-  const password = String(form?.password || '');
 
   if (!name) {
     errors.name = 'Canteen name is required.';
@@ -105,14 +102,6 @@ const validateCanteenForm = (form, options = {}) => {
     errors.contactNumber = 'Contact number is required.';
   } else if (!/^0\d{9}$/.test(contactNumber)) {
     errors.contactNumber = 'Enter a valid 10-digit number (e.g., 0117544801).';
-  }
-
-  if (requirePassword) {
-    if (!password) {
-      errors.password = 'Password is required.';
-    } else if (password.length < 6) {
-      errors.password = 'Password must be at least 6 characters.';
-    }
   }
 
   return errors;
@@ -283,10 +272,7 @@ const AdminCanteensContent = ({ canteens, loading, onCreate, onUpdate, onDelete 
 
   const generatedLoginEmail = useMemo(() => buildCanteenLoginEmail(form.name), [form.name]);
 
-  const formErrors = useMemo(
-    () => validateCanteenForm(form, { requirePassword: !editingId }),
-    [form, editingId],
-  );
+  const formErrors = useMemo(() => validateCanteenForm(form), [form]);
 
   const isFormValid = useMemo(() => Object.keys(formErrors).length === 0, [formErrors]);
 
@@ -318,7 +304,6 @@ const AdminCanteensContent = ({ canteens, loading, onCreate, onUpdate, onDelete 
       openTime: normalizeTimeValue(canteen.openTime),
       closeTime: normalizeTimeValue(canteen.closeTime),
       contactNumber: sanitizeContactNumber(canteen.contactNumber),
-      password: '',
     });
     setTouchedFields({});
     setSubmitAttempted(false);
@@ -334,7 +319,6 @@ const AdminCanteensContent = ({ canteens, loading, onCreate, onUpdate, onDelete 
       openTime: true,
       closeTime: true,
       contactNumber: true,
-      password: !editingId,
     });
     if (!isFormValid) return;
 
@@ -351,7 +335,6 @@ const AdminCanteensContent = ({ canteens, loading, onCreate, onUpdate, onDelete 
       await onCreate({
         ...payload,
         email: generatedLoginEmail,
-        password: form.password,
       });
     }
     resetForm();
@@ -378,7 +361,7 @@ const AdminCanteensContent = ({ canteens, loading, onCreate, onUpdate, onDelete 
   const closedCount = useAnimatedCounter(canteenSummary.closedNow);
   const showingCount = useAnimatedCounter(canteenSummary.showing);
 
-  const totalRequiredFields = editingId ? 5 : 6;
+  const totalRequiredFields = 5;
   const completedFields = totalRequiredFields - Object.keys(formErrors).length;
 
   return (
@@ -909,28 +892,13 @@ const AdminCanteensContent = ({ canteens, loading, onCreate, onUpdate, onDelete 
                         readOnly
                         helperText="This email is auto-generated from the canteen name."
                       />
-
-                      <InputField
-                        id="canteen-login-password"
-                        label="Login Password"
-                        icon={HiOutlineExclamation}
-                        type="password"
-                        placeholder="Set a password for this canteen account"
-                        autoComplete="new-password"
-                        minLength={6}
-                        error={getFieldError('password')}
-                        onBlur={() => markTouched('password')}
-                        value={form.password}
-                        onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))}
-                        required
-                      />
                     </>
                   )}
 
                   {/* progress indicator */}
                   <div className="tw-flex tw-items-center tw-gap-2.5 tw-pt-1">
                     <div className="tw-flex tw-gap-1.5">
-                      {['name', 'location', 'openTime', 'closeTime', 'contactNumber', ...(!editingId ? ['password'] : [])].map((field) => (
+                      {['name', 'location', 'openTime', 'closeTime', 'contactNumber'].map((field) => (
                         <motion.div
                           key={field}
                           animate={{

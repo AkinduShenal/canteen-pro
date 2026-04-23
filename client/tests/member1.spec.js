@@ -10,7 +10,7 @@ const staffUser = {
     _id: 'can-1',
     name: 'Main Canteen',
     location: 'Block A',
-  },
+  },                                 
 };
 
 const studentUser = {
